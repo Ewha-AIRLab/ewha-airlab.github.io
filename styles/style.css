@@ -185,7 +185,8 @@ body { font-family: 'IBM Plex Sans', sans-serif; background: var(--w); color: va
 .pi-bio-section ul { padding-left: 1.1rem; display: flex; flex-direction: column; gap: .25rem; }
 .pi-bio-section li { font-size: .88rem; color: var(--ink2); line-height: 1.65; }
 .pi-bio-sub { color: var(--ink3); font-size: .82rem; }
-.pi-bio-link { color: var(--green); text-decoration: none; border-bottom: 1px solid rgba(0,70,42,.25); } .pi-bio-link:hover { border-color: var(--green); }
+.pi-bio-link { color: var(--green); text-decoration: none; border-bottom: 1px solid rgba(0,70,42,.25); } 
+.pi-bio-link:hover { color: var(--mint); }
 .pi-links { display: flex; gap: .75rem; flex-wrap: wrap; }
 .pi-link { font-size: .78rem; font-weight: 500; color: var(--green); text-decoration: none; border-bottom: 1px solid rgba(0,70,42,.25); padding-bottom: 1px; }
 .pi-link:hover { color: var(--mint); }
@@ -198,7 +199,7 @@ body { font-family: 'IBM Plex Sans', sans-serif; background: var(--w); color: va
 /* member card grid */
 .mem-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 1.25rem; }
 .mem-card { border: 1px solid var(--gmd); border-radius: 8px; overflow: hidden; transition: box-shadow .2s, border-color .2s; }
-.mem-card:hover { border-color: var(--green); box-shadow: 0 4px 16px rgba(0,70,42,.08); }
+/* .mem-card:hover { border-color: var(--green); box-shadow: 0 4px 16px rgba(0,70,42,.08); } */
 .mem-photo-slot { width: 100%; aspect-ratio: 1/1.1; }
 .mem-info { padding: .9rem 1rem; }
 .mem-badge { display: inline-block; font-size: .62rem; font-weight: 700; text-transform: uppercase; letter-spacing: .07em; padding: .15rem .45rem; border-radius: 3px; margin-bottom: .4rem; }

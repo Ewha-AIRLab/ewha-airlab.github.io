@@ -9,7 +9,7 @@ const MEMBERS_DATA = {
     name: "Daeun Song, Ph.D.",
     role: "Assistant Professor",
     photo: "assets/members/daeun.jpg", //null, // e.g. "assets/members/pi.jpg"
-    office: "Jinseonmi-gwan 213",
+    office: "Jinseonmi 213",
     tel: "+82-2-3277-5044",
     email: "songd@ewha.ac.kr",
     bio: `
