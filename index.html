@@ -84,6 +84,8 @@ function setActiveNav(page) {
   const el = document.getElementById(NAV_MAP[page]);
   if (el) el.classList.add('active');
   document.title = 'AIR Lab @ Ewha';
+  document.getElementById('nav-links').classList.remove('open');
+  document.getElementById('hamburger').classList.remove('open');
 }
 
 // ─────────────────────────────────────────────
