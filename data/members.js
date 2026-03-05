@@ -15,9 +15,9 @@ const MEMBERS_DATA = {
     bio: "Prof. Song is an Assistant Professor at Ewha Womans University, Korea. Previously, she was a Postdoctoral Associate in the Robotixx group at George Mason University, working with Dr. Xuesu Xiao, and at the University of Maryland with Dr. Dinesh Manocha. She received her Ph.D. in 2023 from Ewha Womans University, advised by Dr. Young J. Kim in the Computer Graphics Lab. Her research interests are in Human-Robot Interaction and automated systems that work in the real world.",
     links: [
       { label: "Curriculum Vitae", url: "#" },
-      { label: "Google Scholar",   url: "#" },
-      { label: "LinkedIn",   url: "#" },
-      { label: "Github",   url: "#" },
+      { label: "Google Scholar",   url: "https://scholar.google.com/citations?user=hq8STUoAAAAJ&hl=ko&oi=sra" },
+      { label: "LinkedIn",   url: "https://www.linkedin.com/in/daeunsong/" },
+      { label: "Github",   url: "https://github.com/daeunsong" },
       // { label: "DBLP",             url: "#" },
       // { label: "ResearchGate",     url: "#" },
     ]
