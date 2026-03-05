@@ -338,7 +338,7 @@ const PUBLICATIONS = [
     "authors": ["Yun-hyeong Kim", "Taesoo Kwon", "**Daeun Song**", "Young J. Kim<sup>†</sup>"],
     "venue_short": "CG&A",
     "venue_full": "IEEE Computer Graphics and Applications (CG&A), 2017",
-    "type": "conference",
+    "type": "journal",
     "featured": true,
     "thumbnail": "assets/publications/teaser/cga17_teaser.gif",
     "links": [

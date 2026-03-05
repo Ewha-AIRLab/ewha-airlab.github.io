@@ -73,15 +73,6 @@ function toggleMobileNav() {
   document.getElementById('hamburger').classList.toggle('open');
 }
 
-const PAGE_TITLES = {
-  '':             'AIRLab — Advanced Intelligent Robotics Lab',
-  'home':         'AIRLab — Advanced Intelligent Robotics Lab',
-  'members':      'Members — AIR Lab',
-  'publications': 'Publications — AIR Lab',
-  'news':         'News — AIR Lab',
-  'research':     'Research — AIR Lab',
-};
-
 const NAV_MAP = {
   '': 'nav-home', 'home': 'nav-home',
   'members': 'nav-members', 'publications': 'nav-publications',
@@ -92,7 +83,7 @@ function setActiveNav(page) {
   document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
   const el = document.getElementById(NAV_MAP[page]);
   if (el) el.classList.add('active');
-  document.title = PAGE_TITLES[page] || 'AIR Lab';
+  document.title = 'AIR Lab @ Ewha';
 }
 
 // ─────────────────────────────────────────────
@@ -460,7 +451,7 @@ function renderPublications() {
     </div>
     <div class="pub-body"><div class="wrap">
       <div class="filters" id="filterBar">${filterBtns}</div>
-      <div class="pub-footnote">* Equal Contribution &nbsp;&nbsp; &dagger; Corresponding</div><BR>
+      <div class="pub-footnote">* Equal Contribution &nbsp;&nbsp; &dagger; Corresponding Author(s)</div><BR>
       <div id="pubContainer">${groupsHtml}</div>
     </div></div>`;
 
