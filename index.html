@@ -256,7 +256,7 @@ function renderMembers() {
     ? `<img src="${pi.photo}" alt="${pi.name}">`
     : PHOTO_SVG;
   const piLinks = pi.links.map(l =>
-    `<a href="${l.url}" class="pi-link">${l.label}</a>`
+    `<a href="${l.url}" class="pi-link" target="_blank" rel="noopener">${l.label}</a>`
   ).join('');
 
   let groupsHtml = '';

@@ -21,7 +21,7 @@ const MEMBERS_DATA = {
       </div>
       <div class="pi-bio-section"><span class="pi-bio-label">Professional Experience</span>
         <ul>
-          <li>Assistant Professor, Dept. of Artificial Intelligence, Ewha Womans University <span class="pi-bio-sub">(2024.03 – present)</span></li>
+          <li>Assistant Professor, Dept. of Artificial Intelligence, Ewha Womans University <span class="pi-bio-sub">(2026.03 – present)</span></li>
           <li>Postdoctoral Associate, <a href="https://robotixx.cs.gmu.edu/" class="pi-bio-link" target="_blank">RobotiXX lab</a>, George Mason University <span class="pi-bio-sub">(2024.10 - 2026.02)</span></li>
           <li>Postdoctoral Associate, <a href="https://gamma.umd.edu/" class="pi-bio-link" target="_blank">GAMMA lab</a>, University of Maryland <span class="pi-bio-sub">(2023.08 - 2024.09)</span></li>
         </ul>
