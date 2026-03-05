@@ -24,4 +24,16 @@ const LAB_INFO = {
 
   // Copyright year (update annually)
   copyright_year: "2026",
+
+  // Keyword chips shown below the hero intro (emoji + label, no link)
+  keywords: [
+    { emoji: "🤖", label: "Robot Intelligence" },
+    { emoji: "🛞", label: "Autonomous Navigation" },
+    { emoji: "🦾", label: "Robot Manipulation" },
+  ],
+
+  // Hero slideshow images — add more paths to show multiple slides with dots
+  gallery: [
+    "assets/gallery/ewha.gif",
+  ],
 };

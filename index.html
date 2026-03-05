@@ -127,9 +127,10 @@ function renderHome() {
           <h1 class="hero-title fi fi2">Advanced Intelligent<br>Robotics Laboratory</h1>
           <p class="hero-abbr fi fi2">AIR Lab @ Ewha</p>
           <p class="hero-desc fi fi3">${LAB_INFO.intro}</p>
+          <div class="hero-kws fi fi3">${(LAB_INFO.keywords||[]).map(k=>`<span class="hero-kw">${k.emoji} ${k.label}</span>`).join('')}</div>
         </div>
         <div class="hero-slideshow fi fi3" id="heroSlideshow">
-          <div class="hero-slide active"><div class="hero-slide-img"><img src="assets/gallery/ewha.gif"></div></div>
+          ${(LAB_INFO.gallery||[]).map((src,i)=>`<div class="hero-slide${i===0?' active':''}"><div class="hero-slide-img"><img src="${src}"></div></div>`).join('')}
           <div class="hero-dots" id="heroDots"></div>
         </div>
       </div>
@@ -153,6 +154,7 @@ function renderHome() {
           <div class="carousel-viewport"><div class="carousel-track" id="resCarousel">${carouselItems}</div></div>
           <button class="carousel-btn carousel-next" onclick="slideCarousel(1)" aria-label="Next">&#8250;</button>
         </div>
+        <div class="carousel-dots" id="carouselDots"></div>
       </div>
     </div>`;
 
@@ -186,6 +188,7 @@ function initHeroSlideshow() {
 function initCarousel() {
   const track = document.getElementById('resCarousel');
   if (!track) return;
+  const dotsEl = document.getElementById('carouselDots');
   const items = Array.from(track.children);
   let index = 0;
   function getPerPage() { return window.innerWidth <= 640 ? 2 : 4; }
@@ -194,6 +197,22 @@ function initCarousel() {
     const perPage = getPerPage();
     const gap = 12;
     return (viewport.offsetWidth - gap * (perPage - 1)) / perPage;
+  }
+  function buildDots(maxIndex) {
+    if (!dotsEl) return;
+    dotsEl.innerHTML = '';
+    for (let i = 0; i <= maxIndex; i++) {
+      const d = document.createElement('button');
+      d.className = 'hero-dot' + (i === 0 ? ' active' : '');
+      d.setAttribute('aria-label', 'Go to ' + (i + 1));
+      d.onclick = () => { index = i; update(true); };
+      dotsEl.appendChild(d);
+    }
+  }
+  function syncDots() {
+    if (!dotsEl) return;
+    Array.from(dotsEl.children).forEach((d, i) => d.classList.toggle('active', i === index));
+
   }
   function update(animate) {
     const perPage = getPerPage();
@@ -208,6 +227,8 @@ function initCarousel() {
     const next = document.querySelector('.carousel-next');
     if (prev) prev.disabled = index === 0;
     if (next) next.disabled = index >= maxIndex;
+    if (dotsEl && dotsEl.children.length !== maxIndex + 1) buildDots(maxIndex);
+    syncDots();
   }
   window.slideCarousel = function(dir) { index += dir; update(true); };
   window._carouselResize = () => update(false);

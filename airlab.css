@@ -107,7 +107,9 @@ body { font-family: 'IBM Plex Sans', sans-serif; background: var(--w); color: va
 .hero-dept::before { content: ''; width: 20px; height: 1px; background: var(--yg); }
 .hero-title { font-family: 'EB Garamond', serif; font-size: clamp(2rem, 3.5vw, 3rem); font-weight: 500; color: #fff; line-height: 1.15; margin-bottom: .3rem; }
 .hero-abbr { font-size: 1rem; color: var(--yg);  margin-bottom: 1.75rem; text-transform: uppercase; letter-spacing: .14em; font-weight: 500; font-family: 'IBM Plex Mono'}
-.hero-desc { color: rgba(255,255,255,.7); font-size: .95rem; line-height: 1.85; max-width: 480px; margin-bottom: 2rem; }
+.hero-desc { color: rgba(255,255,255,.7); font-size: .95rem; line-height: 1.85; max-width: 480px; margin-bottom: 1rem; }
+.hero-kws { display: flex; flex-wrap: wrap; gap: .5rem; margin-bottom: 2rem; }
+.hero-kw { display: inline-flex; align-items: center; gap: .3rem; background: rgba(255,255,255,.1); color: rgba(255,255,255,.75); font-size: .78rem; font-weight: 500; padding: .3rem .7rem; border-radius: 20px; border: 1px solid rgba(255,255,255,.15); cursor: default; }
 .hero-btns { display: flex; gap: .75rem; }
 .hero-card { background: rgba(255,255,255,.07); border: 1px solid rgba(255,255,255,.12); border-radius: 8px; padding: 1.75rem; }
 .stats-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1.25rem 1rem; }
@@ -387,7 +389,7 @@ a.pub-award:hover { background: rgba(212,175,55,.22); }
   /* publications */
   .pub-body { padding: 2.5rem 0; }
   .pub-item { grid-template-columns: 1fr; gap: .75rem; padding: 1.25rem 0; }
-  .pub-thumb-slot { width: 100%; aspect-ratio: 16/9; }
+  .pub-thumb-slot { width: 50%; aspect-ratio: 16/9; }
   .pub-title { font-size: .9rem; }
   .pub-venue { font-size: .78rem; flex-wrap: wrap; }
   .pub-year-lbl { font-size: 1.2rem; }
@@ -460,6 +462,10 @@ a.pub-award:hover { background: rgba(212,175,55,.22); }
 .carousel-btn:hover { background: var(--gl); border-color: var(--gmd); color: var(--ink); }
 .carousel-btn:disabled { opacity: .25; cursor: default; pointer-events: none; }
 
+.carousel-dots { display: flex; justify-content: center; gap: 6px; margin-top: .85rem; }
+.carousel-dots .hero-dot { background: var(--gmd); }
+.carousel-dots .hero-dot.active { background: var(--grey); width: 18px; border-radius: 3px; }
+
 @media (max-width: 640px) {
   .carousel-item { flex: 0 0 calc((100% - .75rem) / 2); }
   .carousel-wrap { padding: 0; margin: 0; }
@@ -471,9 +477,9 @@ a.pub-award:hover { background: rgba(212,175,55,.22); }
 ════════════════════════════════ */
 .hero-slideshow {
   position: absolute;
-  top: 25%;
+  top: 30%;
   transform: translateY(-50%);
-  right: 1rem;
+  right: 0rem;
   width: 500px;
   aspect-ratio: 16/10;
   border-radius: 14px;
