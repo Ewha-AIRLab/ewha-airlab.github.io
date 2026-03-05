@@ -61,6 +61,7 @@ body { font-family: 'IBM Plex Sans', sans-serif; background: var(--w); color: va
 .bdg-m { background: rgba(54,174,146,.1); color: var(--mint); }
 .bdg-b { background: rgba(69,162,188,.1); color: var(--blue); }
 .bdg-y { background: rgba(188,201,36,.12); color: #8a950a; }
+.bdg-r { background: rgba(242,115,103,.1); color: #c94f45; }
 .bdg-x { background: var(--gl); color: var(--ink3); }
 
 /* ── FILTERS ── */
@@ -230,6 +231,8 @@ body { font-family: 'IBM Plex Sans', sans-serif; background: var(--w); color: va
 .pub-venue-text { font-style: italic; }
 .pub-lnk { font-size: .75rem; font-weight: 500; color: var(--green); text-decoration: none; border-bottom: 1px solid rgba(0,70,42,.25); padding-bottom: 1px; }
 .pub-lnk:hover { color: var(--mint); }
+.pub-award { font-size: .75rem; font-weight: 600; color: #b8860b; background: rgba(212,175,55,.12); border-radius: 4px; padding: .15rem .5rem; text-decoration: none; }
+a.pub-award:hover { background: rgba(212,175,55,.22); }
 .pub-footnote { margin-top: 2rem; font-size: .78rem; color: var(--ink3); }
 
 /* ════ NEWS ════ */

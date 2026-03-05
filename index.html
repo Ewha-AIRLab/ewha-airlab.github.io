@@ -55,7 +55,7 @@ const EMAIL_SVG  = `<svg viewBox="0 0 24 24"><rect x="2" y="4" width="20" height
 const GLOBE_SVG  = `<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 3c-2.5 3-4 5.5-4 9s1.5 6 4 9M12 3c2.5 3 4 5.5 4 9s-1.5 6-4 9M3 12h18"/></svg>`;
 
 const BADGE_CLS = {
-  'T-RO':'bdg-g','RA-L':'bdg-b','ICRA':'bdg-m','IROS':'bdg-y',
+  'T-RO':'bdg-r','RA-L':'bdg-b','ICRA':'bdg-m','IROS':'bdg-y',
   // 'ICASSP':'bdg-b','ISER':'bdg-g','UR':'bdg-g',
 };
 function badgeCls(v) { return BADGE_CLS[v] || 'bdg-x'; }
@@ -379,7 +379,11 @@ function buildPubCard(pub) {
     ? `<img src="${pub.thumbnail}" alt="" loading="lazy" onerror="this.parentElement.innerHTML=''">`
     : '';
   const links = (pub.links || []).map(l =>
-    `<a href="${l.url}" class="pub-lnk" target="_blank" rel="noopener">${l.label}</a>`
+    l.award
+      ? (l.url
+          ? `<a href="${l.url}" class="pub-award" target="_blank" rel="noopener">🏆 ${l.label}</a>`
+          : `<span class="pub-award">🏆 ${l.label}</span>`)
+      : `<a href="${l.url}" class="pub-lnk" target="_blank" rel="noopener">${l.label}</a>`
   ).join('');
   return `<div class="pub-item" data-type="${pub.type}">
     <div class="pub-thumb-slot">${thumb}</div>
@@ -387,7 +391,7 @@ function buildPubCard(pub) {
       <div class="pub-title">${pub.title}</div>
       <div class="pub-authors">${renderAuthors(pub.authors)}</div>
       <div class="pub-venue">
-        <span class="bdg ${badgeCls(pub.venue_short)}" style="flex-shrink:0;font-style:normal;white-space:nowrap;">${pub.venue_short}</span>
+        ${pub.venue_short ? `<span class="bdg ${badgeCls(pub.venue_short)}" style="flex-shrink:0;font-style:normal;white-space:nowrap;">${pub.venue_short}</span>` : ''}
         <span class="pub-venue-text">${pub.venue_full}</span>
       </div>
       <div class="pub-links">${links}</div>
@@ -435,7 +439,7 @@ function renderPublications() {
     </div>
     <div class="pub-body"><div class="wrap">
       <div class="filters" id="filterBar">${filterBtns}</div>
-      <div class="pub-footnote">* Equal Contribution &nbsp;&nbsp; &dagger; Co-corresponding</div><BR>
+      <div class="pub-footnote">* Equal Contribution &nbsp;&nbsp; &dagger; Corresponding</div><BR>
       <div id="pubContainer">${groupsHtml}</div>
     </div></div>`;
 
