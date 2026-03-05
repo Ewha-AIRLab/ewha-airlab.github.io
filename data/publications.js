@@ -10,19 +10,32 @@
 // keywords:  short tags shown in the carousel (2–4 recommended)
 
 const PUBLICATIONS = [
-  {
-    "year": 2026,
-    "title": "MAction-SocialNav: Multi-Action Socially Compliant Navigation via Reasoning-enhanced Prompt Tuning",
-    "authors": ["Zishuo Wang", "Xinyu Zhang", "Zhuonan Liu", "Tomohito Kawabata", "**Daeun Song**", "Xuesu Xiao", "Ling Xiao<sup>†</sup>"],
-    "venue_short": "",
-    "venue_full": "Under Review",
-    "type": "conference",
-    "featured": false,
-    "thumbnail": "assets/publications/teaser/maction-socialnav_teaser.png",
-    "links": [
-      { "label": "Paper", "url": "https://arxiv.org/abs/2512.21722" }
-    ]
-  },
+  // {
+  //   "year": 2026,
+  //   "title": "MAction-SocialNav: Multi-Action Socially Compliant Navigation via Reasoning-enhanced Prompt Tuning",
+  //   "authors": ["Zishuo Wang", "Xinyu Zhang", "Zhuonan Liu", "Tomohito Kawabata", "**Daeun Song**", "Xuesu Xiao", "Ling Xiao<sup>†</sup>"],
+  //   "venue_short": "",
+  //   "venue_full": "Under Review",
+  //   "type": "conference",
+  //   "featured": false,
+  //   "thumbnail": "assets/publications/teaser/maction-socialnav_teaser.png",
+  //   "links": [
+  //     { "label": "Paper", "url": "https://arxiv.org/abs/2512.21722" }
+  //   ]
+  // },
+  // {
+  //   "year": 2026,
+  //   "title": "MAction-SocialNav: Multi-Action Socially Compliant Navigation via Reasoning-enhanced Prompt Tuning",
+  //   "authors": ["Zishuo Wang", "Xinyu Zhang", "Zhuonan Liu", "Tomohito Kawabata", "**Daeun Song**", "Xuesu Xiao", "Ling Xiao<sup>†</sup>"],
+  //   "venue_short": "",
+  //   "venue_full": "Under Review",
+  //   "type": "conference",
+  //   "featured": false,
+  //   "thumbnail": "assets/publications/teaser/maction-socialnav_teaser.png",
+  //   "links": [
+  //     { "label": "Paper", "url": "https://arxiv.org/abs/2512.21722" }
+  //   ]
+  // },
   {
     "year": 2026,
     "title": "Narrate2Nav: Real-Time Visual Navigation with Implicit Language Reasoning in Human-Centric Environments",
@@ -199,7 +212,7 @@ const PUBLICATIONS = [
   {
     "year": 2024,
     "title": "AGL-NET: Aerial-Ground Localization Network",
-    "authors": ["Tianrui Guan<sup>†</sup>", "Ruiqi Xian", "Xijun Wang", "Xiyang Wu", "Mohamed Elnoor", "**Daeun Song**", "Dinesh Manocha"],
+    "authors": ["Tianrui Guan*<sup>†</sup>", "Ruiqi Xian*", "Xijun Wang", "Xiyang Wu", "Mohamed Elnoor", "**Daeun Song**", "Dinesh Manocha"],
     "venue_short": "IROS",
     "venue_full": "IEEE/RSJ International Conference on Intelligent Robots and Systems (IROS), 2024",
     "type": "conference",
@@ -339,7 +352,7 @@ const PUBLICATIONS = [
     "venue_short": "CG&A",
     "venue_full": "IEEE Computer Graphics and Applications (CG&A), 2017",
     "type": "journal",
-    "featured": true,
+    "featured": false,
     "thumbnail": "assets/publications/teaser/cga17_teaser.gif",
     "links": [
       { "label": "Webpage", "url": "https://graphics.ewha.ac.kr/alteredgravity/" },

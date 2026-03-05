@@ -254,7 +254,7 @@ a.pub-award:hover { background: rgba(212,175,55,.22); }
 .nf-body  { font-size: .85rem; color: var(--ink2); line-height: 1.7; }
 
 /* ── FOOTER ── */
-.site-ft { background: var(--ink); padding: 2.5rem 0 2.5rem; flex-shrink: 0; padding-bottom: calc(2.5rem + env(safe-area-inset-bottom, 0px)); }
+.site-ft { background: var(--ink); padding: 2.5rem 0 2.5rem; flex-shrink: 0; padding-bottom: calc(1.5rem + env(safe-area-inset-bottom, 0px)); }
 .ft-inner { max-width: 1100px; margin: 0 auto; padding: 0 2rem; display: grid; grid-template-columns: 1fr 1fr; gap: 2rem; margin-bottom: 2rem; }
 .ft-inner > div:last-child { text-align: right; }
 .ft-brand { font-family: 'EB Garamond', serif; font-size: 1rem; font-weight: 500; color: #fff; margin-bottom: .4rem; }
