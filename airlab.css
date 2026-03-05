@@ -180,6 +180,12 @@ body { font-family: 'IBM Plex Sans', sans-serif; background: var(--w); color: va
 .pi-meta span { font-size: .8rem; color: var(--ink3); }
 .pi-meta span strong { color: var(--ink2); }
 .pi-bio { font-size: .88rem; color: var(--ink2); line-height: 1.8; max-width: 680px; margin-bottom: 1rem; }
+.pi-bio-section { margin-bottom: .9rem; }
+.pi-bio-label { display: block; font-size: .7rem; font-weight: 700; text-transform: uppercase; letter-spacing: .1em; color: var(--green); margin-bottom: .35rem; }
+.pi-bio-section ul { padding-left: 1.1rem; display: flex; flex-direction: column; gap: .25rem; }
+.pi-bio-section li { font-size: .88rem; color: var(--ink2); line-height: 1.65; }
+.pi-bio-sub { color: var(--ink3); font-size: .82rem; }
+.pi-bio-link { color: var(--green); text-decoration: none; border-bottom: 1px solid rgba(0,70,42,.25); } .pi-bio-link:hover { border-color: var(--green); }
 .pi-links { display: flex; gap: .75rem; flex-wrap: wrap; }
 .pi-link { font-size: .78rem; font-weight: 500; color: var(--green); text-decoration: none; border-bottom: 1px solid rgba(0,70,42,.25); padding-bottom: 1px; }
 .pi-link:hover { color: var(--mint); }
@@ -477,7 +483,7 @@ a.pub-award:hover { background: rgba(212,175,55,.22); }
 ════════════════════════════════ */
 .hero-slideshow {
   position: absolute;
-  top: 30%;
+  top: 25%;
   transform: translateY(-50%);
   right: 0rem;
   width: 500px;

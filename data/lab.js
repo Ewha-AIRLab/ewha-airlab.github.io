@@ -10,7 +10,7 @@ const LAB_INFO = {
   full_name: "Advanced Intelligent Robotics Laboratory",
 
   // Paragraph shown under the hero title on the home page
-  intro: "We focus on building <B>deployable robotic AI systems</B> that perceive, learn, and act in complex, real-world, human-centered environments. We integrate machine learning and motion planning to enable practical autonomy beyond the lab—from navigation to manipulation. AIR Lab advances <B>practical robot intelligence</B> through multimodal scene understanding for socially compliant, robust behavior with minimal supervision—toward Robot Intelligence for the Real World.",
+  intro: "We focus on building <B>deployable robotic AI systems</B> that perceive, learn, and act in complex, real-world, human-centered environments. We integrate machine learning and motion planning to enable practical autonomy beyond the lab—from navigation to manipulation. AIR Lab advances <B>Robot Intelligence for the Real World</B>!",
 
   // Department / university line shown in the footer
   department: "Dept. of Artificial Intelligence",

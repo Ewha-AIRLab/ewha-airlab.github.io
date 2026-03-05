@@ -30,7 +30,7 @@ const PUBLICATIONS = [
     "venue_short": "ICRA",
     "venue_full": "IEEE International Conference on Robotics and Automation (ICRA), 2026",
     "type": "conference",
-    "featured": true,
+    "featured": false,
     "thumbnail": "assets/publications/teaser/narrate2nav.png",
     "links": [
       { "label": "Paper", "url": "https://arxiv.org/abs/2506.14233" }
@@ -69,7 +69,7 @@ const PUBLICATIONS = [
     "venue_short": "RAM",
     "venue_full": "IEEE Robotics & Automation Magazine (RAM), accepted",
     "type": "journal",
-    "featured": true,
+    "featured": false,
     "thumbnail": "assets/publications/teaser/barn_teaser.jpg",
     "links": [
       { "label": "Website",   "url": "https://people.cs.gmu.edu/~xiao/Research/BARN_Challenge/BARN_Challenge25.html" },
@@ -84,7 +84,7 @@ const PUBLICATIONS = [
     "venue_short": "SSRR",
     "venue_full": "IEEE International Conference on Safety, Security, and Rescue Robotics (SSRR), 2025",
     "type": "conference",
-    "featured": true,
+    "featured": false,
     "thumbnail": "assets/publications/teaser/verti_arena_teaser.png",
     "links": [
       { "label": "Best Student Presentation Award", "award": true, "url": "assets/award/verti_arena_award.jpg"},
@@ -114,7 +114,7 @@ const PUBLICATIONS = [
     "venue_short": "IROS",
     "venue_full": "IEEE/RSJ International Conference on Intelligent Robots and Systems (IROS), 2025",
     "type": "conference",
-    "featured": true,
+    "featured": false,
     "thumbnail": "assets/publications/teaser/social-llava.gif",
     "links": [
       { "label": "Webpage", "url": "https://people.cs.gmu.edu/~xiao/Research/SNEI/" },
