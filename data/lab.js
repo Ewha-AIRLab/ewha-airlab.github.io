@@ -16,8 +16,12 @@ const LAB_INFO = {
   department: "Dept. of Artificial Intelligence",
   university:  "Ewha Womans University, Seoul, Korea",
 
-  // Mailing address shown in the footer
-  address: "Jinseonmi, Room 213<br>52 Ewhayeodae-gil, Seodaemun-gu<br>Seoul 03760, Republic of Korea",
+  // Mailing address shown in the footer (one line per entry)
+  address: [
+    "Jinseonmi, Room 213",
+    "52 Ewhayeodae-gil, Seodaemun-gu",
+    "Seoul 03760, Republic of Korea",
+  ],
 
   // Phone number shown in the footer
   phone: "+82-2-3277-5044",

@@ -12,20 +12,15 @@ const MEMBERS_DATA = {
     office: "Jinseonmi 213",
     tel: "+82-2-3277-5044",
     email: "songd@ewha.ac.kr",
-    bio: `
-      <div class="pi-bio-section"><span class="pi-bio-label">Education</span>
-        <ul>
-          <li>Ph.D., Computer Science &amp; Engineering, Ewha Womans University, 2023</li>
-          <li>B.S., Computer Science &amp; Engineering, Ewha Womans University, 2017</li>
-        </ul>
-      </div>
-      <div class="pi-bio-section"><span class="pi-bio-label">Professional Experience</span>
-        <ul>
-          <li>Assistant Professor, Dept. of Artificial Intelligence, Ewha Womans University <span class="pi-bio-sub">(2026.03 – present)</span></li>
-          <li>Postdoctoral Associate, <a href="https://robotixx.cs.gmu.edu/" class="pi-bio-link" target="_blank">RobotiXX lab</a>, George Mason University <span class="pi-bio-sub">(2024.10 - 2026.02)</span></li>
-          <li>Postdoctoral Associate, <a href="https://gamma.umd.edu/" class="pi-bio-link" target="_blank">GAMMA lab</a>, University of Maryland <span class="pi-bio-sub">(2023.08 - 2024.09)</span></li>
-        </ul>
-      </div>`,
+    education: [
+      { degree: "Ph.D.", field: "Computer Science & Engineering", school: "Ewha Womans University", year: 2023 },
+      { degree: "B.S.",  field: "Computer Science & Engineering", school: "Ewha Womans University", year: 2017 },
+    ],
+    experience: [
+      { role: "Assistant Professor", org: "Dept. of Artificial Intelligence, Ewha Womans University", period: "2026.03 – present" },
+      { role: "Postdoctoral Associate", org: "RobotiXX lab, George Mason University", org_url: "https://robotixx.cs.gmu.edu/", period: "2024.10 – 2026.02" },
+      { role: "Postdoctoral Associate", org: "GAMMA lab, University of Maryland",     org_url: "https://gamma.umd.edu/",            period: "2023.08 – 2024.09" },
+    ],
     links: [
       { label: "Curriculum Vitae", url: "#" },
       { label: "Google Scholar",   url: "https://scholar.google.com/citations?user=hq8STUoAAAAJ&hl=ko&oi=sra" },
