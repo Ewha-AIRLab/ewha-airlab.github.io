@@ -1,0 +1,618 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Coordinate Frames — AIR Lab @ Ewha</title>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@300;400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: 'IBM Plex Sans', sans-serif; background: #f8fafc; color: #0f172a; min-height: 100vh; }
+
+/* ── Nav breadcrumb ── */
+.topbar { background: white; border-bottom: 1px solid #e2e8f0; padding: .7rem 1.5rem; display: flex; align-items: center; gap: .5rem; font-size: .84rem; }
+.topbar a { text-decoration: none; color: #00462A; font-weight: 500; }
+.topbar a:hover { text-decoration: underline; }
+.topbar .sep { color: #94a3b8; }
+.topbar .cur { color: #0f172a; font-weight: 600; }
+
+/* ── Page layout ── */
+.page { max-width: 1400px; margin: 0 auto; padding: 1.5rem; }
+.page-title { font-size: 1.75rem; font-weight: 700; margin-bottom: .4rem; }
+.page-desc { color: #64748b; font-size: .9rem; max-width: 640px; margin-bottom: 1.25rem; line-height: 1.6; }
+
+/* ── Buttons ── */
+.btn-row { display: flex; flex-wrap: wrap; gap: .5rem; align-items: center; margin-bottom: 1.25rem; }
+button { font-family: inherit; cursor: pointer; border: 1px solid #e2e8f0; border-radius: 8px; padding: .42rem 1rem; font-size: .84rem; font-weight: 500; transition: background .12s, color .12s; background: white; color: #0f172a; }
+button:hover { background: #f1f5f9; }
+button.btn-active { background: #0f172a; color: white; border-color: #0f172a; }
+button.btn-danger { background: #dc2626; color: white; border-color: #dc2626; }
+button.btn-danger:hover { background: #b91c1c; }
+.badge { background: #f1f5f9; border: 1px solid #e2e8f0; border-radius: 9999px; padding: .3rem .85rem; font-size: .8rem; color: #475569; white-space: nowrap; }
+
+/* ── Grid ── */
+.main-grid { display: grid; grid-template-columns: 1.5fr 1fr; gap: 1.25rem; align-items: start; }
+@media (max-width: 960px) { .main-grid { grid-template-columns: 1fr; } }
+
+/* ── Cards ── */
+.card { background: white; border: 1px solid #e2e8f0; border-radius: 16px; box-shadow: 0 1px 3px rgba(0,0,0,.06); }
+.card-hd { padding: 1rem 1.35rem .6rem; display: flex; align-items: center; justify-content: space-between; }
+.axis-legend { display: flex; gap: .6rem; }
+.axis-chip { font-size: .75rem; font-weight: 600; padding: .15rem .55rem; border-radius: 999px; color: white; }
+.card-title { font-size: .98rem; font-weight: 600; }
+.card-body { padding: 1rem 1.35rem 1.2rem; }
+
+/* ── SVG canvas ── */
+.viz-svg { width: 100%; display: block; border-radius: 10px; border: 1px solid #e2e8f0; background: white; }
+
+/* ── Side panel ── */
+.side-panel { display: flex; flex-direction: column; gap: 1.25rem; }
+
+/* ── Sliders ── */
+.sl-group { margin-bottom: .95rem; }
+.sl-group:last-child { margin-bottom: 0; }
+.sl-label { display: flex; justify-content: space-between; font-size: .83rem; margin-bottom: .35rem; }
+.sl-label .sl-val { font-family: 'IBM Plex Mono', monospace; color: #475569; }
+input[type=range] { width: 100%; -webkit-appearance: none; appearance: none; height: 6px; background: #e2e8f0; border-radius: 3px; outline: none; cursor: pointer; }
+input[type=range]::-webkit-slider-thumb { -webkit-appearance: none; width: 17px; height: 17px; border-radius: 50%; background: #0f172a; cursor: pointer; border: 2px solid white; box-shadow: 0 1px 3px rgba(0,0,0,.25); }
+input[type=range]:disabled { opacity: .32; filter: grayscale(1); cursor: default; }
+.sl-divider { border-top: 1px solid #f1f5f9; margin: .75rem 0; }
+
+/* ── Number inputs alongside sliders ── */
+.sl-row { display: flex; align-items: center; gap: .5rem; }
+.sl-row input[type=range] { flex: 1; }
+input[type=number] { width: 62px; font-family: 'IBM Plex Mono', monospace; font-size: .8rem; border: 1px solid #e2e8f0; border-radius: 6px; padding: .28rem .4rem; text-align: right; background: #f8fafc; color: #0f172a; -moz-appearance: textfield; appearance: textfield; }
+input[type=number]::-webkit-outer-spin-button, input[type=number]::-webkit-inner-spin-button { -webkit-appearance: none; }
+input[type=number]:focus { outline: none; border-color: #94a3b8; background: white; }
+input[type=number]:disabled { opacity: .32; cursor: default; }
+
+/* ── Reference frame selector ── */
+.frame-sel-label { font-size: .78rem; font-weight: 600; color: #64748b; margin-bottom: .4rem; text-transform: uppercase; letter-spacing: .04em; }
+.frame-sel-row { display: flex; gap: .4rem; margin-bottom: .9rem; }
+.frame-btn { flex: 1; border-radius: 8px; font-size: .8rem; padding: .35rem .4rem; }
+
+/* ── Highlighted info row ── */
+.info-row.highlighted { background: #f0fdf4; border-radius: 8px; margin: 0 -.35rem; padding: .5rem .35rem; border-bottom: none; }
+.info-row.highlighted .info-label { color: #15803d; font-weight: 600; }
+.info-row.highlighted .info-val { color: #166534; }
+
+/* ── Info rows ── */
+.info-row { display: flex; justify-content: space-between; align-items: flex-start; gap: 1rem; border-bottom: 1px solid #f1f5f9; padding: .5rem 0; font-size: .81rem; }
+.info-row:last-child { border-bottom: none; }
+.info-label { color: #64748b; font-weight: 500; }
+.info-val { font-family: 'IBM Plex Mono', monospace; text-align: right; }
+
+/* ── Matrices ── */
+.mat-block { background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 10px; padding: .75rem; margin-bottom: .7rem; }
+.mat-block:last-of-type { margin-bottom: 0; }
+.mat-label { font-size: .78rem; font-weight: 600; color: #475569; margin-bottom: .45rem; }
+.mat-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: .3rem; }
+.mat-cell { background: white; border-radius: 4px; padding: .22rem .45rem; text-align: right; font-family: 'IBM Plex Mono', monospace; font-size: .78rem; box-shadow: 0 1px 2px rgba(0,0,0,.05); }
+.mat-note { font-size: .72rem; color: #94a3b8; margin-top: .6rem; line-height: 1.5; }
+
+/* ── Teaching notes ── */
+.note { font-size: .83rem; color: #64748b; margin-bottom: .5rem; line-height: 1.6; }
+.note:last-child { margin-bottom: 0; }
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <a href="/">AIR Lab @ Ewha</a>
+  <span class="sep">/</span>
+  <span class="cur">2D Mobile Robot</span>
+  <span style="margin-left:auto;display:flex;gap:.75rem;">
+    <span class="cur" style="font-size:.8rem;">2D Mobile Robot</span>
+    <a href="3d.html" style="font-size:.8rem;">3D Robot Arm</a>
+  </span>
+</div>
+
+<div class="page">
+  <h1 class="page-title">[2D] Coordinate Frames, Pose, and Transformation</h1>
+  <p class="page-desc">Interactive 2D visualizer for teaching world, robot, and camera frames; pose representation; local vs. global coordinates; and transform composition.</p>
+
+  <div class="btn-row">
+    <button id="btn-play"        onclick="togglePlay()">Play</button>
+    <button id="btn-translation" onclick="clickMode('translation')">Translation</button>
+    <button id="btn-rotation"    onclick="clickMode('rotation')">Rotation</button>
+    <button id="btn-rigid"       onclick="clickMode('rigid')">Rigid</button>
+    <span class="badge" id="badge">Mode: free</span>
+    <span style="width:1px;height:24px;background:#e2e8f0;margin:0 .25rem;display:inline-block;vertical-align:middle;"></span>
+    <button id="btn-camera" onclick="toggleCamera()" style="border-color:#2563eb;color:#2563eb;">Camera: ON</button>
+  </div>
+
+  <div class="main-grid">
+    <!-- Visualization -->
+    <div class="card">
+      <div class="card-hd">
+        <div class="card-title">Visualization</div>
+        <div class="axis-legend">
+          <span class="axis-chip" style="background:#ef4444">X</span>
+          <span class="axis-chip" style="background:#22c55e">Y</span>
+        </div>
+      </div>
+      <div class="card-body" style="padding:.75rem;">
+        <svg id="viz" viewBox="0 0 900 560" class="viz-svg"></svg>
+      </div>
+    </div>
+
+    <!-- Side panel -->
+    <div class="side-panel">
+
+      <!-- Controls -->
+      <div class="card">
+        <div class="card-hd"><div class="card-title">Controls</div></div>
+        <div class="card-body">
+          <div class="sl-group">
+            <div class="sl-label"><span>Robot x (m)</span><span class="sl-val" id="lbl-x">2.00</span></div>
+            <div class="sl-row">
+              <input type="range"  id="sl-x"    min="-0.5" max="6.0"  step="0.05" value="2.0"  oninput="onSlider('x',this)">
+              <input type="number" id="num-x"   min="-0.5" max="6.0"  step="0.05" value="2.00" oninput="onNumber('x',this)">
+            </div>
+          </div>
+          <div class="sl-group">
+            <div class="sl-label"><span>Robot y (m)</span><span class="sl-val" id="lbl-y">1.50</span></div>
+            <div class="sl-row">
+              <input type="range"  id="sl-y"    min="-0.5" max="4.5"  step="0.05" value="1.5"  oninput="onSlider('y',this)">
+              <input type="number" id="num-y"   min="-0.5" max="4.5"  step="0.05" value="1.50" oninput="onNumber('y',this)">
+            </div>
+          </div>
+          <div class="sl-group">
+            <div class="sl-label"><span>Robot &theta; (deg)</span><span class="sl-val" id="lbl-theta">30°</span></div>
+            <div class="sl-row">
+              <input type="range"  id="sl-theta"  min="-180" max="180" step="1" value="30" oninput="onSlider('theta',this)">
+              <input type="number" id="num-theta" min="-180" max="180" step="1" value="30"  oninput="onNumber('theta',this)">
+            </div>
+          </div>
+          <div class="sl-divider"></div>
+          <div class="frame-sel-label">Point P reference frame</div>
+          <div class="frame-sel-row">
+            <button class="frame-btn btn-active" id="frame-world"  onclick="setRefFrame('world')">World</button>
+            <button class="frame-btn"            id="frame-robot"  onclick="setRefFrame('robot')">Robot</button>
+            <button class="frame-btn"            id="frame-camera" onclick="setRefFrame('camera')">Camera</button>
+          </div>
+          <div class="sl-group">
+            <div class="sl-label"><span>Point P x (<span id="px-frame-lbl">world</span>)</span><span class="sl-val" id="lbl-px">4.60</span></div>
+            <div class="sl-row">
+              <input type="range"  id="sl-px"   min="-6" max="8" step="0.05" value="4.6"  oninput="onSlider('px',this)">
+              <input type="number" id="num-px"  min="-6" max="8" step="0.05" value="4.60" oninput="onNumber('px',this)">
+            </div>
+          </div>
+          <div class="sl-group">
+            <div class="sl-label"><span>Point P y (<span id="py-frame-lbl">world</span>)</span><span class="sl-val" id="lbl-py">2.50</span></div>
+            <div class="sl-row">
+              <input type="range"  id="sl-py"   min="-6" max="8" step="0.05" value="2.5"  oninput="onSlider('py',this)">
+              <input type="number" id="num-py"  min="-6" max="8" step="0.05" value="2.50" oninput="onNumber('py',this)">
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Live coordinates -->
+      <div class="card">
+        <div class="card-hd"><div class="card-title">Live coordinates</div></div>
+        <div class="card-body">
+          <div class="info-row"><span class="info-label">Robot pose in world</span><span class="info-val" id="i-robot"></span></div>
+          <div class="info-row" id="row-pw"><span class="info-label">Point P in world</span><span class="info-val" id="i-pw"></span></div>
+          <div class="info-row" id="row-pr"><span class="info-label">Point P in robot</span><span class="info-val" id="i-pr"></span></div>
+          <div id="cam-info">
+            <div class="info-row"><span class="info-label">Camera pose in robot</span><span class="info-val" id="i-cr"></span></div>
+            <div class="info-row"><span class="info-label">Camera pose in world</span><span class="info-val" id="i-cw"></span></div>
+            <div class="info-row" id="row-pc"><span class="info-label">Point P in camera</span><span class="info-val" id="i-pc"></span></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Matrices -->
+      <div class="card">
+        <div class="card-hd"><div class="card-title">Transformation matrices</div></div>
+        <div class="card-body">
+          <div class="mat-block"><div class="mat-label">T_world_robot</div><div class="mat-grid" id="mat-wr"></div></div>
+          <div id="cam-mat">
+            <div class="mat-block"><div class="mat-label">T_robot_camera</div><div class="mat-grid" id="mat-rc"></div></div>
+            <div class="mat-block"><div class="mat-label">T_world_camera</div><div class="mat-grid" id="mat-wc"></div></div>
+            <p class="mat-note">In 2D homogeneous coordinates, T_world_camera = T_world_robot &middot; T_robot_camera.</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Teaching notes -->
+      <!-- <div class="card">
+        <div class="card-hd"><div class="card-title">Teaching notes</div></div>
+        <div class="card-body">
+          <p class="note"><strong>Translation</strong> — only position sliders active, &theta; locked at 0°.</p>
+          <p class="note"><strong>Rotation</strong> — only &theta; slider active, position locked.</p>
+          <p class="note"><strong>Rigid</strong> — all robot pose sliders active.</p>
+          <p class="note">1. Move x and y with &theta; = 0° to demonstrate pure translation.</p>
+          <p class="note">2. Fix position and change &theta; to demonstrate rotation.</p>
+          <p class="note">3. Move Point P to compare world vs. robot frame coordinates.</p>
+          <p class="note">4. Show that the camera frame follows the robot automatically (rigid attachment).</p>
+          <p class="note">5. Use the matrix panel to explain T_world_camera = T_world_robot &middot; T_robot_camera.</p>
+          <p class="note">6. Press <strong>Play</strong> to animate any mode continuously.</p>
+        </div>
+      </div> -->
+
+    </div><!-- /side-panel -->
+  </div><!-- /main-grid -->
+</div><!-- /page -->
+
+<script>
+'use strict';
+
+// ── Constants ──
+const W = 900, H = 560, SCALE = 80, OX = 170, OY = 440;
+const CAM_LOCAL = { x: 0.55, y: 0.2, theta: deg2rad(20) };
+
+// ── State ──
+const S = {
+  mode: 'free',
+  x: 2.0, y: 1.5, thetaDeg: 30,
+  pointX: 4.6, pointY: 2.5,
+  isPlaying: false,
+  playMode: 'rigid',
+  showCamera: false,
+  refFrame: 'world',
+  animId: null,
+  animStart: null,
+};
+
+// ── Math ──
+function deg2rad(d) { return d * Math.PI / 180; }
+function rad2deg(r) { return r * 180 / Math.PI; }
+
+function applyRot(theta, p) {
+  const c = Math.cos(theta), s = Math.sin(theta);
+  return { x: c * p.x - s * p.y, y: s * p.x + c * p.y };
+}
+
+function composePose(a, b) {
+  const t = applyRot(a.theta, { x: b.x, y: b.y });
+  return { x: a.x + t.x, y: a.y + t.y, theta: a.theta + b.theta };
+}
+
+function worldToLocal(frame, p) {
+  const dx = p.x - frame.x, dy = p.y - frame.y;
+  const c = Math.cos(frame.theta), s = Math.sin(frame.theta);
+  return { x: c * dx + s * dy, y: -s * dx + c * dy };
+}
+
+function localToWorld(frame, p) {
+  const r = applyRot(frame.theta, p);
+  return { x: frame.x + r.x, y: frame.y + r.y };
+}
+
+function matRows(pose) {
+  const c = Math.cos(pose.theta), s = Math.sin(pose.theta);
+  return [[c, -s, pose.x], [s, c, pose.y], [0, 0, 1]];
+}
+
+// ── Canvas helpers ──
+function w2c(p)  { return { x: OX + p.x * SCALE, y: OY - p.y * SCALE }; }
+function cv(v)   { return { x: v.x * SCALE, y: -v.y * SCALE }; }
+function fmt(n)  { return (n >= 0 ? '' : '\u2212') + Math.abs(n).toFixed(2); }
+
+// ── SVG builders ──
+function svgDefs() {
+  return `<defs>
+    <marker id="ar" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto"><path d="M0,0 L8,4 L0,8 z" fill="#dc2626"/></marker>
+    <marker id="ag" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto"><path d="M0,0 L8,4 L0,8 z" fill="#16a34a"/></marker>
+    <marker id="ab" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto"><path d="M0,0 L8,4 L0,8 z" fill="#2563eb"/></marker>
+  </defs>`;
+}
+
+function svgGrid() {
+  const tl = w2c({ x: -1, y: 5 }), br = w2c({ x: 8, y: -1 });
+  let s = `<g><rect x="${tl.x}" y="${tl.y}" width="${br.x - tl.x}" height="${br.y - tl.y}" fill="#f8fafc"/>`;
+  for (let gx = -1; gx <= 8; gx++) {
+    const a = w2c({ x: gx, y: -1 }), b = w2c({ x: gx, y: 5 });
+    s += `<line x1="${a.x}" y1="${a.y}" x2="${b.x}" y2="${b.y}" stroke="#e5e7eb" stroke-width="1"/>`;
+  }
+  for (let gy = -1; gy <= 5; gy++) {
+    const a = w2c({ x: -1, y: gy }), b = w2c({ x: 8, y: gy });
+    s += `<line x1="${a.x}" y1="${a.y}" x2="${b.x}" y2="${b.y}" stroke="#e5e7eb" stroke-width="1"/>`;
+  }
+  return s + '</g>';
+}
+
+function svgFrame(pose, label, axisLen, dashed) {
+  axisLen = axisLen || 0.9;
+  const o  = w2c({ x: pose.x, y: pose.y });
+  const xa = cv(applyRot(pose.theta, { x: axisLen, y: 0 }));
+  const ya = cv(applyRot(pose.theta, { x: 0, y: axisLen }));
+  const d  = dashed ? 'stroke-dasharray="6 4"' : '';
+  return `<g>
+    <circle cx="${o.x}" cy="${o.y}" r="5" fill="black"/>
+    <line x1="${o.x}" y1="${o.y}" x2="${o.x+xa.x}" y2="${o.y+xa.y}" stroke="#dc2626" stroke-width="3" ${d} marker-end="url(#ar)"/>
+    <line x1="${o.x}" y1="${o.y}" x2="${o.x+ya.x}" y2="${o.y+ya.y}" stroke="#16a34a" stroke-width="3" ${d} marker-end="url(#ag)"/>
+    <text x="${o.x+8}" y="${o.y+15}" font-size="15" font-weight="600">${label}</text>
+    <text x="${o.x+xa.x+6}" y="${o.y+xa.y+4}" font-size="13" fill="#dc2626">x</text>
+    <text x="${o.x+ya.x+6}" y="${o.y+ya.y+4}" font-size="13" fill="#16a34a">y</text>
+  </g>`;
+}
+
+function svgRobot(pose) {
+  const o = w2c({ x: pose.x, y: pose.y });
+  const deg = rad2deg(pose.theta);
+  return `<g transform="translate(${o.x},${o.y}) rotate(${-deg})">
+    <rect x="-34" y="-22" width="68" height="44" rx="14" fill="#cbd5e1" stroke="#475569" stroke-width="2"/>
+    <circle cx="26" cy="0" r="4" fill="#0f172a"/>
+    <circle cx="-20" cy="-24" r="7" fill="#334155"/>
+    <circle cx="20"  cy="-24" r="7" fill="#334155"/>
+    <circle cx="-20" cy="24"  r="7" fill="#334155"/>
+    <circle cx="20"  cy="24"  r="7" fill="#334155"/>
+  </g>`;
+}
+
+function svgCamera(pose) {
+  const o = w2c({ x: pose.x, y: pose.y });
+  const deg = rad2deg(pose.theta);
+  return `<g transform="translate(${o.x},${o.y}) rotate(${-deg})">
+    <rect x="-12" y="-8" width="24" height="16" rx="4" fill="#dbeafe" stroke="#2563eb" stroke-width="2"/>
+    <circle cx="4" cy="0" r="4" fill="#60a5fa" stroke="#1d4ed8" stroke-width="1.5"/>
+    <line x1="12" y1="0" x2="26" y2="0" stroke="#2563eb" stroke-width="2" stroke-dasharray="4 3"/>
+  </g>`;
+}
+
+function svgPoint(p, color, label) {
+  const c = w2c(p);
+  return `<g>
+    <circle cx="${c.x}" cy="${c.y}" r="7" fill="${color}"/>
+    <text x="${c.x+10}" y="${c.y-10}" font-size="14" font-weight="600" fill="${color}">${label}</text>
+  </g>`;
+}
+
+function svgLegend() {
+  // return `<g>
+  //   <rect x="600" y="40" width="250" height="115" rx="14" fill="#f8fafc" stroke="#e2e8f0"/>
+  //   <text x="620" y="68" font-size="15" font-weight="700">What this shows</text>
+  //   <text x="620" y="92"  font-size="13">\u2022 Same point, different coordinates</text>
+  //   <text x="620" y="112" font-size="13">\u2022 Pose = position + orientation</text>
+  //   <text x="620" y="132" font-size="13">\u2022 Camera frame is attached to robot</text>
+  // </g>`;
+}
+
+// ── Render ──
+function render() {
+  const theta      = deg2rad(S.thetaDeg);
+  const robotPose  = { x: S.x, y: S.y, theta };
+  const cameraPose = composePose(robotPose, CAM_LOCAL);
+  const pWorld     = { x: S.pointX, y: S.pointY };
+  const pRobot     = worldToLocal(robotPose, pWorld);
+  const pCam       = worldToLocal(cameraPose, pWorld);
+  const camOrig    = localToWorld(robotPose, { x: CAM_LOCAL.x, y: CAM_LOCAL.y });
+
+  // Arrow from robot origin to camera origin
+  const ra = w2c({ x: robotPose.x, y: robotPose.y });
+  const ca = w2c(camOrig);
+  const mx = (ra.x + ca.x) / 2 + 8, my = (ra.y + ca.y) / 2 - 6;
+
+  // Draw SVG
+  const camSvg = S.showCamera
+    ? svgCamera(cameraPose) +
+      svgFrame(cameraPose, 'camera', 0.75, true) +
+      `<line x1="${ra.x}" y1="${ra.y}" x2="${ca.x}" y2="${ca.y}"
+         stroke="#2563eb" stroke-width="2" stroke-dasharray="6 4" marker-end="url(#ab)"/>`
+    : '';
+
+  document.getElementById('viz').innerHTML =
+    svgDefs() +
+    svgGrid() +
+    svgRobot(robotPose) +
+    svgFrame({ x: 0, y: 0, theta: 0 }, 'world', 1.1) +
+    svgFrame(robotPose, 'robot', 1.0) +
+    svgPoint(pWorld, '#7c3aed', 'point P') +
+    camSvg +
+    svgLegend();
+
+  // Info rows
+  document.getElementById('i-robot').textContent = `(${fmt(robotPose.x)}, ${fmt(robotPose.y)}, ${S.thetaDeg.toFixed(0)}°)`;
+  document.getElementById('i-pw').textContent    = `(${fmt(pWorld.x)}, ${fmt(pWorld.y)})`;
+  document.getElementById('i-pr').textContent    = `(${fmt(pRobot.x)}, ${fmt(pRobot.y)})`;
+  document.getElementById('i-cr').textContent    = `(${fmt(CAM_LOCAL.x)}, ${fmt(CAM_LOCAL.y)}, ${rad2deg(CAM_LOCAL.theta).toFixed(0)}°)`;
+  document.getElementById('i-cw').textContent    = `(${fmt(cameraPose.x)}, ${fmt(cameraPose.y)}, ${rad2deg(cameraPose.theta).toFixed(0)}°)`;
+  document.getElementById('i-pc').textContent    = `(${fmt(pCam.x)}, ${fmt(pCam.y)})`;
+
+  // Matrices
+  renderMat('mat-wr', matRows(robotPose));
+  renderMat('mat-rc', matRows(CAM_LOCAL));
+  renderMat('mat-wc', matRows(cameraPose));
+
+  // Sync slider + number input values (needed during animation)
+  const pFrame = getPointInFrame();
+
+  document.getElementById('sl-x').value     = S.x;
+  document.getElementById('sl-y').value     = S.y;
+  document.getElementById('sl-theta').value = S.thetaDeg;
+  document.getElementById('sl-px').value    = pFrame.x;
+  document.getElementById('sl-py').value    = pFrame.y;
+  document.getElementById('num-x').value     = S.x.toFixed(2);
+  document.getElementById('num-y').value     = S.y.toFixed(2);
+  document.getElementById('num-theta').value = S.thetaDeg.toFixed(0);
+  document.getElementById('num-px').value    = pFrame.x.toFixed(2);
+  document.getElementById('num-py').value    = pFrame.y.toFixed(2);
+
+  // Sync slider labels
+  document.getElementById('lbl-x').textContent     = fmt(S.x);
+  document.getElementById('lbl-y').textContent     = fmt(S.y);
+  document.getElementById('lbl-theta').textContent = `${S.thetaDeg.toFixed(0)}°`;
+  document.getElementById('lbl-px').textContent    = fmt(pFrame.x);
+  document.getElementById('lbl-py').textContent    = fmt(pFrame.y);
+
+  // Update Point P slider frame labels
+  document.getElementById('px-frame-lbl').textContent = S.refFrame;
+  document.getElementById('py-frame-lbl').textContent = S.refFrame;
+
+  // Slider + number disabled state
+  const posLock   = S.mode === 'rotation' || S.isPlaying;
+  const rotLock   = S.mode === 'translation' || S.isPlaying;
+  const ptLock    = S.isPlaying;
+  document.getElementById('sl-x').disabled      = posLock;
+  document.getElementById('sl-y').disabled      = posLock;
+  document.getElementById('sl-theta').disabled  = rotLock;
+  document.getElementById('sl-px').disabled     = ptLock;
+  document.getElementById('sl-py').disabled     = ptLock;
+  document.getElementById('num-x').disabled     = posLock;
+  document.getElementById('num-y').disabled     = posLock;
+  document.getElementById('num-theta').disabled = rotLock;
+  document.getElementById('num-px').disabled    = ptLock;
+  document.getElementById('num-py').disabled    = ptLock;
+
+  // Reference frame buttons
+  const camFrameOk = S.showCamera;
+  ['world', 'robot', 'camera'].forEach(f => {
+    const btn = document.getElementById(`frame-${f}`);
+    const disabled = f === 'camera' && !camFrameOk;
+    btn.disabled = disabled;
+    btn.className = (!disabled && S.refFrame === f) ? 'frame-btn btn-active' : 'frame-btn';
+  });
+
+  // Highlight Point P row in selected reference frame
+  const rowMap = { world: 'row-pw', robot: 'row-pr', camera: 'row-pc' };
+  ['row-pw', 'row-pr', 'row-pc'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.classList.remove('highlighted');
+  });
+  const activeRow = document.getElementById(rowMap[S.refFrame]);
+  if (activeRow) activeRow.classList.add('highlighted');
+
+  // Button states
+  document.getElementById('btn-play').textContent = S.isPlaying ? 'Pause' : 'Play';
+  document.getElementById('btn-play').className   = S.isPlaying ? 'btn-danger' : '';
+  ['translation', 'rotation', 'rigid'].forEach(m => {
+    document.getElementById(`btn-${m}`).className = S.mode === m ? 'btn-active' : '';
+  });
+
+  // Badge
+  document.getElementById('badge').textContent = S.isPlaying ? `Playing: ${S.playMode}` : `Mode: ${S.mode}`;
+
+  // Camera toggle
+  const hide = S.showCamera ? '' : 'none';
+  document.getElementById('cam-info').style.display = hide;
+  document.getElementById('cam-mat').style.display  = hide;
+  const btnCam = document.getElementById('btn-camera');
+  btnCam.textContent = S.showCamera ? 'Camera: ON' : 'Camera: OFF';
+  btnCam.style.borderColor = S.showCamera ? '#2563eb' : '#e2e8f0';
+  btnCam.style.color       = S.showCamera ? '#2563eb' : '#94a3b8';
+  btnCam.style.background  = S.showCamera ? '#eff6ff' : 'white';
+}
+
+function renderMat(id, rows) {
+  document.getElementById(id).innerHTML = rows
+    .map(row => row.map(v => `<div class="mat-cell">${Math.abs(v) < 1e-9 ? '0.00' : v.toFixed(2)}</div>`).join(''))
+    .join('');
+}
+
+// ── Point P frame helpers ──
+// Returns Point P coordinates expressed in the currently selected reference frame
+function getPointInFrame() {
+  const pWorld    = { x: S.pointX, y: S.pointY };
+  const robotPose = { x: S.x, y: S.y, theta: deg2rad(S.thetaDeg) };
+  if (S.refFrame === 'robot')  return worldToLocal(robotPose, pWorld);
+  if (S.refFrame === 'camera') return worldToLocal(composePose(robotPose, CAM_LOCAL), pWorld);
+  return pWorld;
+}
+
+// Converts (px, py) from selected frame back to world frame and stores in S
+function setPointFromFrame(px, py) {
+  const robotPose  = { x: S.x, y: S.y, theta: deg2rad(S.thetaDeg) };
+  const cameraPose = composePose(robotPose, CAM_LOCAL);
+  let pWorld;
+  if (S.refFrame === 'robot')  pWorld = localToWorld(robotPose, { x: px, y: py });
+  else if (S.refFrame === 'camera') pWorld = localToWorld(cameraPose, { x: px, y: py });
+  else pWorld = { x: px, y: py };
+  S.pointX = pWorld.x;
+  S.pointY = pWorld.y;
+}
+
+// ── Interaction ──
+function onSlider(key, el) {
+  const v = parseFloat(el.value);
+  if (key === 'x')     { S.x = v;        S.mode = 'free'; }
+  if (key === 'y')     { S.y = v;        S.mode = 'free'; }
+  if (key === 'theta') { S.thetaDeg = v; S.mode = 'free'; }
+  if (key === 'px')    { const cur = getPointInFrame(); setPointFromFrame(v, cur.y); }
+  if (key === 'py')    { const cur = getPointInFrame(); setPointFromFrame(cur.x, v); }
+  render();
+}
+
+function setPreset(mode) {
+  S.mode = mode;
+  if (mode === 'translation') { S.x = 2.5; S.y = 1.2; S.thetaDeg = 0;  }
+  if (mode === 'rotation')    { S.x = 2.5; S.y = 1.2; S.thetaDeg = 55; }
+  if (mode === 'rigid')       { S.x = 2.5; S.y = 1.8; S.thetaDeg = 40; }
+}
+
+function clickMode(mode) {
+  stopAnim();
+  S.isPlaying = false;
+  S.playMode = mode;
+  setPreset(mode);
+  render();
+}
+
+function setRefFrame(f) {
+  if (f === 'camera' && !S.showCamera) return;
+  S.refFrame = f;
+  render();
+}
+
+function onNumber(key, el) {
+  const min = parseFloat(el.min), max = parseFloat(el.max);
+  let v = parseFloat(el.value);
+  if (isNaN(v)) return;
+  v = Math.max(min, Math.min(max, v));
+  el.value = v;
+  if (key === 'x')     { S.x = v;        S.mode = 'free'; }
+  if (key === 'y')     { S.y = v;        S.mode = 'free'; }
+  if (key === 'theta') { S.thetaDeg = v; S.mode = 'free'; }
+  if (key === 'px')    { const cur = getPointInFrame(); setPointFromFrame(v, cur.y); }
+  if (key === 'py')    { const cur = getPointInFrame(); setPointFromFrame(cur.x, v); }
+  render();
+}
+
+function toggleCamera() {
+  S.showCamera = !S.showCamera;
+  if (!S.showCamera && S.refFrame === 'camera') S.refFrame = 'world';
+  render();
+}
+
+function togglePlay() {
+  S.isPlaying = !S.isPlaying;
+  if (S.isPlaying) {
+    S.animStart = null;
+    S.animId = requestAnimationFrame(animate);
+  } else {
+    stopAnim();
+  }
+  render();
+}
+
+function stopAnim() {
+  if (S.animId !== null) { cancelAnimationFrame(S.animId); S.animId = null; }
+}
+
+function animate(ts) {
+  if (S.animStart === null) S.animStart = ts;
+  const t = (ts - S.animStart) / 1000;
+  S.mode = S.playMode;
+  if (S.playMode === 'translation') {
+    S.x = 2.5 + 1.4 * Math.sin(t * 1.1);
+    S.y = 1.6 + 0.8 * Math.cos(t * 0.9);
+    S.thetaDeg = 0;
+  } else if (S.playMode === 'rotation') {
+    S.x = 2.5; S.y = 1.2;
+    S.thetaDeg = 90 * Math.sin(t * 1.2);
+  } else {
+    S.x = 2.5 + 1.2 * Math.cos(t * 0.8);
+    S.y = 1.7 + 0.9 * Math.sin(t * 1.1);
+    S.thetaDeg = 60 * Math.sin(t * 1.4);
+  }
+  render();
+  S.animId = requestAnimationFrame(animate);
+}
+
+// ── Init ──
+render();
+</script>
+</body>
+</html>

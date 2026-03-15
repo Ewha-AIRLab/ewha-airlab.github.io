@@ -1,0 +1,471 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Robot Arm Frames 3D — AIR Lab @ Ewha</title>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@300;400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: 'IBM Plex Sans', sans-serif; background: #f8fafc; color: #0f172a; min-height: 100vh; }
+
+/* ── Nav ── */
+.topbar { background: white; border-bottom: 1px solid #e2e8f0; padding: .7rem 1.5rem; display: flex; align-items: center; gap: .5rem; font-size: .84rem; }
+.topbar a { text-decoration: none; color: #00462A; font-weight: 500; }
+.topbar a:hover { text-decoration: underline; }
+.topbar .sep { color: #94a3b8; }
+.topbar .cur { color: #0f172a; font-weight: 600; }
+
+/* ── Page ── */
+.page { max-width: 1400px; margin: 0 auto; padding: 1.5rem; }
+.page-title { font-size: 1.75rem; font-weight: 700; margin-bottom: .4rem; }
+.page-desc { color: #64748b; font-size: .9rem; max-width: 640px; margin-bottom: 1.25rem; line-height: 1.6; }
+
+/* ── Buttons ── */
+.btn-row { display: flex; flex-wrap: wrap; gap: .5rem; align-items: center; margin-bottom: 1.25rem; }
+button { font-family: inherit; cursor: pointer; border: 1px solid #e2e8f0; border-radius: 8px; padding: .42rem 1rem; font-size: .84rem; font-weight: 500; transition: background .12s, color .12s; background: white; color: #0f172a; }
+button:hover { background: #f1f5f9; }
+button.btn-active { background: #0f172a; color: white; border-color: #0f172a; }
+button.btn-danger { background: #dc2626; color: white; border-color: #dc2626; }
+button.btn-danger:hover { background: #b91c1c; }
+
+/* ── Layout ── */
+.main-grid { display: grid; grid-template-columns: 1.5fr 1fr; gap: 1.25rem; align-items: start; }
+@media (max-width: 960px) { .main-grid { grid-template-columns: 1fr; } }
+
+/* ── Cards ── */
+.card { background: white; border: 1px solid #e2e8f0; border-radius: 16px; box-shadow: 0 1px 3px rgba(0,0,0,.06); }
+.card-hd { padding: 1rem 1.35rem .6rem; display: flex; align-items: center; justify-content: space-between; }
+.card-title { font-size: .98rem; font-weight: 600; }
+.card-body { padding: 1rem 1.35rem 1.2rem; }
+
+/* ── 3D canvas ── */
+.viz-wrap { width: 100%; aspect-ratio: 4/3; position: relative; border-radius: 10px; overflow: hidden; border: 1px solid #e2e8f0; background: #f8fafc; }
+#viz3d { display: block; }
+
+/* ── Side panel ── */
+.side-panel { display: flex; flex-direction: column; gap: 1.25rem; }
+
+/* ── Sliders ── */
+.sl-group { margin-bottom: .95rem; }
+.sl-group:last-child { margin-bottom: 0; }
+.sl-label { display: flex; justify-content: space-between; font-size: .83rem; margin-bottom: .35rem; }
+.sl-label .sl-val { font-family: 'IBM Plex Mono', monospace; color: #475569; }
+.sl-row { display: flex; align-items: center; gap: .5rem; }
+.sl-row input[type=range] { flex: 1; }
+input[type=range] { -webkit-appearance: none; appearance: none; height: 6px; background: #e2e8f0; border-radius: 3px; outline: none; cursor: pointer; }
+input[type=range]::-webkit-slider-thumb { -webkit-appearance: none; width: 17px; height: 17px; border-radius: 50%; background: #0f172a; cursor: pointer; border: 2px solid white; box-shadow: 0 1px 3px rgba(0,0,0,.25); }
+input[type=number] { width: 62px; font-family: 'IBM Plex Mono', monospace; font-size: .8rem; border: 1px solid #e2e8f0; border-radius: 6px; padding: .28rem .4rem; text-align: right; background: #f8fafc; color: #0f172a; -moz-appearance: textfield; appearance: textfield; }
+input[type=number]::-webkit-outer-spin-button, input[type=number]::-webkit-inner-spin-button { -webkit-appearance: none; }
+input[type=number]:focus { outline: none; border-color: #94a3b8; background: white; }
+
+/* ── Info rows ── */
+.info-row { display: flex; justify-content: space-between; align-items: flex-start; gap: 1rem; border-bottom: 1px solid #f1f5f9; padding: .5rem 0; font-size: .81rem; }
+.info-row:last-child { border-bottom: none; }
+.info-label { color: #64748b; font-weight: 500; }
+.info-val { font-family: 'IBM Plex Mono', monospace; text-align: right; }
+
+/* ── Matrices ── */
+.mat-block { background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 10px; padding: .75rem; margin-bottom: .7rem; }
+.mat-block:last-of-type { margin-bottom: 0; }
+.mat-label { font-size: .78rem; font-weight: 600; color: #475569; margin-bottom: .45rem; }
+.mat-grid4 { display: grid; grid-template-columns: repeat(4, 1fr); gap: .25rem; }
+.mat-cell { background: white; border-radius: 4px; padding: .2rem .3rem; text-align: right; font-family: 'IBM Plex Mono', monospace; font-size: .7rem; box-shadow: 0 1px 2px rgba(0,0,0,.05); }
+.mat-note { font-size: .72rem; color: #94a3b8; margin-top: .6rem; line-height: 1.5; }
+
+/* ── Axis legend chips ── */
+.axis-legend { display: flex; gap: .6rem; }
+.axis-chip { font-size: .75rem; font-weight: 600; padding: .15rem .55rem; border-radius: 999px; color: white; }
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <a href="/">AIR Lab @ Ewha</a>
+  <span class="sep">/</span>
+  <span class="cur">3D Robot Arm</span>
+  <span style="margin-left:auto;display:flex;gap:.75rem;">
+    <a href="2d.html" style="font-size:.8rem;">2D Mobile Robot</a>
+    <span class="cur" style="font-size:.8rem;">3D Robot Arm</span>
+  </span>
+</div>
+
+<div class="page">
+  <h1 class="page-title">[3D] Coordinate Frames, Pose, and Transformation</h1>
+  <p class="page-desc">3-DOF robot arm visualizer. Adjust joint angles to see how coordinate frames compose through homogeneous transforms and how the end-effector pose is computed. </p> 
+  <!-- via T<sub>world,ee</sub> = T<sub>01</sub> · T<sub>12</sub> · T<sub>23</sub> · T<sub>3,ee</sub>.</p> -->
+
+  <div class="btn-row">
+    <button id="btn-play" onclick="togglePlay()">Play</button>
+    <button onclick="resetPose()">Reset</button>
+  </div>
+
+  <div class="main-grid">
+
+    <!-- Visualization -->
+    <div class="card">
+      <div class="card-hd">
+        <div class="card-title">Visualization</div>
+        <div class="axis-legend">
+          <span class="axis-chip" style="background:#ef4444">X</span>
+          <span class="axis-chip" style="background:#22c55e">Y</span>
+          <span class="axis-chip" style="background:#3b82f6">Z</span>
+        </div>
+      </div>
+      <div class="card-body" style="padding:.75rem;">
+        <div class="viz-wrap" id="viz-wrap">
+          <canvas id="viz3d"></canvas>
+        </div>
+        <p style="font-size:.75rem;color:#94a3b8;margin-top:.5rem;">Drag to orbit &middot; Scroll to zoom &middot; Right-drag to pan</p>
+      </div>
+    </div>
+
+    <!-- Side panel -->
+    <div class="side-panel">
+
+      <!-- Controls -->
+      <div class="card">
+        <div class="card-hd"><div class="card-title">Joint angles</div></div>
+        <div class="card-body">
+          <div class="sl-group">
+            <div class="sl-label"><span>q<sub>1</sub> — base (Rz)</span><span class="sl-val" id="lbl-q1">30°</span></div>
+            <div class="sl-row">
+              <input type="range"  id="sl-q1"  min="-180" max="180" step="1" value="30"  oninput="onSlider('q1',this)">
+              <input type="number" id="num-q1" min="-180" max="180" step="1" value="30"  oninput="onNumber('q1',this)">
+            </div>
+          </div>
+          <div class="sl-group">
+            <div class="sl-label"><span>q<sub>2</sub> — shoulder (Ry)</span><span class="sl-val" id="lbl-q2">40°</span></div>
+            <div class="sl-row">
+              <input type="range"  id="sl-q2"  min="-90" max="90" step="1" value="40"  oninput="onSlider('q2',this)">
+              <input type="number" id="num-q2" min="-90" max="90" step="1" value="40"  oninput="onNumber('q2',this)">
+            </div>
+          </div>
+          <div class="sl-group">
+            <div class="sl-label"><span>q<sub>3</sub> — elbow (Ry)</span><span class="sl-val" id="lbl-q3">−50°</span></div>
+            <div class="sl-row">
+              <input type="range"  id="sl-q3"  min="-90" max="90" step="1" value="-50" oninput="onSlider('q3',this)">
+              <input type="number" id="num-q3" min="-90" max="90" step="1" value="-50" oninput="onNumber('q3',this)">
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Live coordinates -->
+      <div class="card">
+        <div class="card-hd"><div class="card-title">Joint positions (world)</div></div>
+        <div class="card-body">
+          <div class="info-row"><span class="info-label">Base J<sub>1</sub></span><span class="info-val">(0.00, 0.00, 0.00)</span></div>
+          <div class="info-row"><span class="info-label">Shoulder J<sub>2</sub></span><span class="info-val" id="i-j2"></span></div>
+          <div class="info-row"><span class="info-label">Elbow J<sub>3</sub></span><span class="info-val" id="i-j3"></span></div>
+          <div class="info-row"><span class="info-label">End-effector</span><span class="info-val" id="i-ee"></span></div>
+        </div>
+      </div>
+
+      <!-- Matrices -->
+      <div class="card">
+        <div class="card-hd"><div class="card-title">Transformation matrices</div></div>
+        <div class="card-body">
+          <div class="mat-block">
+            <div class="mat-label">T<sub>01</sub> = Rz(q<sub>1</sub>)</div>
+            <div class="mat-grid4" id="mat-t01"></div>
+          </div>
+          <div class="mat-block">
+            <div class="mat-label">T<sub>12</sub> = Trans(0,0,L<sub>1</sub>) · Ry(q<sub>2</sub>)</div>
+            <div class="mat-grid4" id="mat-t12"></div>
+          </div>
+          <div class="mat-block">
+            <div class="mat-label">T<sub>23</sub> = Trans(L<sub>2</sub>,0,0) · Ry(q<sub>3</sub>)</div>
+            <div class="mat-grid4" id="mat-t23"></div>
+          </div>
+          <div class="mat-block">
+            <div class="mat-label">T<sub>world,ee</sub></div>
+            <div class="mat-grid4" id="mat-tee"></div>
+          </div>
+          <p class="mat-note">T<sub>world,ee</sub> = T<sub>01</sub> · T<sub>12</sub> · T<sub>23</sub> · Trans(L<sub>3</sub>)</p>
+        </div>
+      </div>
+
+    </div><!-- /side-panel -->
+  </div><!-- /main-grid -->
+</div><!-- /page -->
+
+<script src="https://cdn.jsdelivr.net/npm/three@0.128.0/build/three.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
+<script>
+'use strict';
+
+// ── Constants ──
+const L1 = 1.0, L2 = 1.0, L3 = 1.0;
+const LINK_R = 0.055, JOINT_R = 0.09;
+const DEFAULT = { q1: 30, q2: 40, q3: -50 };
+
+// ── State ──
+const S = { q1: 30, q2: 40, q3: -50, isPlaying: false, animId: null, animStart: null };
+
+// ── Three.js setup ──
+const vizWrap  = document.getElementById('viz-wrap');
+const canvas   = document.getElementById('viz3d');
+const renderer = new THREE.WebGLRenderer({ canvas, antialias: true });
+renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+
+const scene  = new THREE.Scene();
+scene.background = new THREE.Color(0xf8fafc);
+
+const camera = new THREE.PerspectiveCamera(45, 4 / 3, 0.01, 50);
+camera.up.set(0, 0, 1);           // Z-up (robotics convention)
+camera.position.set(3.5, -3.5, 2.5);
+
+const controls = new THREE.OrbitControls(camera, renderer.domElement);
+controls.enableDamping  = true;
+controls.dampingFactor  = 0.08;
+controls.target.set(0.3, 0, 0.7);
+controls.update();
+
+// ── Lighting ──
+scene.add(new THREE.AmbientLight(0xffffff, 0.65));
+const sun = new THREE.DirectionalLight(0xffffff, 0.9);
+sun.position.set(4, 4, 8);   // Z-up: light from above
+scene.add(sun);
+
+// ── Grid (Z-up: rotate to XY plane) ──
+const grid = new THREE.GridHelper(8, 16, 0xd1d5db, 0xe5e7eb);
+grid.rotation.x = Math.PI / 2;
+scene.add(grid);
+
+// ── Math helpers ──
+function deg2rad(d) { return d * Math.PI / 180; }
+
+function Ry(deg) { const m = new THREE.Matrix4(); m.makeRotationY(deg2rad(deg)); return m; }
+function Rz(deg) { const m = new THREE.Matrix4(); m.makeRotationZ(deg2rad(deg)); return m; }
+function Tr(x, y, z) { const m = new THREE.Matrix4(); m.makeTranslation(x, y, z); return m; }
+function mul(...ms) { return ms.reduce((a, b) => new THREE.Matrix4().multiplyMatrices(a, b)); }
+
+function setPose(obj, m) {
+  const pos = new THREE.Vector3(), q = new THREE.Quaternion(), sc = new THREE.Vector3();
+  m.decompose(pos, q, sc);
+  obj.position.copy(pos);
+  obj.quaternion.copy(q);
+}
+
+function mat4rows(m) {
+  const e = m.elements;
+  return [
+    [e[0], e[4], e[8],  e[12]],
+    [e[1], e[5], e[9],  e[13]],
+    [e[2], e[6], e[10], e[14]],
+    [e[3], e[7], e[11], e[15]],
+  ];
+}
+
+function fmt(n) { return (n >= 0 ? '' : '\u2212') + Math.abs(n).toFixed(2); }
+function fmtVec(v) { return `(${fmt(v.x)},\u00a0${fmt(v.y)},\u00a0${fmt(v.z)})`; }
+
+function renderMat4(id, m) {
+  document.getElementById(id).innerHTML = mat4rows(m)
+    .map(row => row.map(v =>
+      `<div class="mat-cell">${Math.abs(v) < 1e-9 ? '0.00' : v.toFixed(2)}</div>`
+    ).join('')).join('');
+}
+
+// ── Geometry builders ──
+// Link along local X (for links 2 & 3)
+function mkLink(len, color) {
+  const geo = new THREE.CylinderGeometry(LINK_R, LINK_R, len, 16);
+  geo.applyMatrix4(new THREE.Matrix4().makeRotationZ(Math.PI / 2));
+  geo.applyMatrix4(new THREE.Matrix4().makeTranslation(len / 2, 0, 0));
+  return new THREE.Mesh(geo, new THREE.MeshPhongMaterial({ color }));
+}
+// Link along local Z (for link 1, going upward)
+function mkLinkZ(len, color) {
+  const geo = new THREE.CylinderGeometry(LINK_R, LINK_R, len, 16);
+  geo.applyMatrix4(new THREE.Matrix4().makeRotationX(Math.PI / 2));
+  geo.applyMatrix4(new THREE.Matrix4().makeTranslation(0, 0, len / 2));
+  return new THREE.Mesh(geo, new THREE.MeshPhongMaterial({ color }));
+}
+
+function mkSphere(r, color) {
+  return new THREE.Mesh(
+    new THREE.SphereGeometry(r, 16, 16),
+    new THREE.MeshPhongMaterial({ color })
+  );
+}
+
+// Cylinder aligned along a rotation axis ('Y' = default, 'Z' = rotate 90° around X)
+function mkJointCyl(len, r, color, axis) {
+  const geo = new THREE.CylinderGeometry(r, r, len, 16);
+  if (axis === 'Z') geo.applyMatrix4(new THREE.Matrix4().makeRotationX(Math.PI / 2));
+  return new THREE.Mesh(geo, new THREE.MeshPhongMaterial({ color }));
+}
+
+function mkAxes(scale) {
+  const g = new THREE.Group();
+  const hl = scale * 0.22, hw = scale * 0.1;
+  const o  = new THREE.Vector3();
+  g.add(new THREE.ArrowHelper(new THREE.Vector3(1, 0, 0), o, scale, 0xef4444, hl, hw));
+  g.add(new THREE.ArrowHelper(new THREE.Vector3(0, 1, 0), o, scale, 0x22c55e, hl, hw));
+  g.add(new THREE.ArrowHelper(new THREE.Vector3(0, 0, 1), o, scale, 0x3b82f6, hl, hw));
+  return g;
+}
+
+// ── Scene objects ──
+// World frame (fixed)
+scene.add(mkAxes(0.55));
+
+// Base disc
+const baseDisc = new THREE.Mesh(
+  new THREE.CylinderGeometry(0.16, 0.20, 0.07, 24),
+  new THREE.MeshPhongMaterial({ color: 0x1e293b })
+);
+baseDisc.rotation.x = Math.PI / 2;  // Z-up: disc flat on XY plane
+baseDisc.position.z = -0.035;
+scene.add(baseDisc);
+
+// Links
+const link1 = mkLinkZ(L1, 0xcbd5e1); scene.add(link1); // goes UP along Z
+const link2 = mkLink(L2, 0xcbd5e1);  scene.add(link2); // goes along local X
+const link3 = mkLink(L3, 0x94a3b8);  scene.add(link3);
+
+// Joint axis cylinders
+//   jnt1 — world Z (vertical, up) — fixed at origin
+//   jnt2, jnt3 — local Y (shoulder/elbow pitch axis)
+const JNT_COLOR = 0xf59e0b; // amber
+const jnt1 = mkJointCyl(0.32, 0.052, JNT_COLOR, 'Z'); scene.add(jnt1); // fixed
+const jnt2 = mkJointCyl(0.32, 0.052, JNT_COLOR, 'Y'); scene.add(jnt2);
+const jnt3 = mkJointCyl(0.32, 0.052, JNT_COLOR, 'Y'); scene.add(jnt3);
+
+// End-effector tip
+const eeTip = mkSphere(0.07, 0x7c3aed); scene.add(eeTip);
+
+// Frame axes: one per joint + end-effector
+const ax1  = mkAxes(0.45); scene.add(ax1);
+const ax2  = mkAxes(0.40); scene.add(ax2);
+const ax3  = mkAxes(0.35); scene.add(ax3);
+const axEe = mkAxes(0.28); scene.add(axEe);
+
+// ── Update arm ──
+function updateArm() {
+  // Relative transforms
+  const T01  = Rz(S.q1);
+  const T12  = mul(Tr(0, 0, L1), Ry(S.q2));   // translate UP then shoulder pitch (Ry)
+  const T23  = mul(Tr(L2, 0, 0), Ry(S.q3));   // translate along arm then elbow pitch (Ry)
+  const T3e  = Tr(L3, 0, 0);
+
+  // Absolute transforms (world frame)
+  const Tw1  = T01;
+  const Tw2  = mul(T01, T12);
+  const Tw3  = mul(T01, T12, T23);
+  const Tee  = mul(T01, T12, T23, T3e);
+
+  // Positions
+  const p2 = new THREE.Vector3().setFromMatrixPosition(Tw2);
+  const p3 = new THREE.Vector3().setFromMatrixPosition(Tw3);
+  const pe = new THREE.Vector3().setFromMatrixPosition(Tee);
+
+  // Update meshes
+  setPose(link1, Tw1);
+  setPose(link2, Tw2);
+  setPose(link3, Tw3);
+  // jnt1 stays fixed at origin (world Z axis)
+  setPose(jnt2, Tw2);   // Z of Tw2 frame = joint 2 rotation axis
+  setPose(jnt3, Tw3);   // Z of Tw3 frame = joint 3 rotation axis
+  eeTip.position.copy(pe);
+
+  // Update frame axes
+  setPose(ax1,  Tw1);
+  setPose(ax2,  Tw2);
+  setPose(ax3,  Tw3);
+  setPose(axEe, Tee);
+
+  // Live coordinates
+  document.getElementById('i-j2').textContent = fmtVec(p2);
+  document.getElementById('i-j3').textContent = fmtVec(p3);
+  document.getElementById('i-ee').textContent = fmtVec(pe);
+
+  // Matrices
+  renderMat4('mat-t01', T01);
+  renderMat4('mat-t12', T12);
+  renderMat4('mat-t23', T23);
+  renderMat4('mat-tee', Tee);
+
+  // Sync sliders + labels
+  [['q1', S.q1], ['q2', S.q2], ['q3', S.q3]].forEach(([k, v]) => {
+    document.getElementById(`sl-${k}`).value  = v;
+    document.getElementById(`num-${k}`).value = v.toFixed(0);
+    document.getElementById(`lbl-${k}`).textContent = `${v < 0 ? '\u2212' : ''}${Math.abs(v).toFixed(0)}\u00b0`;
+  });
+
+  // Play button
+  document.getElementById('btn-play').textContent = S.isPlaying ? 'Pause' : 'Play';
+  document.getElementById('btn-play').className   = S.isPlaying ? 'btn-danger' : '';
+}
+
+// ── Interaction ──
+function onSlider(key, el) {
+  S[key] = parseFloat(el.value);
+  updateArm();
+}
+
+function onNumber(key, el) {
+  const min = parseFloat(el.min), max = parseFloat(el.max);
+  let v = parseFloat(el.value);
+  if (isNaN(v)) return;
+  v = Math.max(min, Math.min(max, v));
+  el.value = v;
+  S[key] = v;
+  updateArm();
+}
+
+function resetPose() {
+  stopAnim();
+  S.q1 = DEFAULT.q1; S.q2 = DEFAULT.q2; S.q3 = DEFAULT.q3;
+  updateArm();
+}
+
+// ── Animation ──
+function stopAnim() {
+  if (S.animId !== null) { cancelAnimationFrame(S.animId); S.animId = null; }
+  S.isPlaying = false;
+}
+
+function togglePlay() {
+  S.isPlaying = !S.isPlaying;
+  if (S.isPlaying) { S.animStart = null; S.animId = requestAnimationFrame(animStep); }
+  else             { stopAnim(); }
+  updateArm();
+}
+
+function animStep(ts) {
+  if (S.animStart === null) S.animStart = ts;
+  const t = (ts - S.animStart) / 1000;
+  S.q1 = 40 * Math.sin(t * 0.7);
+  S.q2 = 35 + 30 * Math.sin(t * 1.1);
+  S.q3 = -40 + 35 * Math.cos(t * 0.9);
+  updateArm();
+  S.animId = requestAnimationFrame(animStep);
+}
+
+// ── Resize ──
+function onResize() {
+  const w = vizWrap.clientWidth;
+  const h = vizWrap.clientHeight;
+  if (!w || !h) return;
+  renderer.setSize(w, h);
+  camera.aspect = w / h;
+  camera.updateProjectionMatrix();
+}
+new ResizeObserver(onResize).observe(vizWrap);
+onResize();
+
+// ── Render loop ──
+(function loop() {
+  requestAnimationFrame(loop);
+  controls.update();
+  renderer.render(scene, camera);
+})();
+
+// ── Init ──
+updateArm();
+</script>
+</body>
+</html>

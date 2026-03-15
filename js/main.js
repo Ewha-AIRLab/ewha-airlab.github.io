@@ -303,7 +303,7 @@ function renderMembers() {
 function renderNews() {
   const catPillCls = { award:'pg', publication:'pm', grant:'pb', position:'pc', conference:'py', media:'pg', announcement:'pg' };
 
-  const items = NEWS_DATA.map((item, i) => {
+  const items = NEWS_DATA.map((item) => {
     const pill = item.cat
       ? `<span class="pill ${catPillCls[item.cat]||'pg'}">${item.cat.charAt(0).toUpperCase()+item.cat.slice(1)}</span>`
       : '';
@@ -391,7 +391,8 @@ function renderPublications() {
     filterBtns += `<button class="fbtn" data-filter="${k}">${label}</button>`;
   });
   filterBtns += `<button class="fbtn" data-filter="journal">Journals</button>
-                 <button class="fbtn" data-filter="conference">Conferences</button>`;
+                 <button class="fbtn" data-filter="conference">Conferences</button>
+                 <button class="fbtn" data-filter="extended_abstract">Extended Abstracts</button>`;
 
   let groupsHtml = '';
   yearKeys.forEach(k => {
@@ -428,7 +429,7 @@ function applyPubFilter(filter) {
     if (filter === 'all') {
       grp.classList.remove('hidden');
       grp.querySelectorAll('.pub-item').forEach(i => i.style.display = '');
-    } else if (filter === 'journal' || filter === 'conference') {
+    } else if (filter === 'journal' || filter === 'conference' || filter === 'extended_abstract') {
       let any = false;
       grp.querySelectorAll('.pub-item').forEach(i => {
         const show = i.dataset.type === filter;
