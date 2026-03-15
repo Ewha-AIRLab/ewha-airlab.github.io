@@ -10,7 +10,7 @@
 body { font-family: 'IBM Plex Sans', sans-serif; background: #f8fafc; color: #0f172a; min-height: 100vh; }
 
 /* ── Nav ── */
-.topbar { background: white; border-bottom: 1px solid #e2e8f0; padding: .7rem 1.5rem; display: flex; align-items: center; gap: .5rem; font-size: .84rem; }
+.topbar { background: white; border-bottom: 1px solid #e2e8f0; padding: .7rem 1.5rem; display: flex; align-items: center; gap: .5rem; font-size: .84rem; flex-wrap: wrap; }
 .topbar a { text-decoration: none; color: #00462A; font-weight: 500; }
 .topbar a:hover { text-decoration: underline; }
 .topbar .sep { color: #94a3b8; }
@@ -31,7 +31,9 @@ button.btn-danger:hover { background: #b91c1c; }
 
 /* ── Layout ── */
 .main-grid { display: grid; grid-template-columns: 1.5fr 1fr; gap: 1.25rem; align-items: start; }
+.main-grid > * { min-width: 0; }
 @media (max-width: 960px) { .main-grid { grid-template-columns: 1fr; } }
+body { overflow-x: hidden; }
 
 /* ── Cards ── */
 .card { background: white; border: 1px solid #e2e8f0; border-radius: 16px; box-shadow: 0 1px 3px rgba(0,0,0,.06); }
@@ -76,6 +78,19 @@ input[type=number]:focus { outline: none; border-color: #94a3b8; background: whi
 /* ── Axis legend chips ── */
 .axis-legend { display: flex; gap: .6rem; }
 .axis-chip { font-size: .75rem; font-weight: 600; padding: .15rem .55rem; border-radius: 999px; color: white; }
+
+/* ── Mobile ── */
+@media (max-width: 640px) {
+  .topbar { padding: .6rem 1rem; font-size: .78rem; gap: .35rem; }
+  .page { padding: 1rem; }
+  .page-title { font-size: 1.25rem; }
+  .page-desc { font-size: .83rem; margin-bottom: 1rem; }
+  .btn-row { margin-bottom: 1rem; }
+  .card-body { padding: .75rem 1rem 1rem; }
+  .card-hd { padding: .75rem 1rem .5rem; }
+  .viz-wrap { aspect-ratio: 1/1; }
+  input[type=number] { width: 54px; font-size: .75rem; }
+}
 </style>
 </head>
 <body>
@@ -135,14 +150,14 @@ input[type=number]:focus { outline: none; border-color: #94a3b8; background: whi
             </div>
           </div>
           <div class="sl-group">
-            <div class="sl-label"><span>q<sub>2</sub> — shoulder (Ry)</span><span class="sl-val" id="lbl-q2">40°</span></div>
+            <div class="sl-label"><span>q<sub>2</sub> — shoulder (Rz)</span><span class="sl-val" id="lbl-q2">40°</span></div>
             <div class="sl-row">
               <input type="range"  id="sl-q2"  min="-90" max="90" step="1" value="40"  oninput="onSlider('q2',this)">
               <input type="number" id="num-q2" min="-90" max="90" step="1" value="40"  oninput="onNumber('q2',this)">
             </div>
           </div>
           <div class="sl-group">
-            <div class="sl-label"><span>q<sub>3</sub> — elbow (Ry)</span><span class="sl-val" id="lbl-q3">−50°</span></div>
+            <div class="sl-label"><span>q<sub>3</sub> — elbow (Rz)</span><span class="sl-val" id="lbl-q3">−50°</span></div>
             <div class="sl-row">
               <input type="range"  id="sl-q3"  min="-90" max="90" step="1" value="-50" oninput="onSlider('q3',this)">
               <input type="number" id="num-q3" min="-90" max="90" step="1" value="-50" oninput="onNumber('q3',this)">
@@ -171,11 +186,11 @@ input[type=number]:focus { outline: none; border-color: #94a3b8; background: whi
             <div class="mat-grid4" id="mat-t01"></div>
           </div>
           <div class="mat-block">
-            <div class="mat-label">T<sub>12</sub> = Trans(0,0,L<sub>1</sub>) · Ry(q<sub>2</sub>)</div>
+            <div class="mat-label">T<sub>12</sub> = Trans(0,0,L<sub>1</sub>) · Rx(−90°) · Rz(q<sub>2</sub>)</div>
             <div class="mat-grid4" id="mat-t12"></div>
           </div>
           <div class="mat-block">
-            <div class="mat-label">T<sub>23</sub> = Trans(L<sub>2</sub>,0,0) · Ry(q<sub>3</sub>)</div>
+            <div class="mat-label">T<sub>23</sub> = Trans(L<sub>2</sub>,0,0) · Rz(q<sub>3</sub>)</div>
             <div class="mat-grid4" id="mat-t23"></div>
           </div>
           <div class="mat-block">
@@ -236,6 +251,7 @@ scene.add(grid);
 // ── Math helpers ──
 function deg2rad(d) { return d * Math.PI / 180; }
 
+function Rx(deg) { const m = new THREE.Matrix4(); m.makeRotationX(deg2rad(deg)); return m; }
 function Ry(deg) { const m = new THREE.Matrix4(); m.makeRotationY(deg2rad(deg)); return m; }
 function Rz(deg) { const m = new THREE.Matrix4(); m.makeRotationZ(deg2rad(deg)); return m; }
 function Tr(x, y, z) { const m = new THREE.Matrix4(); m.makeTranslation(x, y, z); return m; }
@@ -324,15 +340,15 @@ scene.add(baseDisc);
 // Links
 const link1 = mkLinkZ(L1, 0xcbd5e1); scene.add(link1); // goes UP along Z
 const link2 = mkLink(L2, 0xcbd5e1);  scene.add(link2); // goes along local X
-const link3 = mkLink(L3, 0x94a3b8);  scene.add(link3);
+const link3 = mkLink(L3, 0xcbd5e1);  scene.add(link3);
 
 // Joint axis cylinders
 //   jnt1 — world Z (vertical, up) — fixed at origin
 //   jnt2, jnt3 — local Y (shoulder/elbow pitch axis)
 const JNT_COLOR = 0xf59e0b; // amber
-const jnt1 = mkJointCyl(0.32, 0.052, JNT_COLOR, 'Z'); scene.add(jnt1); // fixed
-const jnt2 = mkJointCyl(0.32, 0.052, JNT_COLOR, 'Y'); scene.add(jnt2);
-const jnt3 = mkJointCyl(0.32, 0.052, JNT_COLOR, 'Y'); scene.add(jnt3);
+const jnt1 = mkJointCyl(0.15, 0.05, JNT_COLOR, 'Z'); scene.add(jnt1); // fixed
+const jnt2 = mkJointCyl(0.15, 0.05, JNT_COLOR, 'Z'); scene.add(jnt2);
+const jnt3 = mkJointCyl(0.15, 0.05, JNT_COLOR, 'Z'); scene.add(jnt3);
 
 // End-effector tip
 const eeTip = mkSphere(0.07, 0x7c3aed); scene.add(eeTip);
@@ -347,8 +363,8 @@ const axEe = mkAxes(0.28); scene.add(axEe);
 function updateArm() {
   // Relative transforms
   const T01  = Rz(S.q1);
-  const T12  = mul(Tr(0, 0, L1), Ry(S.q2));   // translate UP then shoulder pitch (Ry)
-  const T23  = mul(Tr(L2, 0, 0), Ry(S.q3));   // translate along arm then elbow pitch (Ry)
+  const T12  = mul(Tr(0, 0, L1), Rx(-90), Rz(S.q2));  // up L1, Rx twist → local Z horizontal, shoulder Rz
+  const T23  = mul(Tr(L2, 0, 0), Rz(S.q3));            // along arm L2, elbow Rz
   const T3e  = Tr(L3, 0, 0);
 
   // Absolute transforms (world frame)
