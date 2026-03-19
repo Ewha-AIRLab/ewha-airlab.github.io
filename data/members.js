@@ -12,15 +12,18 @@ const MEMBERS_DATA = {
     office: "Jinseonmi 213",
     tel: "+82-2-3277-5044",
     email: "songd@ewha.ac.kr",
-    education: [
-      { degree: "Ph.D.", field: "Computer Science & Engineering", school: "Ewha Womans University", year: 2023 },
-      { degree: "B.S.",  field: "Computer Science & Engineering", school: "Ewha Womans University", year: 2017 },
-    ],
+    // education: [
+    //   { degree: "Ph.D.", field: "Computer Science & Engineering", school: "Ewha Womans University", year: 2023 },
+    //   { degree: "B.S.",  field: "Computer Science & Engineering", school: "Ewha Womans University", year: 2017 },
+    // ],
     experience: [
-      { role: "Assistant Professor", org: "Dept. of Artificial Intelligence, Ewha Womans University", period: "2026.03 – present" },
-      { role: "Postdoctoral Associate", org: "RobotiXX lab, George Mason University", org_url: "https://robotixx.cs.gmu.edu/", period: "2024.10 – 2026.02" },
-      { role: "Postdoctoral Associate", org: "GAMMA lab, University of Maryland",     org_url: "https://gamma.umd.edu/",            period: "2023.08 – 2024.09" },
+      { role: "Assistant Professor",    uni: "Ewha Womans University",   period: "2026.03 – present" },
+      { role: "Postdoctoral Associate", lab: "RobotiXX lab", org_url: "https://robotixx.cs.gmu.edu/", uni: "George Mason University", period: "2024.09 – 2026.02" },
+      { role: "Postdoctoral Associate", lab: "GAMMA lab",    org_url: "https://gamma.umd.edu/",        uni: "University of Maryland",  period: "2023.08 – 2024.08" },
+      { role: "Postdoctoral Associate", lab: "Computer Graphics lab", org_url: "https://graphics.ewha.ac.kr", uni: "Ewha Womans University", period: "2023.03 – 2024.06" },
     ],
+    bio: "I am an Assistant Professor at Ewha Womans University, Korea. I received my Ph.D. from Ewha Womans University under the supervision of Prof. Young J. Kim, and later conducted postdoctoral research with Prof. Xuesu Xiao and Prof. Dinesh Manocha. <BR><BR>My work explores real-world robotic intelligence, and I am excited about a future in which robots and automated systems seamlessly integrate into our lives in useful, adaptive, and human-centered ways!",
+
     links: [
       { label: "Curriculum Vitae", url: "#" },
       { label: "Google Scholar",   url: "https://scholar.google.com/citations?user=hq8STUoAAAAJ&hl=ko&oi=sra" },

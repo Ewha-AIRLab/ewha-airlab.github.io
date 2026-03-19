@@ -278,9 +278,9 @@ function renderMembers() {
             <span><strong>Email:</strong> ${pi.email}</span>
           </div>
           <div class="pi-bio">${[
-            pi.education && pi.education.length ? `<div class="pi-bio-section"><span class="pi-bio-label">Education</span><ul>${pi.education.map(e=>`<li>${e.degree}, ${e.field}, ${e.school}${e.year ? ', '+e.year : ''}</li>`).join('')}</ul></div>` : '',
-            pi.experience && pi.experience.length ? `<div class="pi-bio-section"><span class="pi-bio-label">Professional Experience</span><ul>${pi.experience.map(e=>`<li>${e.role}, ${e.org_url ? `<a href="${e.org_url}" class="pi-bio-link" target="_blank" rel="noopener">${e.org}</a>` : e.org}${e.period ? ` <span class="pi-bio-sub">(${e.period})</span>` : ''}</li>`).join('')}</ul></div>` : '',
-            pi.bio || ''
+            // pi.education && pi.education.length ? `<div class="pi-bio-section"><span class="pi-bio-label">Education</span><ul>${pi.education.map(e=>`<li>${e.degree}, ${e.field}, ${e.school}${e.year ? ', '+e.year : ''}</li>`).join('')}</ul></div>` : '',
+            pi.experience && pi.experience.length ? `<div class="pi-bio-section"><span class="pi-bio-label">Professional Experience</span><ul>${pi.experience.map(e=>{const labHtml=e.lab?(e.org_url?`<a href="${e.org_url}" class="pi-bio-link" target="_blank" rel="noopener">${e.lab}</a>`:e.lab):'';const orgHtml=labHtml?(e.uni?labHtml+', '+e.uni:labHtml):(e.org||e.uni||'');return`<li>${e.role}, ${orgHtml}${e.period?` <span class="pi-bio-sub">(${e.period})</span>`:''}</li>`;}).join('')}</ul></div>` : '',
+            // pi.bio || ''
           ].join('')}</div>
           <div class="pi-links">${piLinks}</div>
         </div>

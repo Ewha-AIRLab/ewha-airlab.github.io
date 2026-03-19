@@ -87,7 +87,7 @@ body { font-family: 'IBM Plex Sans', sans-serif; background: var(--w); color: va
 
 /* ── PUB THUMB SLOT ── */
 .pub-thumb-slot {
-  width: 180px;
+  width: 200px;
   aspect-ratio: 16/9;
   background: var(--gl);
   border-radius: 5px;
@@ -230,7 +230,7 @@ body { font-family: 'IBM Plex Sans', sans-serif; background: var(--w); color: va
 .pub-year-grp.hidden { display: none; }
 .pub-year-lbl { font-family: 'EB Garamond', serif; font-size: 1.5rem; font-style: italic; color: var(--grey); margin-bottom: 1rem; padding-bottom: .5rem; border-bottom: 2px solid var(--gmd); }
 .pub-list { display: flex; flex-direction: column; }
-.pub-item { display: grid; grid-template-columns: 180px 1fr; gap: 1.5rem; padding: 1.5rem 0; border-bottom: 1px solid var(--gmd); align-items: start; }
+.pub-item { display: grid; grid-template-columns: 200px 1fr; gap: 1.5rem; padding: 1.5rem 0; border-bottom: 1px solid var(--gmd); align-items: start; }
 .pub-item:first-child { border-top: 1px solid var(--gmd); }
 
 .pub-title { font-size: .95rem; font-weight: 600; color: var(--ink); line-height: 1.45; margin-bottom: .3rem; }
