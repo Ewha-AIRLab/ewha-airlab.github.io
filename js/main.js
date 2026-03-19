@@ -272,6 +272,7 @@ function renderMembers() {
         <div>
           <div class="pi-name">${pi.name}</div>
           <div class="pi-role">${pi.role}</div>
+          ${pi.dept ? `<div class="pi-dept">${pi.dept}</div>` : ''}
           <div class="pi-meta">
             <span><strong>Office:</strong> ${pi.office}</span>
             <span><strong>Tel:</strong> ${pi.tel}</span>

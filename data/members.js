@@ -8,6 +8,7 @@ const MEMBERS_DATA = {
   pi: {
     name: "Daeun Song, Ph.D.",
     role: "Assistant Professor",
+    dept: "Dept. of Artificial Intelligence, Ewha Womans University",
     photo: "assets/members/daeun.jpg", //null, // e.g. "assets/members/pi.jpg"
     office: "Jinseonmi 213",
     tel: "+82-2-3277-5044",

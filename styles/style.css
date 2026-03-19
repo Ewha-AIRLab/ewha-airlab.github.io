@@ -175,7 +175,8 @@ body { font-family: 'IBM Plex Sans', sans-serif; background: var(--w); color: va
 .pi-block { display: grid; grid-template-columns: 140px 1fr; gap: 2.5rem; align-items: start; margin-bottom: 3rem; padding-bottom: 3rem; border-bottom: 1px solid var(--gmd); }
 .pi-photo-slot { width: 140px; height: 170px; }
 .pi-name { font-family: 'EB Garamond', serif; font-size: 1.5rem; font-weight: 500; color: var(--ink); margin-bottom: .2rem; }
-.pi-role { font-size: .8rem; color: var(--green); font-weight: 600; text-transform: uppercase; letter-spacing: .08em; margin-bottom: .75rem; }
+.pi-role { font-size: .8rem; color: var(--green); font-weight: 600; text-transform: uppercase; letter-spacing: .08em; margin-bottom: .2rem; }
+.pi-dept { font-size: .8rem; color: var(--ink3); font-weight: 400; margin-bottom: .75rem; }
 .pi-meta { display: flex; flex-wrap: wrap; gap: .5rem 1.5rem; margin-bottom: .75rem; }
 .pi-meta span { font-size: .8rem; color: var(--ink3); }
 .pi-meta span strong { color: var(--ink2); }

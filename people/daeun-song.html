@@ -6,7 +6,7 @@
 <title>Daeun Song — AIR Lab @ Ewha</title>
 <link href="https://fonts.googleapis.com/css2?family=EB+Garamond:ital,wght@0,400;0,500;0,600;1,400&family=IBM+Plex+Sans:wght@300;400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
 <link rel="icon" type="image/png" href="../assets/symbols/ewha.png">
-<link rel="stylesheet" href="../styles/style.css?v=2">
+<link rel="stylesheet" href="../styles/style.css?v=3">
 <style>
   /* Larger photo on dedicated profile page */
   .pi-block { grid-template-columns: 200px 1fr !important; border-bottom: none !important; margin-bottom: 0 !important; }
@@ -110,6 +110,7 @@ function renderProfile() {
       <div class="wrap">
         <h1>${pi.name}</h1>
         <div class="page-sub">${pi.role}</div>
+        ${pi.dept ? `<div class="page-sub" style="font-size:.85rem;font-weight:400;color:var(--ink3);margin-top:.15rem;">${pi.dept}</div>` : ''}
       </div>
     </div>
     <div class="mem-body"><div class="wrap">
