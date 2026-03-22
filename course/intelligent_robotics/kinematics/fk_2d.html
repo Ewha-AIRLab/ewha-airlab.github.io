@@ -1,0 +1,443 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>FK 2D — AIR Lab @ Ewha</title>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@300;400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: 'IBM Plex Sans', sans-serif; background: #f8fafc; color: #0f172a; min-height: 100vh; overflow-x: hidden; }
+
+/* ── Nav ── */
+.topbar { background: white; border-bottom: 1px solid #e2e8f0; padding: .7rem 1.5rem; display: flex; align-items: center; gap: .5rem; font-size: .84rem; flex-wrap: wrap; }
+.topbar a { text-decoration: none; color: #00462A; font-weight: 500; }
+.topbar a:hover { text-decoration: underline; }
+.topbar .sep { color: #94a3b8; }
+.topbar .cur { color: #0f172a; font-weight: 600; }
+
+/* ── Page ── */
+.page { max-width: 1400px; margin: 0 auto; padding: 1.5rem; }
+.page-title { font-size: 1.75rem; font-weight: 700; margin-bottom: .4rem; }
+.page-desc { color: #64748b; font-size: .9rem; max-width: 680px; margin-bottom: 1.25rem; line-height: 1.6; }
+
+/* ── Layout ── */
+.main-grid { display: grid; grid-template-columns: 1.5fr 1fr; gap: 1.25rem; align-items: start; }
+@media (max-width: 960px) { .main-grid { grid-template-columns: 1fr; } }
+
+/* ── Cards ── */
+.card { background: white; border: 1px solid #e2e8f0; border-radius: 16px; box-shadow: 0 1px 3px rgba(0,0,0,.06); }
+.card-hd { padding: 1rem 1.35rem .6rem; display: flex; align-items: center; justify-content: space-between; gap: .75rem; }
+.card-title { font-size: .98rem; font-weight: 600; }
+.card-body { padding: .75rem 1.35rem 1.2rem; }
+
+/* ── Canvas ── */
+.viz-wrap { width: 100%; aspect-ratio: 4/3; position: relative; border-radius: 10px; overflow: hidden; border: 1px solid #e2e8f0; background: #f8fafc; }
+#cvs { display: block; }
+.hint { font-size: .75rem; color: #94a3b8; margin-top: .5rem; }
+
+/* ── Side panel ── */
+.side-panel { display: flex; flex-direction: column; gap: 1.25rem; }
+
+/* ── Sliders ── */
+.sl-group { margin-bottom: .95rem; }
+.sl-group:last-child { margin-bottom: 0; }
+.sl-label { display: flex; justify-content: space-between; font-size: .83rem; margin-bottom: .35rem; }
+.sl-label .sl-name { color: #475569; }
+.sl-label .sl-val { font-family: 'IBM Plex Mono', monospace; color: #0f172a; font-weight: 500; }
+.sl-row { display: flex; align-items: center; gap: .5rem; }
+.sl-row input[type=range] { flex: 1; }
+input[type=range] { -webkit-appearance: none; appearance: none; height: 6px; background: #e2e8f0; border-radius: 3px; outline: none; cursor: pointer; }
+input[type=range]::-webkit-slider-thumb { -webkit-appearance: none; width: 17px; height: 17px; border-radius: 50%; background: #0f172a; cursor: pointer; border: 2px solid white; box-shadow: 0 1px 3px rgba(0,0,0,.25); }
+input[type=number] { width: 66px; font-family: 'IBM Plex Mono', monospace; font-size: .8rem; border: 1px solid #e2e8f0; border-radius: 6px; padding: .28rem .4rem; text-align: right; background: #f8fafc; color: #0f172a; -moz-appearance: textfield; appearance: textfield; }
+input[type=number]::-webkit-outer-spin-button, input[type=number]::-webkit-inner-spin-button { -webkit-appearance: none; }
+input[type=number]:focus { outline: none; border-color: #94a3b8; background: white; }
+
+/* ── Info rows ── */
+.info-row { display: flex; justify-content: space-between; align-items: center; gap: 1rem; border-bottom: 1px solid #f1f5f9; padding: .45rem 0; font-size: .82rem; }
+.info-row:last-child { border-bottom: none; }
+.info-label { color: #64748b; font-weight: 500; }
+.info-val { font-family: 'IBM Plex Mono', monospace; text-align: right; }
+
+/* ── Equations ── */
+.eq-block { background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 10px; padding: .75rem 1rem; margin-bottom: .7rem; }
+.eq-block:last-child { margin-bottom: 0; }
+.eq-label { font-size: .75rem; font-weight: 600; color: #475569; margin-bottom: .45rem; }
+.eq-line { font-family: 'IBM Plex Mono', monospace; font-size: .72rem; color: #1e293b; line-height: 1.7; }
+.eq-line span { color: #7c3aed; }
+
+/* ── Matrices ── */
+.mat-block { background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 10px; padding: .65rem .85rem; margin-bottom: .7rem; }
+.mat-block:last-of-type { margin-bottom: 0; }
+.mat-label { font-size: .75rem; font-weight: 600; color: #475569; margin-bottom: .4rem; }
+.mat-grid3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: .22rem; }
+.mat-cell { background: white; border-radius: 4px; padding: .18rem .28rem; text-align: center; font-family: 'IBM Plex Mono', monospace; font-size: .68rem; box-shadow: 0 1px 2px rgba(0,0,0,.05); color: #1e293b; }
+.mat-cell.hi { color: #7c3aed; }
+
+/* ── Mobile ── */
+@media (max-width: 640px) {
+  .topbar { padding: .6rem 1rem; font-size: .78rem; gap: .35rem; }
+  .page { padding: 1rem; }
+  .page-title { font-size: 1.25rem; }
+  .page-desc { font-size: .83rem; margin-bottom: 1rem; }
+  .card-body { padding: .65rem .9rem 1rem; }
+  .card-hd { padding: .7rem .9rem .5rem; }
+  input[type=number] { width: 56px; font-size: .75rem; }
+}
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <a href="/">AIR Lab @ Ewha</a>
+  <span class="sep">/</span>
+  <span class="cur">FK 2D</span>
+  <span style="margin-left:auto;display:flex;gap:.75rem;">
+    <span class="cur" style="font-size:.8rem;">FK 2D</span>
+    <a href="fk_3d.html" style="font-size:.8rem;">FK 3D (SCARA)</a>
+  </span>
+</div>
+
+<div class="page">
+  <h1 class="page-title">[2D] Forward Kinematics</h1>
+  <p class="page-desc">
+    2D planar 3-DOF robot arm (L<sub>1</sub>=1.5, L<sub>2</sub>=1.2, L<sub>3</sub>=0.8 m).
+    Set joint angles (q<sub>1</sub>, q<sub>2</sub>, q<sub>3</sub>) to compute the end-effector pose.
+  </p>
+
+  <div class="main-grid">
+
+    <!-- Visualization -->
+    <div class="card">
+      <div class="card-hd">
+        <div class="card-title">Visualization</div>
+      </div>
+      <div class="card-body" style="padding:.75rem;">
+        <div class="viz-wrap" id="viz-wrap">
+          <canvas id="cvs"></canvas>
+        </div>
+        <p class="hint">Drag sliders to change joint angles.</p>
+      </div>
+    </div>
+
+    <!-- Side panel -->
+    <div class="side-panel">
+
+      <div class="card">
+        <div class="card-hd"><div class="card-title">Joint Angles</div></div>
+        <div class="card-body">
+          <div class="sl-group">
+            <div class="sl-label"><span class="sl-name">q<sub>1</sub> — base</span><span class="sl-val" id="lbl-fk-q1">30°</span></div>
+            <div class="sl-row">
+              <input type="range"  id="fk-sl-q1"  min="-180" max="180" step="1" value="30"  oninput="fkOnSlider(0,this)">
+              <input type="number" id="fk-num-q1" min="-180" max="180" step="1" value="30"  oninput="fkOnNumber(0,this)">
+            </div>
+          </div>
+          <div class="sl-group">
+            <div class="sl-label"><span class="sl-name">q<sub>2</sub> — elbow</span><span class="sl-val" id="lbl-fk-q2">−40°</span></div>
+            <div class="sl-row">
+              <input type="range"  id="fk-sl-q2"  min="-150" max="150" step="1" value="-40"  oninput="fkOnSlider(1,this)">
+              <input type="number" id="fk-num-q2" min="-150" max="150" step="1" value="-40"  oninput="fkOnNumber(1,this)">
+            </div>
+          </div>
+          <div class="sl-group">
+            <div class="sl-label"><span class="sl-name">q<sub>3</sub> — wrist</span><span class="sl-val" id="lbl-fk-q3">20°</span></div>
+            <div class="sl-row">
+              <input type="range"  id="fk-sl-q3"  min="-150" max="150" step="1" value="20"  oninput="fkOnSlider(2,this)">
+              <input type="number" id="fk-num-q3" min="-150" max="150" step="1" value="20"  oninput="fkOnNumber(2,this)">
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-hd"><div class="card-title">End-Effector Pose</div></div>
+        <div class="card-body">
+          <div class="info-row">
+            <span class="info-label">(x<sub>ee</sub>, y<sub>ee</sub>, φ)</span>
+            <span class="info-val" id="fk-ee-pose">—</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-hd"><div class="card-title">FK Equations</div></div>
+        <div class="card-body">
+
+          <div class="eq-block">
+            <div class="eq-label">Transforms (3×3 homogeneous)</div>
+            <div class="eq-line">T<sub>01</sub> = Rz(q₁) · Trans(<span>L₁</span>, 0)</div>
+            <div class="eq-line">T<sub>12</sub> = Rz(q₂) · Trans(<span>L₂</span>, 0)</div>
+            <div class="eq-line">T<sub>23</sub> = Rz(q₃) · Trans(<span>L₃</span>, 0)</div>
+          </div>
+
+          <div class="mat-block">
+            <div class="mat-label">T<sub>i</sub> = Rz(qᵢ) · Trans(Lᵢ, 0)</div>
+            <div class="mat-grid3">
+              <div class="mat-cell hi">cᵢ</div><div class="mat-cell hi">−sᵢ</div><div class="mat-cell hi">Lᵢcᵢ</div>
+              <div class="mat-cell hi">sᵢ</div><div class="mat-cell hi"> cᵢ</div><div class="mat-cell hi">Lᵢsᵢ</div>
+              <div class="mat-cell">0</div><div class="mat-cell">0</div><div class="mat-cell">1</div>
+            </div>
+          </div>
+
+          <div class="eq-block">
+            <div class="eq-label">End-effector pose</div>
+            <div class="eq-line">p<sub>ee</sub> = T<sub>01</sub>·T<sub>12</sub>·T<sub>23</sub> · [0, 0, 1]<sup>T</sup></div>
+            <div class="eq-line">φ &nbsp;= q₁ + q₂ + q₃</div>
+          </div>
+
+        </div>
+      </div>
+
+      <!-- Transformation Matrices -->
+      <div class="card">
+        <div class="card-hd"><div class="card-title">Transformation Matrices</div></div>
+        <div class="card-body">
+          <div class="mat-block">
+            <div class="mat-label">T<sub>01</sub> = Rz(q<sub>1</sub>) · Trans(L<sub>1</sub>, 0)</div>
+            <div class="mat-grid3" id="mat-t01"></div>
+          </div>
+          <div class="mat-block">
+            <div class="mat-label">T<sub>12</sub> = Rz(q<sub>2</sub>) · Trans(L<sub>2</sub>, 0)</div>
+            <div class="mat-grid3" id="mat-t12"></div>
+          </div>
+          <div class="mat-block">
+            <div class="mat-label">T<sub>23</sub> = Rz(q<sub>3</sub>) · Trans(L<sub>3</sub>, 0)</div>
+            <div class="mat-grid3" id="mat-t23"></div>
+          </div>
+          <div class="mat-block">
+            <div class="mat-label">T<sub>world,ee</sub> = T<sub>01</sub>·T<sub>12</sub>·T<sub>23</sub></div>
+            <div class="mat-grid3" id="mat-tee"></div>
+          </div>
+        </div>
+      </div>
+
+    </div><!-- /side-panel -->
+  </div><!-- /main-grid -->
+</div><!-- /page -->
+
+<script>
+'use strict';
+
+// ── Constants ──
+const L1 = 1.5, L2 = 1.2, L3 = 0.8;
+const D2R = Math.PI / 180, R2D = 180 / Math.PI;
+const REACH_MAX = L1 + L2 + L3;
+const REACH_MIN = Math.max(0, L1 - L2 - L3);
+
+// ── State ──
+const S = { q: [30, -40, 20] };
+
+// ── Canvas setup ──
+const vizWrap = document.getElementById('viz-wrap');
+const cvs     = document.getElementById('cvs');
+const ctx     = cvs.getContext('2d');
+
+let W = 0, H = 0, CX = 0, CY = 0, SCALE = 0;
+
+function onResize() {
+  W = vizWrap.clientWidth;
+  H = vizWrap.clientHeight;
+  cvs.width  = W;
+  cvs.height = H;
+  cvs.style.width  = W + 'px';
+  cvs.style.height = H + 'px';
+  SCALE = Math.min(W, H) / 7.5;
+  CX = W * 0.38;
+  CY = H * 0.62;
+  draw();
+}
+new ResizeObserver(onResize).observe(vizWrap);
+
+// ── Coordinate helpers ──
+function w2c(x, y)  { return [CX + x * SCALE, CY - y * SCALE]; }
+
+// ── 3×3 homogeneous matrix helpers ──
+// Each row-major: [r00,r01,tx, r10,r11,ty, 0,0,1]
+function mat3Rz_Trans(angleDeg, L) {
+  const c = Math.cos(angleDeg * D2R), s = Math.sin(angleDeg * D2R);
+  return [c, -s, L*c,
+          s,  c, L*s,
+          0,  0,  1 ];
+}
+function mat3Mul(A, B) {
+  const R = new Array(9).fill(0);
+  for (let r = 0; r < 3; r++)
+    for (let col = 0; col < 3; col++)
+      for (let k = 0; k < 3; k++)
+        R[r*3+col] += A[r*3+k] * B[k*3+col];
+  return R;
+}
+function renderMat3(id, m) {
+  const fmt = v => Math.abs(v) < 1e-9 ? '0.00' : ((v >= 0 ? '' : '\u2212') + Math.abs(v).toFixed(2));
+  document.getElementById(id).innerHTML =
+    m.map(v => `<div class="mat-cell">${fmt(v)}</div>`).join('');
+}
+
+// ── FK math ──
+function fkPoses(q1, q2, q3) {
+  const a1   = q1 * D2R;
+  const a12  = (q1 + q2) * D2R;
+  const a123 = (q1 + q2 + q3) * D2R;
+  const p0 = { x: 0, y: 0 };
+  const p1 = { x: L1 * Math.cos(a1),  y: L1 * Math.sin(a1) };
+  const p2 = { x: p1.x + L2 * Math.cos(a12),  y: p1.y + L2 * Math.sin(a12) };
+  const p3 = { x: p2.x + L3 * Math.cos(a123), y: p2.y + L3 * Math.sin(a123) };
+  return [p0, p1, p2, p3];
+}
+
+// ── Drawing ──
+function drawGrid() {
+  ctx.save();
+  ctx.strokeStyle = '#e2e8f0';
+  ctx.lineWidth = 1;
+  const range = 5;
+  for (let i = -range; i <= range; i++) {
+    const [x0, y0] = w2c(i, -range); const [x1, y1] = w2c(i,  range);
+    ctx.beginPath(); ctx.moveTo(x0, y0); ctx.lineTo(x1, y1); ctx.stroke();
+    const [x2, y2] = w2c(-range, i);  const [x3, y3] = w2c( range, i);
+    ctx.beginPath(); ctx.moveTo(x2, y2); ctx.lineTo(x3, y3); ctx.stroke();
+  }
+  ctx.strokeStyle = '#94a3b8'; ctx.lineWidth = 1.5;
+  const [ax0, ay0] = w2c(-range, 0); const [ax1, ay1] = w2c(range, 0);
+  ctx.beginPath(); ctx.moveTo(ax0, ay0); ctx.lineTo(ax1, ay1); ctx.stroke();
+  const [bx0, by0] = w2c(0, -range); const [bx1, by1] = w2c(0, range);
+  ctx.beginPath(); ctx.moveTo(bx0, by0); ctx.lineTo(bx1, by1); ctx.stroke();
+  ctx.fillStyle = '#94a3b8'; ctx.font = `${Math.max(10,SCALE*.18)}px IBM Plex Sans, sans-serif`; ctx.textAlign = 'center';
+  const [lx, ly] = w2c(range - 0.2, 0); ctx.fillText('x', lx, ly - 6);
+  const [ly2x, ly2y] = w2c(0, range - 0.2); ctx.fillText('y', ly2x + 6, ly2y);
+  ctx.font = `${Math.max(9, SCALE*.14)}px IBM Plex Mono, monospace`; ctx.fillStyle = '#cbd5e1';
+  for (let i = -range; i <= range; i++) {
+    if (i === 0) continue;
+    const [tx, ty] = w2c(i, 0); ctx.fillText(i, tx, ty + 14);
+    const [tx2, ty2] = w2c(0, i); ctx.fillText(i, tx2 - 14, ty2 + 4);
+  }
+  ctx.restore();
+}
+
+function drawWorkspace() {
+  ctx.save();
+  const [ox, oy] = w2c(0, 0);
+  ctx.beginPath(); ctx.arc(ox, oy, REACH_MAX * SCALE, 0, 2*Math.PI);
+  ctx.strokeStyle = 'rgba(148,163,184,0.25)'; ctx.setLineDash([5, 5]); ctx.lineWidth = 1.5; ctx.stroke();
+  if (REACH_MIN > 0.01) {
+    ctx.beginPath(); ctx.arc(ox, oy, REACH_MIN * SCALE, 0, 2*Math.PI); ctx.stroke();
+  }
+  ctx.setLineDash([]); ctx.restore();
+}
+
+function drawArm(pts) {
+  const lw = Math.max(5, SCALE * 0.12);
+  ctx.save();
+  ctx.lineCap = 'round'; ctx.lineWidth = lw; ctx.strokeStyle = 'rgba(148,163,184,1)';
+  for (let i = 0; i < pts.length - 1; i++) {
+    const [x0, y0] = w2c(pts[i].x, pts[i].y);
+    const [x1, y1] = w2c(pts[i+1].x, pts[i+1].y);
+    ctx.beginPath(); ctx.moveTo(x0, y0); ctx.lineTo(x1, y1); ctx.stroke();
+  }
+  const jR = lw * 0.85;
+  const jCols = ['#1e293b', '#f59e0b', '#f59e0b'];
+  for (let i = 0; i < 3; i++) {
+    const [cx2, cy2] = w2c(pts[i].x, pts[i].y);
+    ctx.beginPath(); ctx.arc(cx2, cy2, jR, 0, 2*Math.PI);
+    ctx.fillStyle = jCols[i]; ctx.fill();
+    ctx.strokeStyle = 'white'; ctx.lineWidth = 2; ctx.stroke();
+  }
+  const [ex, ey] = w2c(pts[3].x, pts[3].y);
+  ctx.beginPath(); ctx.arc(ex, ey, jR * 0.85, 0, 2*Math.PI);
+  ctx.fillStyle = '#7c3aed'; ctx.fill();
+  ctx.strokeStyle = 'white'; ctx.lineWidth = 2; ctx.stroke();
+  ctx.restore();
+}
+
+function drawFrameArrow(px, py, angle, len = 0.35) {
+  const cos = Math.cos(angle), sin = Math.sin(angle);
+  const [x0, y0] = w2c(px, py);
+  const [x1, y1] = w2c(px + len*cos, py + len*sin);
+  ctx.save();
+  ctx.strokeStyle = '#ef4444'; ctx.lineWidth = 2;
+  ctx.beginPath(); ctx.moveTo(x0, y0); ctx.lineTo(x1, y1); ctx.stroke();
+  const headLen = 8, headAngle = 0.4;
+  const ang = Math.atan2(y0-y1, x0-x1);
+  ctx.fillStyle = '#ef4444';
+  ctx.beginPath();
+  ctx.moveTo(x1, y1);
+  ctx.lineTo(x1 + headLen*Math.cos(ang - headAngle), y1 + headLen*Math.sin(ang - headAngle));
+  ctx.lineTo(x1 + headLen*Math.cos(ang + headAngle), y1 + headLen*Math.sin(ang + headAngle));
+  ctx.closePath(); ctx.fill();
+  ctx.restore();
+}
+
+function drawJointLabels(pts) {
+  ctx.save();
+  ctx.font = `${Math.max(10, SCALE * 0.15)}px IBM Plex Sans, sans-serif`;
+  ctx.fillStyle = '#475569';
+  const labels = ['q₁', 'q₂', 'q₃'];
+  const offsets = [{dx:-16, dy:-12}, {dx:8, dy:-12}, {dx:8, dy:-12}];
+  for (let i = 0; i < 3; i++) {
+    const [px, py] = w2c(pts[i].x, pts[i].y);
+    ctx.fillText(labels[i], px + offsets[i].dx, py + offsets[i].dy);
+  }
+  ctx.restore();
+}
+
+function draw() {
+  if (!W || !H) return;
+  ctx.clearRect(0, 0, W, H);
+  drawGrid();
+  drawWorkspace();
+  const [q1, q2, q3] = S.q;
+  const pts = fkPoses(q1, q2, q3);
+  drawArm(pts);
+  drawFrameArrow(pts[3].x, pts[3].y, (q1+q2+q3)*D2R, 0.38);
+  drawJointLabels(pts);
+}
+
+// ── FK UI ──
+function fkUpdate() {
+  const [q1, q2, q3] = S.q;
+  const pts = fkPoses(q1, q2, q3);
+  const ee  = pts[3];
+  const phi = q1 + q2 + q3;
+
+  const fmt    = v => (v >= 0 ? '' : '\u2212') + Math.abs(v).toFixed(2);
+  const fmtDeg = v => `${v < 0 ? '\u2212' : ''}${Math.abs(v).toFixed(1)}\u00b0`;
+
+  document.getElementById('fk-ee-pose').textContent =
+    `(${fmt(ee.x)},\u00a0${fmt(ee.y)}\u00a0m,\u00a0${fmtDeg(phi)})`;
+
+  // Transformation matrices
+  const T01 = mat3Rz_Trans(q1, L1);
+  const T12 = mat3Rz_Trans(q2, L2);
+  const T23 = mat3Rz_Trans(q3, L3);
+  const Tee = mat3Mul(mat3Mul(T01, T12), T23);
+  renderMat3('mat-t01', T01);
+  renderMat3('mat-t12', T12);
+  renderMat3('mat-t23', T23);
+  renderMat3('mat-tee', Tee);
+
+  [0,1,2].forEach(i => {
+    const keys = ['q1','q2','q3'];
+    const v = S.q[i];
+    document.getElementById(`fk-sl-${keys[i]}`).value  = v;
+    document.getElementById(`fk-num-${keys[i]}`).value = v.toFixed(0);
+    document.getElementById(`lbl-fk-${keys[i]}`).textContent = fmtDeg(v);
+  });
+
+  draw();
+}
+
+function fkOnSlider(idx, el) { S.q[idx] = parseFloat(el.value); fkUpdate(); }
+function fkOnNumber(idx, el) {
+  const min = parseFloat(el.min), max = parseFloat(el.max);
+  let v = parseFloat(el.value);
+  if (isNaN(v)) return;
+  v = Math.max(min, Math.min(max, v));
+  S.q[idx] = v; fkUpdate();
+}
+
+// ── Init ──
+fkUpdate();
+</script>
+</body>
+</html>
