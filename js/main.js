@@ -309,8 +309,8 @@ function renderNews() {
       ? `<span class="pill ${catPillCls[item.cat]||'pg'}">${item.cat.charAt(0).toUpperCase()+item.cat.slice(1)}</span>`
       : '';
     return `<div class="news-full-item" data-cat="${item.cat||''}">
-      <div class="nf-meta"><div class="nf-date">${item.date}</div>${pill}</div>
-      <div><div class="nf-title">${item.title}</div><div class="nf-body">${item.body||''}</div></div>
+      <div class="nf-meta"><div class="nf-date">${item.date}</div></div>
+      <div><div class="nf-title-row">${pill}<span class="nf-title">${item.title}</span></div><div class="nf-body">${item.body||''}</div></div>
     </div>`;
   }).join('') || '<div style="padding:2rem 0;color:var(--ink2)">No news yet.</div>';
 

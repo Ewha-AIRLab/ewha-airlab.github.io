@@ -248,11 +248,12 @@ a.pub-award:hover { background: rgba(212,175,55,.22); }
 /* ════ NEWS ════ */
 .news-page-body { padding: 3.5rem 0; }
 .news-full-list { display: flex; flex-direction: column; }
-.news-full-item { display: grid; grid-template-columns: 110px 1fr; gap: 1.5rem; padding: 1.25rem 0; border-bottom: 1px solid var(--gmd); align-items: start; }
+.news-full-item { display: grid; grid-template-columns: 82px 1fr; gap: 1.5rem; padding: 1.25rem 0; border-bottom: 1px solid var(--gmd); align-items: center; }
 .news-full-item:first-child { border-top: 1px solid var(--gmd); }
 .news-full-item.hidden { display: none; }
 .nf-date { font-family: 'IBM Plex Mono', monospace; font-size: .75rem; color: var(--ink3); margin-top: .15rem; }
-.nf-title { font-size: .95rem; font-weight: 600; color: var(--ink); margin-bottom: .4rem; }
+.nf-title-row { display: flex; align-items: center; gap: .5rem; margin-bottom: .4rem; flex-wrap: wrap; }
+.nf-title { font-size: .95rem; font-weight: 600; color: var(--ink); }
 .nf-body  { font-size: .85rem; color: var(--ink2); line-height: 1.7; }
 
 /* ── FOOTER ── */
