@@ -6,7 +6,7 @@
 <title>AIR Lab @ Ewha</title>
 <link href="https://fonts.googleapis.com/css2?family=EB+Garamond:ital,wght@0,400;0,500;0,600;1,400&family=IBM+Plex+Sans:wght@300;400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
 <link rel="icon" type="image/png" href="assets/symbols/ewha.png">
-<link rel="stylesheet" href="styles/style.css?v=3">
+<script>var _v=new Date().toISOString().slice(0,10).replace(/-/g,'');document.write('<link rel="stylesheet" href="styles/style.css?v='+_v+'">');</script>
 </head>
 <body>
 
@@ -35,15 +35,13 @@
 
 <footer class="site-ft" id="site-footer"></footer>
 
-<!-- Data files — edit these to update content -->
-<script src="data/lab.js?v=2"></script>
-<script src="data/publications.js?v=2"></script>
-<script src="data/members.js?v=2"></script>
-<script src="data/news.js?v=2"></script>
-<script src="data/research.js?v=2"></script>
-
-<!-- App logic -->
-<script src="js/main.js?v=2"></script>
+<!-- Data & app — version auto-set to today's date -->
+<script>
+['data/lab.js','data/publications.js','data/members.js',
+ 'data/news.js','data/research.js','js/main.js'].forEach(function(s){
+  document.write('<script src="'+s+'?v='+_v+'"><\/script>');
+});
+</script>
 
 </body>
 </html>
