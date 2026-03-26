@@ -2,7 +2,7 @@
 // Edit this file to add or update publications.
 // Add new entries at the TOP of the array (newest first).
 //
-// type:      "conference" | "journal"
+// type:      "conference" | "journal" | "extended_abstract"
 // thumbnail: path relative to site root, e.g. "assets/publications/teaser/foo.gif"
 //            Set to null if no image is available.
 // featured:  true  → shown in the Research Overview carousel on the home page
@@ -10,6 +10,19 @@
 // keywords:  short tags shown in the carousel (2–4 recommended)
 
 const PUBLICATIONS = [
+  // {
+  //   year: 2026,
+  //   title: "Narrate2Nav: Real-Time Visual Navigation with Implicit Language Reasoning in Human-Centric Environments",
+  //   authors: ["Amirreza Payandeh<sup>†</sup>", "Anuj Pokhrel", "**Daeun Song**", "Marcos Zampieri", "Xuesu Xiao"],
+  //   venue_short: "ICRA",
+  //   venue_full: "IEEE International Conference on Robotics and Automation (ICRA), 2026",
+  //   type: "conference",
+  //   featured: false,
+  //   thumbnail: "assets/publications/teaser/humain_teaser.gif",
+  //   links: [
+  //     { label: "Paper", url: "https://arxiv.org/abs/2506.14233" }
+  //   ]
+  // },
   {
     year: 2026,
     title: "Narrate2Nav: Real-Time Visual Navigation with Implicit Language Reasoning in Human-Centric Environments",
@@ -46,7 +59,22 @@ const PUBLICATIONS = [
     featured: false,
     thumbnail: "assets/publications/teaser/e_socialnav_teaser.png",
     links: [
-      { label: "Paper", url: "https://people.cs.gmu.edu/~xiao/papers/e_socialnav.pdf" }
+      { label: "Paper", url: "https://arxiv.org/abs/2603.20664" }
+    ]
+  },
+  {
+    year: 2025,
+    title: "Towards Human-Like Instruction Navigation in Real-World",
+    authors: ["Jiseon Kim", "**Daeun Song**", "Bokeon Suh", "Hyoseok Ju", "Yumin Lee", "Xuesu Xiao", "Giseop Kim<sup>†</sup>"],
+    venue_short: "Workshop",
+    venue_full: "Human-aware Embodied AI (HEAI) Workshop at IROS, 2025",
+    type: "extended_abstract",
+    featured: false,
+    thumbnail: "assets/publications/teaser/socialact_teaser.png",
+    links: [
+      { label: "Best Poster Award", award: true, url: "assets/award/SocialAct_BestPosterAward.pdf"},
+      // { label: "Website",   url: "https://people.cs.gmu.edu/~xiao/Research/BARN_Challenge/BARN_Challenge25.html" },
+      // { label: "Paper",   url: "https://people.cs.gmu.edu/~xiao/papers/barn25_report.pdf" },
     ]
   },
   {

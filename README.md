@@ -61,7 +61,7 @@ Open `data/publications.js` and add a new entry at the **top** of the `PUBLICATI
 - Add `<sup>*</sup>` for equal contribution: `"Author One<sup>*</sup>"`
 - Add `<sup>†</sup>` for corresponding author: `"Daeun Song<sup>†</sup>"`
 
-**Venue badge colors** (`venue_short` → badge color):
+<!-- **Venue badge colors** (`venue_short` → badge color):
 
 | Key     | Color  |
 |---------|--------|
@@ -71,7 +71,7 @@ Open `data/publications.js` and add a new entry at the **top** of the `PUBLICATI
 | `IROS`  | Yellow |
 | other   | Gray   |
 
-To add a new color, edit the `BADGE_CLS` map in `js/main.js`.
+To add a new color, edit the `BADGE_CLS` map in `js/main.js`. -->
 
 ---
 
@@ -123,10 +123,10 @@ groups: [
 { name: "Graduate Name, Ph.D. (2025)", now: "Postdoc, Some University" }
 ```
 
-**Update PI info** — edit the `pi` object directly. Fields:
+<!-- **Update PI info** — edit the `pi` object directly. Fields:
 - `education[]` — degree, field, school, year
 - `experience[]` — role, org, org_url (optional), period
-- `links[]` — label, url
+- `links[]` — label, url -->
 
 ---
 

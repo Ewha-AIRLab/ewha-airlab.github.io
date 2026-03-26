@@ -57,13 +57,16 @@ function renderHome() {
       </div>
     </div>`).join('');
 
-  const catPillCls = { award:'pg', publication:'pm', grant:'pb', position:'pc', conference:'py', media:'pg', announcement:'pg' };
+  const catPillCls   = { award:'pa', publication:'pm', grant:'pb', position:'pc', talk:'py', media:'pg', news:'pg' };
+  const catPillLabel = { publication:'PAPER', news:'NEWS', award:'AWARD', talk:'TALK', grant:'GRANT', media:'MEDIA' };
   const newsRows = NEWS_DATA.slice(0, 5).map(item => {
-    const pill = item.cat ? `<span class="pill ${catPillCls[item.cat]||'pg'}">${item.cat.charAt(0).toUpperCase()+item.cat.slice(1)}</span>` : '';
+    const cls   = catPillCls[item.cat];
+    const label = catPillLabel[item.cat];
+    const pill  = (cls && label) ? `<span class="pill ${cls}">${label}</span>` : '';
     return `<div class="news-row">
       <div class="news-date">${item.date}</div>
-      <div>${pill}<span class="news-text">${item.title}</span></div>
-      <a class="news-lnk" href="#news">Details →</a>
+      <div class="news-cat">${pill}</div>
+      <span class="news-text">${item.title}</span>
     </div>`;
   }).join('') || `<div class="news-row"><div class="news-date" style="color:var(--grey)">No news yet.</div><div></div></div>`;
 
@@ -302,17 +305,32 @@ function renderMembers() {
 // ─────────────────────────────────────────────
 
 function renderNews() {
-  const catPillCls = { award:'pg', publication:'pm', grant:'pb', position:'pc', conference:'py', media:'pg', announcement:'pg' };
+  const catPillCls   = { award:'pa', publication:'pm', grant:'pb', position:'pc', talk:'py', media:'pg', news:'pg' };
+  const catPillLabel = { publication:'PAPER', news:'NEWS', award:'AWARD', talk:'TALK', grant:'GRANT', media:'MEDIA' };
 
+  let prevYear = null;
   const items = NEWS_DATA.map((item) => {
-    const pill = item.cat
-      ? `<span class="pill ${catPillCls[item.cat]||'pg'}">${item.cat.charAt(0).toUpperCase()+item.cat.slice(1)}</span>`
-      : '';
-    return `<div class="news-full-item" data-cat="${item.cat||''}">
-      <div class="nf-meta"><div class="nf-date">${item.date}</div></div>
-      <div><div class="nf-title-row">${pill}<span class="nf-title">${item.title}</span></div><div class="nf-body">${item.body||''}</div></div>
+    const year = item.date.slice(0, 4);
+    const yearBreak = (prevYear && year !== prevYear) ? ' year-break' : '';
+    prevYear = year;
+    const cls   = catPillCls[item.cat];
+    const label = catPillLabel[item.cat];
+    const pill  = (cls && label) ? `<span class="pill ${cls}">${label}</span>` : '';
+    return `<div class="news-full-item${yearBreak}" data-cat="${item.cat||''}">
+      <div class="nf-date">${item.date}</div>
+      <div class="nf-cat">${pill}</div>
+      <div class="nf-content">${item.title}</div>
     </div>`;
   }).join('') || '<div style="padding:2rem 0;color:var(--ink2)">No news yet.</div>';
+
+  const catOrder  = ['publication', 'award', 'talk', 'grant', 'news', 'media'];
+  const catBtnLbl = { publication:'Publications', award:'Awards', talk:'Talks', grant:'Grants', news:'News', media:'Media' };
+  const catBtnCls = { award:'fbtn fbtn-award' };
+  const usedCats  = new Set(NEWS_DATA.map(i => i.cat));
+  const filterBtns = catOrder
+    .filter(c => usedCats.has(c))
+    .map(c => `<button class="${catBtnCls[c]||'fbtn'}" onclick="fnews('${c}',this)">${catBtnLbl[c]}</button>`)
+    .join('');
 
   document.getElementById('page-content').innerHTML = `
     <div class="page-hd">
@@ -324,10 +342,7 @@ function renderNews() {
     <div class="news-page-body"><div class="wrap">
       <div class="filters">
         <button class="fbtn active" onclick="fnews('all',this)">All</button>
-        <button class="fbtn" onclick="fnews('publication',this)">Publications</button>
-        <button class="fbtn" onclick="fnews('award',this)">Awards</button>
-        <button class="fbtn" onclick="fnews('grant',this)">Grants</button>
-        <button class="fbtn" onclick="fnews('announcement',this)">Announcement</button>
+        ${filterBtns}
       </div>
       <div class="news-full-list">${items}</div>
     </div></div>`;

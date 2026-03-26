@@ -31,9 +31,10 @@ const LAB_INFO = {
 
   // Keyword chips shown below the hero intro (emoji + label, no link)
   keywords: [
-    { emoji: "🤖", label: "Robot Intelligence" },
-    { emoji: "🛞", label: "Autonomous Navigation" },
-    { emoji: "🦾", label: "Robot Manipulation" },
+    { emoji: "🤖🧠", label: "Robot Intelligence" },
+    { emoji: "🤝🤖", label: "Human-Robot Interaction" },
+    // { emoji: "🛞", label: "Autonomous Navigation" },
+    // { emoji: "🦾", label: "Robot Manipulation" },
   ],
 
   // Hero slideshow images — add more paths to show multiple slides with dots
