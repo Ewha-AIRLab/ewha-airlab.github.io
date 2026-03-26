@@ -26,6 +26,7 @@ function openLightbox(url) {
     document.addEventListener('keydown', e => { if (e.key === 'Escape') closeLightbox(); });
   }
   const isPdf = url.endsWith('.pdf');
+  if (isPdf && window.innerWidth < 768) { window.open(url, '_blank'); return; }
   document.getElementById('lightbox-content').innerHTML = isPdf
     ? `<iframe src="${url}"></iframe>`
     : `<img src="${url}" alt="">`;
