@@ -12,11 +12,11 @@ const NEWS_DATA = [
     title: "AIR Lab website now online!"
   },
 
-  {
-    date:  "2026.03",
-    cat:   "news",
-    title: "Daeun has joined the Department of AI at Ewha Womans University"
-  },
+  // {
+  //   date:  "2026.03",
+  //   cat:   "news",
+  //   title: "Daeun has joined the Department of AI at Ewha Womans University"
+  // },
 
   {
     date:  "2026.02",

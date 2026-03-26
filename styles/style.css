@@ -70,8 +70,6 @@ body { font-family: 'IBM Plex Sans', sans-serif; background: var(--w); color: va
 .fbtn { font-family: 'IBM Plex Sans', sans-serif; font-size: .78rem; font-weight: 500; border: 1px solid var(--gmd); border-radius: 4px; padding: .35rem .85rem; background: #fff; color: var(--ink2); cursor: pointer; transition: all .15s; }
 .fbtn:hover { border-color: var(--green); color: var(--green); }
 .fbtn.active { background: var(--green); color: #fff; border-color: var(--green); }
-.fbtn.fbtn-award:hover { border-color: #b8860b; color: #b8860b; }
-.fbtn.fbtn-award.active { background: rgba(212,175,55,.12); color: #b8860b; border-color: rgba(212,175,55,.5); }
 
 /* ── SECTION LABELS ── */
 .sec-eye { font-size: .72rem; text-transform: uppercase; letter-spacing: .14em; color: var(--green); font-weight: 600; font-family: 'IBM Plex Mono', monospace; margin-bottom: .6rem; }

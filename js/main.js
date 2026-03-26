@@ -60,7 +60,7 @@ function toggleMobileNav() {
 const NAV_MAP = {
   '': 'nav-home', 'home': 'nav-home',
   'members': 'nav-members', 'publications': 'nav-publications',
-  'news': 'nav-news', 'research': 'nav-research',
+  'news': 'nav-news', 'projects': 'nav-projects',
 };
 
 function setActiveNav(page) {
@@ -519,22 +519,23 @@ function renderResearch() {
   document.getElementById('page-content').innerHTML = `
     <div class="page-hd">
       <div class="wrap">
-        <div class="page-eye">AIR Lab · Ewha Womans University</div>
-        <h1>Research</h1>
+        <h1>Projects</h1>
         <div class="page-sub">Active projects and research grants</div>
       </div>
     </div>
     <div class="res-body"><div class="wrap">
       <div class="res-intro">
-        <div class="sec-eye">Overview</div>
+        <!-- div class="sec-eye">Overview</!-->
         <h2 class="sec-h2" style="margin-bottom:1rem;">Active <em>Projects</em></h2>
-        <p>AIR Lab currently runs funded research projects spanning robot learning, safe human-robot coexistence, foundation model integration, and dexterous manipulation.</p>
+        <!-- p>AIR Lab currently runs funded research projects spanning robot learning, safe human-robot coexistence, foundation model integration, and dexterous manipulation.</!-->
       </div>
       <div class="proj-list">${projects}</div>
+      <!--
       <div style="margin-top:3rem;padding-top:3rem;border-top:1px solid var(--gmd);">
         <div class="sec-eye">Themes</div>
         <h2 class="sec-h2">Research <em>Areas</em></h2>
         <div class="ra-grid" style="grid-template-columns:repeat(4,1fr);">${areas}</div>
+        -->
       </div>
     </div></div>`;
 }
@@ -575,7 +576,7 @@ function route() {
     case 'members':      renderMembers();      break;
     case 'news':         renderNews();         break;
     case 'publications': renderPublications(); break;
-    case 'research':     renderResearch();     break;
+    case 'projects':     renderResearch();     break;
     default:             renderHome();
   }
 }
