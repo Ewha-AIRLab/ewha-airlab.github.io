@@ -15,7 +15,7 @@ const NEWS_DATA = [
   {
     date:  "2026.03",
     cat:   "news",
-    title: "Daeun has joined Ewha Womans University "
+    title: "Daeun has joined the Department of AI at Ewha Womans University"
   },
 
   {
