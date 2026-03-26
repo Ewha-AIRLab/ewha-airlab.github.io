@@ -13,6 +13,12 @@ const NEWS_DATA = [
   },
 
   {
+    date:  "2026.03",
+    cat:   "news",
+    title: "Daeun has joined Ewha Womans University "
+  },
+
+  {
     date:  "2026.02",
     cat:   "talk",
     title: "Daeun gave an invited talk, \"Socially and Contextually Aware Navigation for Robots in Human-Centric Environments\" at Tufts University CS Colloquium"
@@ -51,7 +57,7 @@ const NEWS_DATA = [
   {
     date:  "2025.10",
     cat:   "award",
-    title: "Our collaborative work with DGIST, \"Towards Human-Like Instruction Navigation in Real-World\" has won the <a href=\"/assets/award/verti_arena_award.jpg\" target=\"_blank\">Best Poster Award</a> at <a href=\"https://heai-iros25-workshop.github.io/\" target=\"_blank\">HEAI Workshop</a>, <b>IROS 2025</b>"
+    title: "Our collaborative work with DGIST, \"Towards Human-Like Instruction Navigation in Real-World\" has won the <span class=\"award-lnk\" data-lightbox=\"assets/award/SocialAct_BestPosterAward.pdf\">Best Poster Award</span> at <a href=\"https://heai-iros25-workshop.github.io/\" target=\"_blank\">HEAI Workshop</a>, <b>IROS 2025</b>"
   },
 
   {

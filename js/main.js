@@ -15,6 +15,34 @@ const BADGE_CLS = {
 };
 function badgeCls(v) { return BADGE_CLS[v] || 'bdg-x'; }
 
+function openLightbox(url) {
+  let box = document.getElementById('lightbox');
+  if (!box) {
+    box = document.createElement('div');
+    box.id = 'lightbox';
+    box.innerHTML = '<div id="lightbox-inner"><button id="lightbox-close" onclick="closeLightbox()" aria-label="Close">&times;</button><div id="lightbox-content"></div></div>';
+    box.addEventListener('click', e => { if (e.target === box) closeLightbox(); });
+    document.body.appendChild(box);
+    document.addEventListener('keydown', e => { if (e.key === 'Escape') closeLightbox(); });
+  }
+  const isPdf = url.endsWith('.pdf');
+  document.getElementById('lightbox-content').innerHTML = isPdf
+    ? `<iframe src="${url}"></iframe>`
+    : `<img src="${url}" alt="">`;
+  box.classList.add('open');
+}
+window.openLightbox = openLightbox;
+
+document.addEventListener('click', e => {
+  const el = e.target.closest('[data-lightbox]');
+  if (el) { e.preventDefault(); openLightbox(el.dataset.lightbox); }
+});
+
+function closeLightbox() {
+  const box = document.getElementById('lightbox');
+  if (box) box.classList.remove('open');
+}
+
 function renderAuthors(arr) {
   return arr.map(a => a.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')).join(', ');
 }
@@ -369,7 +397,7 @@ function buildPubCard(pub) {
   const links = (pub.links || []).map(l =>
     l.award
       ? (l.url
-          ? `<a href="${l.url}" class="pub-award" target="_blank" rel="noopener">🏆 ${l.label}</a>`
+          ? `<span class="pub-award" data-lightbox="${l.url}">🏆 ${l.label}</span>`
           : `<span class="pub-award">🏆 ${l.label}</span>`)
       : `<a href="${l.url}" class="pub-lnk" target="_blank" rel="noopener">${l.label}</a>`
   ).join('');

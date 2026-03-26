@@ -245,8 +245,11 @@ body { font-family: 'IBM Plex Sans', sans-serif; background: var(--w); color: va
 .pub-venue-text { font-style: italic; }
 .pub-lnk { font-size: .75rem; font-weight: 500; color: var(--green); text-decoration: none; border-bottom: 1px solid rgba(0,70,42,.25); padding-bottom: 1px; }
 .pub-lnk:hover { color: var(--mint); }
-.pub-award { font-size: .75rem; font-weight: 600; color: #b8860b; background: rgba(212,175,55,.12); border-radius: 4px; padding: .15rem .5rem; text-decoration: none; }
-a.pub-award:hover { background: rgba(212,175,55,.22); }
+.pub-award { font-size: .75rem; font-weight: 500; color: #b8860b; background: rgba(212,175,55,.12); border-radius: 4px; padding: .15rem .5rem; cursor: pointer; }
+.pub-award:hover { background: rgba(212,175,55,.22); }
+.award-lnk { color: #b8860b; font-weight: 450; border-bottom: 1px solid rgba(184,134,11,.35); cursor: pointer; }
+.award-lnk::before { content: '🏆 '; font-size: 0.9em;}
+.award-lnk:hover { border-bottom-color: #b8860b; }
 .pub-footnote { margin-top: 2rem; font-size: .78rem; color: var(--ink3); }
 
 /* ════ NEWS ════ */
@@ -259,7 +262,18 @@ a.pub-award:hover { background: rgba(212,175,55,.22); }
 .nf-date  { font-family: 'IBM Plex Mono', monospace; font-size: .75rem; color: var(--ink3); }
 .nf-cat   { display: flex; text-justify: right; justify-content: flex-end;}
 .nf-content { font-size: .90rem; font-weight: 400; color: var(--ink); }
-.nf-content a, .news-text a { color: var(--green); text-decoration: none; border-bottom: 1px solid rgba(0,70,42,.25); }
+.nf-content a, .news-text a { color: var(--green); text-decoration: none; border-bottom: 1px solid rgba(0,70,42,.25); font-weight: 500;}
+.nf-content b, .news-text b { font-weight: 500; }
+
+
+/* ── LIGHTBOX ── */
+#lightbox { display: none; position: fixed; inset: 0; background: rgba(0,0,0,.65); z-index: 9999; align-items: center; justify-content: center; }
+#lightbox.open { display: flex; }
+#lightbox-inner { position: relative; background: #fff; border-radius: 10px; overflow: hidden; box-shadow: 0 8px 40px rgba(0,0,0,.35); }
+#lightbox-close { position: absolute; top: .6rem; right: .7rem; width: 28px; height: 28px; border: none; background: rgba(0,0,0,.15); color: #fff; border-radius: 50%; font-size: 1.1rem; line-height: 1; cursor: pointer; z-index: 1; display: flex; align-items: center; justify-content: center; }
+#lightbox-close:hover { background: rgba(0,0,0,.35); }
+#lightbox-content img { display: block; max-width: 80vw; max-height: 82vh; object-fit: contain; }
+#lightbox-content iframe { display: block; width: 75vw; height: 82vh; border: none; }
 .nf-content a:hover, .news-text a:hover { color: var(--mint); border-bottom-color: var(--mint); }
 
 /* ── FOOTER ── */
