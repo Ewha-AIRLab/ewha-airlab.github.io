@@ -337,20 +337,37 @@ function renderNews() {
   const catPillCls   = { award:'pa', publication:'pm', grant:'pb', position:'pc', talk:'py', media:'pg', news:'pg' };
   const catPillLabel = { publication:'PAPER', news:'NEWS', award:'AWARD', talk:'TALK', grant:'GRANT', media:'MEDIA' };
 
+  const CUTOFF_YEAR = '2025';
   let prevYear = null;
-  const items = NEWS_DATA.map((item) => {
+  const recentItems = [], olderItems = [];
+  NEWS_DATA.forEach(item => {
     const year = item.date.slice(0, 4);
     const yearBreak = (prevYear && year !== prevYear) ? ' year-break' : '';
     prevYear = year;
     const cls   = catPillCls[item.cat];
     const label = catPillLabel[item.cat];
     const pill  = (cls && label) ? `<span class="pill ${cls}">${label}</span>` : '';
-    return `<div class="news-full-item${yearBreak}" data-cat="${item.cat||''}">
+    let titleHtml = item.title;
+    if (item.awardUrl && item.awardLabel) {
+      const isExternal = item.awardUrl.startsWith('http');
+      const linked = isExternal
+        ? `<a class="award-lnk" href="${item.awardUrl}" target="_blank" rel="noopener">${item.awardLabel}</a>`
+        : `<span class="award-lnk" data-lightbox="${item.awardUrl}">${item.awardLabel}</span>`;
+      titleHtml = titleHtml.replace(item.awardLabel, linked);
+    }
+    const html = `<div class="news-full-item${yearBreak}" data-cat="${item.cat||''}">
       <div class="nf-date">${item.date}</div>
       <div class="nf-cat">${pill}</div>
-      <div class="nf-content">${item.title}</div>
+      <div class="nf-content">${titleHtml}</div>
     </div>`;
-  }).join('') || '<div style="padding:2rem 0;color:var(--ink2)">No news yet.</div>';
+    (year >= CUTOFF_YEAR ? recentItems : olderItems).push(html);
+  });
+  const olderSection = olderItems.length ? `
+    <div class="news-older-toggle" onclick="toggleOlderNews(this)">
+      <span class="not-label">Before ${CUTOFF_YEAR}</span><span class="not-arrow">▸</span>
+    </div>
+    <div class="news-older-list hidden">${olderItems.join('')}</div>` : '';
+  const items = (recentItems.join('') || '<div style="padding:2rem 0;color:var(--ink2)">No news yet.</div>') + olderSection;
 
   const catOrder  = ['publication', 'award', 'talk', 'grant', 'news', 'media'];
   const catBtnLbl = { publication:'Publications', award:'Awards', talk:'Talks', grant:'Grants', news:'News', media:'Media' };
@@ -381,8 +398,23 @@ window.fnews = function(filter, btn) {
   document.querySelectorAll('.filters .fbtn').forEach(b => b.classList.remove('active'));
   btn.classList.add('active');
   document.querySelectorAll('.news-full-item').forEach(item => {
-    item.classList.toggle('hidden', filter !== 'all' && item.dataset.cat !== filter);
+    const catMatch = filter === 'all' || item.dataset.cat === filter;
+    const inOlder  = item.closest('.news-older-list');
+    const olderOpen = inOlder && !inOlder.classList.contains('hidden');
+    item.classList.toggle('hidden', !catMatch || (inOlder && !olderOpen));
   });
+};
+
+window.toggleOlderNews = function(btn) {
+  const list = btn.nextElementSibling;
+  const open = list.classList.toggle('hidden') === false;
+  btn.querySelector('.not-arrow').textContent = open ? '▾' : '▸';
+  if (open) {
+    const activeFilter = document.querySelector('.filters .fbtn.active')?.dataset?.filter || 'all';
+    list.querySelectorAll('.news-full-item').forEach(item => {
+      item.classList.toggle('hidden', activeFilter !== 'all' && item.dataset.cat !== activeFilter);
+    });
+  }
 };
 
 // ─────────────────────────────────────────────
