@@ -378,7 +378,8 @@ body { font-family: 'IBM Plex Sans', sans-serif; background: var(--w); color: va
   /* home news rows */
   .news-row { grid-template-columns: 50px 65px 1fr; gap: .5rem; padding: .6rem 0; }
   .news-lnk { display: none; }
-  .news-date { font-size: .7rem; }
+  .news-date { font-size: .72rem; }
+  .news-text { font-size: .85rem;}
 
   /* home pub mini: hide badge */
   .pub-mini-row { grid-template-columns: 1fr; gap: .4rem; }
