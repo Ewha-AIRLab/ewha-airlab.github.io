@@ -29,11 +29,18 @@ body { font-family: 'IBM Plex Sans', sans-serif; background: #f8fafc; color: #0f
 .card-body-tight { padding: .6rem; }
 
 /* ── Main layout ── */
-.main-row { display: grid; grid-template-columns: 1fr 1fr; gap: 1.25rem; align-items: start; }
+.main-row { display: grid; grid-template-columns: 1fr 1fr 340px; gap: 1.25rem; align-items: start; }
+.viz-col  { display: flex; flex-direction: column; gap: 1.25rem; }
 .right-col { display: flex; flex-direction: column; gap: 1.25rem; }
 
-@media (max-width: 1000px) {
+@media (max-width: 1280px) {
+  .main-row { grid-template-columns: 1fr 1fr; }
+  .right-col { grid-column: 1 / -1; flex-direction: row; flex-wrap: wrap; }
+  .right-col > .card { flex: 1 1 280px; }
+}
+@media (max-width: 800px) {
   .main-row { grid-template-columns: 1fr; }
+  .right-col { flex-direction: column; }
 }
 
 /* ── 3D canvas wrappers ── */
@@ -139,49 +146,89 @@ input[type=range]::-webkit-slider-thumb { -webkit-appearance: none; width: 17px;
 
   <div class="main-row">
 
-    <!-- ════════ LEFT: Workspace 3D ════════ -->
-    <div class="card">
-      <div class="card-hd">
-        <div class="card-title">Workspace — W ⊂ ℝ³</div>
-        <div style="display:flex;align-items:center;gap:.6rem;">
-          <span id="ws-status" class="status-badge idle">● Ready</span>
-          <div class="axis-legend">
-            <span class="axis-chip" style="background:#ef4444">x</span>
-            <span class="axis-chip" style="background:#22c55e">y</span>
-            <span class="axis-chip" style="background:#3b82f6">z</span>
+    <!-- ════════ LEFT: Workspace + Obstacles ════════ -->
+    <div class="viz-col">
+      <div class="card">
+        <div class="card-hd">
+          <div class="card-title">Workspace — W ⊂ ℝ³</div>
+          <div style="display:flex;align-items:center;gap:.6rem;">
+            <span id="ws-status" class="status-badge idle">● Ready</span>
+            <div class="axis-legend">
+              <span class="axis-chip" style="background:#ef4444">x</span>
+              <span class="axis-chip" style="background:#22c55e">y</span>
+              <span class="axis-chip" style="background:#3b82f6">z</span>
+            </div>
           </div>
         </div>
+        <div class="card-body-tight">
+          <div class="viz-wrap" id="ws-wrap"></div>
+          <p class="canvas-hint">Orbit: left-drag · Zoom: scroll · Pan: right-drag</p>
+        </div>
       </div>
-      <div class="card-body-tight">
-        <div class="viz-wrap" id="ws-wrap"></div>
-        <p class="canvas-hint">Orbit: left-drag · Zoom: scroll · Pan: right-drag</p>
+
+      <!-- Obstacles -->
+      <div class="card">
+        <div class="card-hd"><div class="card-title">Obstacles</div></div>
+        <div class="card-body">
+          <div class="obs-list" id="obs-list"></div>
+          <!-- <div class="hint-box" style="margin-top:.1rem;"> -->
+            <!-- Box obstacles in workspace. Re-run A* after editing. -->
+          <!-- </div> -->
+        </div>
       </div>
-    </div>
+    </div><!-- end left viz-col -->
 
-    <!-- ════════ RIGHT column ════════ -->
-    <div class="right-col">
-
-      <!-- C-space 3D -->
+    <!-- ════════ CENTER: C-Space + Legend ════════ -->
+    <div class="viz-col">
       <div class="card">
         <div class="card-hd">
           <div class="card-title">C-Space — C ⊂ ℝ³ (θ₁, θ₂, θ₃)</div>
           <div class="axis-legend">
-            <span class="axis-chip" style="background:#ef4444">θ₁</span>
-            <span class="axis-chip" style="background:#22c55e">θ₂</span>
-            <span class="axis-chip" style="background:#3b82f6">θ₃</span>
+            <span class="axis-chip" style="background:#22c55e">θ₁</span>
+            <span class="axis-chip" style="background:#f59e0b">θ₂</span>
+            <span class="axis-chip" style="background:#ec4899">θ₃</span>
           </div>
         </div>
         <div class="card-body-tight">
           <div class="viz-wrap" id="cs-wrap"></div>
           <p class="canvas-hint">
             <span style="color:#3b82f6">■</span> Visited &nbsp;
-            <span style="color:#22c55e">■</span> Path &nbsp;
-            <span style="color:#ef4444">■</span> C-obstacle &nbsp;
+            <span style="color:#ef4444">■</span> Path &nbsp;
+            <span style="color:#64748b">■</span> C-obstacle &nbsp;
             <span style="color:#f59e0b">●</span> Start &nbsp;
             <span style="color:#a855f7">●</span> Goal
           </p>
         </div>
       </div>
+
+      <!-- Legend -->
+      <div class="card">
+        <div class="card-hd"><div class="card-title">Legend</div></div>
+        <div class="card-body">
+          <div class="sec-lbl" style="margin-top:0">Workspace</div>
+          <div class="legend-grid" style="margin-bottom:.7rem;">
+            <div class="leg-item"><div class="leg-line" style="background:#22c55e;height:4px"></div>Link 1</div>
+            <div class="leg-item"><div class="leg-line" style="background:#f59e0b;height:4px"></div>Link 2</div>
+            <div class="leg-item"><div class="leg-line" style="background:#ec4899;height:4px"></div>Link 3</div>
+            <div class="leg-item"><div class="leg-dot" style="background:#ef4444"></div>End-eff.</div>
+            <div class="leg-item"><div class="leg-line" style="background:#a855f7;height:2px"></div>EE path</div>
+            <div class="leg-item"><div class="leg-rect" style="background:rgba(239,68,68,.35)"></div>Obstacle</div>
+            <div class="leg-item"><div class="leg-line" style="background:#a855f7;height:4px;opacity:.4"></div>Goal (ghost)</div>
+          </div>
+          <div class="sec-lbl">C-Space</div>
+          <div class="legend-grid">
+            <div class="leg-item"><div class="leg-dot" style="background:#3b82f6"></div>Visited</div>
+            <div class="leg-item"><div class="leg-dot" style="background:#ef4444"></div>Path</div>
+            <div class="leg-item"><div class="leg-dot" style="background:#64748b;opacity:.7"></div>C-obstacle</div>
+            <div class="leg-item"><div class="leg-dot" style="background:#f59e0b"></div>Start</div>
+            <div class="leg-item"><div class="leg-dot" style="background:#a855f7"></div>Goal</div>
+          </div>
+        </div>
+      </div>
+    </div><!-- end center viz-col -->
+
+    <!-- ════════ RIGHT column: Controls ════════ -->
+    <div class="right-col">
 
       <!-- Controls -->
       <div class="card">
@@ -206,7 +253,7 @@ input[type=range]::-webkit-slider-thumb { -webkit-appearance: none; width: 17px;
               <span class="sl-name">θ₂ start</span>
               <span class="sl-val" id="s2-disp">-10°</span>
             </div>
-            <input type="range" id="s2" min="-10" max="90" value="-10" step="1">
+            <input type="range" id="s2" min="-90" max="90" value="-10" step="1">
           </div>
           <!-- θ3 start -->
           <div class="sl-group">
@@ -234,7 +281,7 @@ input[type=range]::-webkit-slider-thumb { -webkit-appearance: none; width: 17px;
               <span class="sl-name">θ₂ goal</span>
               <span class="sl-val" id="g2-disp">60°</span>
             </div>
-            <input type="range" id="g2" min="-10" max="90" value="60" step="1">
+            <input type="range" id="g2" min="-90" max="90" value="60" step="1">
           </div>
           <!-- θ3 goal -->
           <div class="sl-group">
@@ -281,45 +328,6 @@ input[type=range]::-webkit-slider-thumb { -webkit-appearance: none; width: 17px;
 
         </div>
       </div>
-
-      <!-- Obstacles + Legend -->
-      <div style="display:grid; grid-template-columns:1fr 1fr; gap:1.25rem;">
-
-        <div class="card">
-          <div class="card-hd"><div class="card-title">Obstacles</div></div>
-          <div class="card-body">
-            <div class="obs-list" id="obs-list"></div>
-            <div class="hint-box" style="margin-top:.1rem;">
-              Box obstacles in workspace. Re-run A* after editing.
-            </div>
-          </div>
-        </div>
-
-        <div class="card">
-          <div class="card-hd"><div class="card-title">Legend</div></div>
-          <div class="card-body">
-            <div class="sec-lbl" style="margin-top:0">Workspace</div>
-            <div class="legend-grid" style="margin-bottom:.7rem;">
-              <div class="leg-item"><div class="leg-line" style="background:#22c55e;height:4px"></div>Link 1</div>
-              <div class="leg-item"><div class="leg-line" style="background:#f59e0b;height:4px"></div>Link 2</div>
-              <div class="leg-item"><div class="leg-line" style="background:#ec4899;height:4px"></div>Link 3</div>
-              <div class="leg-item"><div class="leg-dot" style="background:#ef4444"></div>End-eff.</div>
-              <div class="leg-item"><div class="leg-line" style="background:#a855f7;height:2px"></div>EE path</div>
-              <div class="leg-item"><div class="leg-rect" style="background:rgba(239,68,68,.35)"></div>Obstacle</div>
-              <div class="leg-item"><div class="leg-line" style="background:#a855f7;height:4px;opacity:.4"></div>Goal (ghost)</div>
-            </div>
-            <div class="sec-lbl">C-Space</div>
-            <div class="legend-grid">
-              <div class="leg-item"><div class="leg-dot" style="background:#3b82f6"></div>Visited</div>
-              <div class="leg-item"><div class="leg-dot" style="background:#22c55e"></div>Path</div>
-              <div class="leg-item"><div class="leg-dot" style="background:#ef4444;opacity:.6"></div>C-obstacle</div>
-              <div class="leg-item"><div class="leg-dot" style="background:#f59e0b"></div>Start</div>
-              <div class="leg-item"><div class="leg-dot" style="background:#a855f7"></div>Goal</div>
-            </div>
-          </div>
-        </div>
-
-      </div><!-- end grid -->
 
     </div><!-- end right-col -->
 
@@ -463,17 +471,17 @@ function configInCollision(t1, t2, t3) {
 //
 // We divide the joint ranges into N equally-spaced steps:
 //   θ1 ∈ [-180°, 180°]   N steps
-//   θ2 ∈ [  -10°,  90°]  N steps  (z≥0 constraint)
-//   θ3 ∈ [  -60°,  60°]  N steps  (z≥0 constraint)
+//   θ2 ∈ [  -90°,  90°]  N steps  (z≥0 enforced by collision check)
+//   θ3 ∈ [  -60°,  60°]  N steps
 //
 // Each grid node is indexed (i, j, k) ∈ [0, N-1]³ and corresponds to angles:
 //   t1(i) = -π + i * 2π / (N-1)
-//   t2(j) = -10°·π/180 + j * (π/2 + 10°·π/180) / (N-1)
+//   t2(j) = -π/2 + j * π / (N-1)
 //   t3(k) = -π/3 + k * 2π/3 / (N-1)
 // ══════════════════════════════════════════════════════════════════════════════
 const T1_MIN = -Math.PI,      T1_MAX = Math.PI;
-const T2_MIN = -10 * Math.PI / 180, T2_MAX = Math.PI / 2;   // -10° to 90°
-const T3_MIN = -Math.PI / 3,        T3_MAX = Math.PI / 3;   // -60° to 60°
+const T2_MIN = -Math.PI / 2,  T2_MAX = Math.PI / 2;         // -90° to 90°
+const T3_MIN = -Math.PI / 3,  T3_MAX = Math.PI / 3;         // -60° to 60°
 
 function idxToAngles(i, j, k, N) {
   const t1 = T1_MIN + i * (T1_MAX - T1_MIN) / (N - 1);
@@ -897,7 +905,7 @@ function animateWS() {
 // THREE.JS C-SPACE SCENE
 // ══════════════════════════════════════════════════════════════════════════════
 let csScene, csCamera, csRenderer, csControls;
-let csVisitedPts, csPathPts, csCollPts, csStartSph, csGoalSph;
+let csVisitedPts, csPathPts, csCollPts, csStartSph, csGoalSph, csPathLine;
 
 function initCspace() {
   const wrap = document.getElementById('cs-wrap');
@@ -922,9 +930,15 @@ function initCspace() {
 
   csScene.add(new THREE.AmbientLight(0xffffff, 0.8));
 
-  // Axes helper (scaled to match normalized C-space box size ~10)
-  const axes = new THREE.AxesHelper(5.5);
-  csScene.add(axes);
+  // Custom axes (colors match joint colors: θ₁=green, θ₂=orange, θ₃=pink)
+  function makeAxis(dir, len, color) {
+    const pts = [new THREE.Vector3(0,0,0), dir.clone().multiplyScalar(len)];
+    const geo = new THREE.BufferGeometry().setFromPoints(pts);
+    return new THREE.Line(geo, new THREE.LineBasicMaterial({ color }));
+  }
+  csScene.add(makeAxis(new THREE.Vector3(1,0,0), 5.5, 0x22c55e)); // θ₁ green
+  csScene.add(makeAxis(new THREE.Vector3(0,1,0), 5.5, 0xf59e0b)); // θ₂ orange
+  csScene.add(makeAxis(new THREE.Vector3(0,0,1), 5.5, 0xec4899)); // θ₃ pink
 
   // Bounding box for C-space (cube of side 10, centered at 0)
   const boxGeo = new THREE.BoxGeometry(10, 10, 10);
@@ -932,18 +946,24 @@ function initCspace() {
   const boxLine = new THREE.LineSegments(boxEdges, new THREE.LineBasicMaterial({ color: 0x334155, opacity: 0.5, transparent: true }));
   csScene.add(boxLine);
 
-  // Axis labels as sprites
-  addCsLabel('θ₁', 5.8, 0, 0, '#ef4444');
-  addCsLabel('θ₂', 0, 5.8, 0, '#22c55e');
-  addCsLabel('θ₃', 0, 0, 5.8, '#3b82f6');
+  // Axis labels as sprites (colors match joint/link colors: green, orange, pink)
+  addCsLabel('θ₁', 5.8, 0, 0, '#22c55e');
+  addCsLabel('θ₂', 0, 5.8, 0, '#f59e0b');
+  addCsLabel('θ₃', 0, 0, 5.8, '#ec4899');
 
   // Point clouds (will be rebuilt after A* runs)
   csVisitedPts = makePointCloud([], 0x3b82f6, 0.08);
-  csPathPts    = makePointCloud([], 0x22c55e, 0.14);
-  csCollPts    = makePointCloud([], 0xef4444, 0.06);
+  csPathPts    = makePointCloud([], 0xef4444, 0.14);
+  csCollPts    = makePointCloud([], 0x64748b, 0.06);
   csScene.add(csVisitedPts);
   csScene.add(csPathPts);
   csScene.add(csCollPts);
+
+  // Path line connecting path nodes in C-space
+  const csPathGeo = new THREE.BufferGeometry();
+  csPathGeo.setAttribute('position', new THREE.BufferAttribute(new Float32Array(0), 3));
+  csPathLine = new THREE.Line(csPathGeo, new THREE.LineBasicMaterial({ color: 0xef4444, linewidth: 2 }));
+  csScene.add(csPathLine);
 
   // Start / goal spheres
   const sgGeo = new THREE.SphereGeometry(0.22, 10, 10);
@@ -1104,13 +1124,21 @@ function runAstarUI() {
     const visitedScene = result.visited.map(([i, j, k]) => idxToScene(i, j, k, N));
     const collScene    = result.collisionNodes.map(([i, j, k]) => idxToScene(i, j, k, N));
     updatePointCloud(csVisitedPts, visitedScene, 0x3b82f6, 0.09);
-    updatePointCloud(csCollPts,    collScene,    0xef4444, 0.06);
+    updatePointCloud(csCollPts,    collScene,    0x64748b, 0.06);
 
     if (result.path) {
       const pathScene = result.path.map(([i, j, k]) => idxToScene(i, j, k, N));
-      updatePointCloud(csPathPts, pathScene, 0x22c55e, 0.16);
+      updatePointCloud(csPathPts, pathScene, 0xef4444, 0.16);
+      // Draw path line in C-space
+      const pathPos = new Float32Array(pathScene.length * 3);
+      pathScene.forEach(([x, y, z], idx) => { pathPos[idx*3]=x; pathPos[idx*3+1]=y; pathPos[idx*3+2]=z; });
+      csPathLine.geometry.setAttribute('position', new THREE.BufferAttribute(pathPos, 3));
+      csPathLine.geometry.attributes.position.needsUpdate = true;
+      csPathLine.geometry.setDrawRange(0, pathScene.length);
     } else {
-      updatePointCloud(csPathPts, [], 0x22c55e, 0.16);
+      updatePointCloud(csPathPts, [], 0xef4444, 0.16);
+      csPathLine.geometry.setAttribute('position', new THREE.BufferAttribute(new Float32Array(0), 3));
+      csPathLine.geometry.attributes.position.needsUpdate = true;
     }
 
     // Move arm to start
@@ -1184,10 +1212,14 @@ function resetAll() {
   pathLine.geometry.setAttribute('position', new THREE.BufferAttribute(new Float32Array(0), 3));
   pathLine.geometry.attributes.position.needsUpdate = true;
 
-  // Clear C-space points
+  // Clear C-space points and path line
   updatePointCloud(csVisitedPts, [], 0x3b82f6, 0.09);
-  updatePointCloud(csPathPts,    [], 0x22c55e, 0.16);
-  updatePointCloud(csCollPts,    [], 0xef4444, 0.06);
+  updatePointCloud(csPathPts,    [], 0xef4444, 0.16);
+  updatePointCloud(csCollPts,    [], 0x64748b, 0.06);
+  if (csPathLine) {
+    csPathLine.geometry.setAttribute('position', new THREE.BufferAttribute(new Float32Array(0), 3));
+    csPathLine.geometry.attributes.position.needsUpdate = true;
+  }
 
   // Arm to start
   const t1 = parseFloat(document.getElementById('s1').value) * Math.PI / 180;
