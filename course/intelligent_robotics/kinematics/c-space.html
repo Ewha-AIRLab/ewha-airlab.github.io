@@ -1,0 +1,633 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>C-Space Visualizer — AIR Lab @ Ewha</title>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@300;400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: 'IBM Plex Sans', sans-serif; background: #f8fafc; color: #0f172a; min-height: 100vh; overflow-x: hidden; }
+
+/* ── Nav ── */
+.topbar { background: white; border-bottom: 1px solid #e2e8f0; padding: .7rem 1.5rem; display: flex; align-items: center; gap: .5rem; font-size: .84rem; flex-wrap: wrap; }
+.topbar a { text-decoration: none; color: #00462A; font-weight: 500; }
+.topbar a:hover { text-decoration: underline; }
+.topbar .sep { color: #94a3b8; }
+.topbar .cur { color: #0f172a; font-weight: 600; }
+
+/* ── Page ── */
+.page { max-width: 1400px; margin: 0 auto; padding: 1.5rem; }
+.page-title { font-size: 1.75rem; font-weight: 700; margin-bottom: .4rem; }
+.page-desc { color: #64748b; font-size: .9rem; max-width: 680px; margin-bottom: 1.25rem; line-height: 1.6; }
+
+/* ── Layout ── */
+@media (max-width: 960px) { .canvases-row { grid-template-columns: 1fr !important; } .bottom-row { grid-template-columns: 1fr !important; } }
+
+/* ── Cards ── */
+.card { background: white; border: 1px solid #e2e8f0; border-radius: 16px; box-shadow: 0 1px 3px rgba(0,0,0,.06); }
+.card-hd { padding: 1rem 1.35rem .6rem; display: flex; align-items: center; justify-content: space-between; gap: .75rem; }
+.card-title { font-size: .98rem; font-weight: 600; }
+.card-body { padding: .75rem 1.35rem 1.2rem; }
+.card-body-tight { padding: .75rem; }
+
+/* ── Axis chips ── */
+.axis-legend { display: flex; gap: .5rem; }
+.axis-chip { font-size: .73rem; font-weight: 600; padding: .13rem .5rem; border-radius: 999px; color: white; }
+
+/* ── Canvas ── */
+.viz-wrap { width: 100%; aspect-ratio: 1/1; position: relative; border-radius: 10px; overflow: hidden; border: 1px solid #e2e8f0; background: #f8fafc; }
+canvas { display: block; width: 100%; height: 100%; }
+.canvas-hint { font-size: .73rem; color: #94a3b8; margin-top: .4rem; }
+
+/* ── Sliders ── */
+.sl-group { margin-bottom: .9rem; }
+.sl-group:last-child { margin-bottom: 0; }
+.sl-label { display: flex; justify-content: space-between; font-size: .83rem; margin-bottom: .32rem; }
+.sl-label .sl-name { color: #475569; }
+.sl-label .sl-val { font-family: 'IBM Plex Mono', monospace; color: #0f172a; font-weight: 500; }
+.sl-row { display: flex; align-items: center; gap: .5rem; }
+.sl-row input[type=range] { flex: 1; }
+input[type=range] { -webkit-appearance: none; appearance: none; height: 6px; background: #e2e8f0; border-radius: 3px; outline: none; cursor: pointer; }
+input[type=range]::-webkit-slider-thumb { -webkit-appearance: none; width: 17px; height: 17px; border-radius: 50%; background: #0f172a; cursor: pointer; border: 2px solid white; box-shadow: 0 1px 3px rgba(0,0,0,.25); }
+input[type=number] { width: 66px; font-family: 'IBM Plex Mono', monospace; font-size: .8rem; border: 1px solid #e2e8f0; border-radius: 6px; padding: .28rem .4rem; text-align: right; background: #f8fafc; color: #0f172a; -moz-appearance: textfield; appearance: textfield; }
+input[type=number]::-webkit-outer-spin-button, input[type=number]::-webkit-inner-spin-button { -webkit-appearance: none; }
+input[type=number]:focus { outline: none; border-color: #94a3b8; background: white; }
+.sl-divider { border-top: 1px solid #f1f5f9; margin: .7rem 0; }
+
+/* ── Info rows ── */
+.info-row { display: flex; justify-content: space-between; align-items: center; gap: 1rem; border-bottom: 1px solid #f1f5f9; padding: .45rem 0; font-size: .82rem; }
+.info-row:last-child { border-bottom: none; }
+.info-label { color: #64748b; font-weight: 500; }
+.info-val { font-family: 'IBM Plex Mono', monospace; text-align: right; }
+.info-val.warn { color: #dc2626; font-weight: 600; }
+
+/* ── Legend ── */
+.legend-grid { display: grid; grid-template-columns: 1fr 1fr; gap: .35rem .75rem; }
+.leg-item { display: flex; align-items: center; gap: .45rem; font-size: .8rem; color: #475569; }
+.leg-dot  { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; }
+.leg-line { width: 18px; height: 3px; border-radius: 2px; flex-shrink: 0; }
+.leg-rect { width: 14px; height: 9px; border-radius: 2px; flex-shrink: 0; }
+
+/* ── Hint box ── */
+.hint-box { background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: .55rem .75rem; font-size: .78rem; color: #64748b; line-height: 1.7; }
+
+/* ── Collision badge ── */
+.coll-badge { display: inline-flex; align-items: center; gap: .3rem; font-size: .75rem; font-weight: 600; padding: .15rem .55rem; border-radius: 999px; }
+.coll-badge.ok   { background: #f0fdf4; color: #15803d; border: 1px solid #bbf7d0; }
+.coll-badge.warn { background: #fef2f2; color: #dc2626; border: 1px solid #fecaca; }
+
+/* ── Obstacle list ── */
+.obs-list { display: flex; flex-direction: column; gap: .5rem; margin-bottom: .75rem; }
+.obs-item {
+  display: flex; align-items: center; gap: .5rem;
+  background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px;
+  padding: .35rem .6rem; font-size: .8rem; cursor: pointer;
+  transition: border-color .12s, background .12s;
+}
+.obs-item:hover { background: #f1f5f9; }
+.obs-item.selected { border-color: #dc2626; background: #fef2f2; }
+.obs-swatch { width: 12px; height: 12px; border-radius: 3px; flex-shrink: 0; }
+.obs-label { flex: 1; font-family: 'IBM Plex Mono', monospace; color: #475569; }
+.obs-del {
+  background: none; border: none; cursor: pointer; padding: 2px 5px;
+  color: #94a3b8; font-size: 14px; line-height: 1; border-radius: 4px;
+  transition: color .12s, background .12s;
+}
+.obs-del:hover { color: #dc2626; background: #fecaca; }
+
+/* ── Add obstacle button ── */
+.btn-add-obs {
+  width: 100%; padding: .45rem; border-radius: 8px; border: 1.5px dashed #cbd5e1;
+  background: none; font-family: 'IBM Plex Sans', sans-serif; font-size: .83rem;
+  color: #64748b; cursor: pointer; transition: border-color .12s, color .12s, background .12s;
+}
+.btn-add-obs:hover { border-color: #dc2626; color: #dc2626; background: #fef2f2; }
+
+@media (max-width: 640px) {
+  .topbar { padding: .6rem 1rem; font-size: .78rem; }
+  .page { padding: 1rem; }
+  .page-title { font-size: 1.25rem; }
+}
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <a href="/">AIR Lab @ Ewha</a>
+  <span class="sep">/</span>
+  <a href="fk_2d.html">FK 2D</a>
+  <span class="sep">/</span>
+  <span class="cur">C-Space Visualizer</span>
+</div>
+
+<div class="page">
+  <h1 class="page-title">Configuration Space Visualizer — 2R Planar Robot</h1>
+  <p class="page-desc">
+    Add and drag obstacles in the workspace to see how the C-obstacle region is precomputed in joint space.
+    Each point (θ₁, θ₂) in the right panel corresponds to a unique robot configuration q ∈ C ⊂ ℝ².
+  </p>
+
+  <!-- ── Canvases ── -->
+  <div class="canvases-row" style="display:grid; grid-template-columns:1fr 1fr; gap:1.25rem; margin-bottom:1.25rem;">
+    <div class="card">
+      <div class="card-hd">
+        <div class="card-title">Workspace — W ⊂ ℝ²</div>
+        <div style="display:flex;align-items:center;gap:.6rem;">
+          <span id="coll-badge" class="coll-badge ok">● Free</span>
+          <div class="axis-legend">
+            <span class="axis-chip" style="background:#ef4444">x</span>
+            <span class="axis-chip" style="background:#22c55e">y</span>
+          </div>
+        </div>
+      </div>
+      <div class="card-body-tight">
+        <div class="viz-wrap"><canvas id="ws-canvas"></canvas></div>
+        <p class="canvas-hint">Drag obstacles to recompute the C-obstacle. Click empty space to deselect.</p>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-hd">
+        <div class="card-title">Configuration Space — C ⊂ ℝ²</div>
+        <div class="axis-legend">
+          <span class="axis-chip" style="background:#7c3aed">θ₁</span>
+          <span class="axis-chip" style="background:#0ea5e9">θ₂</span>
+        </div>
+      </div>
+      <div class="card-body-tight">
+        <div class="viz-wrap"><canvas id="cs-canvas"></canvas></div>
+        <p class="canvas-hint">Click anywhere to teleport the robot to that configuration.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── Bottom controls ── -->
+  <div class="bottom-row" style="display:grid; grid-template-columns:1fr 1fr 1fr; gap:1.25rem; align-items:start;">
+
+    <!-- Joint Configuration -->
+    <div class="card">
+      <div class="card-hd"><div class="card-title">Joint Configuration</div></div>
+      <div class="card-body">
+        <div class="sl-group">
+          <div class="sl-label">
+            <span class="sl-name">θ₁ (Joint 1)</span>
+            <span class="sl-val" id="q1-disp">30°</span>
+          </div>
+          <div class="sl-row">
+            <input type="range" id="q1-slider" min="-180" max="180" value="30" step="1">
+            <input type="number" id="q1-num" min="-180" max="180" value="30" step="1">
+          </div>
+        </div>
+        <div class="sl-group">
+          <div class="sl-label">
+            <span class="sl-name">θ₂ (Joint 2)</span>
+            <span class="sl-val" id="q2-disp">60°</span>
+          </div>
+          <div class="sl-row">
+            <input type="range" id="q2-slider" min="-180" max="180" value="60" step="1">
+            <input type="number" id="q2-num" min="-180" max="180" value="60" step="1">
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Obstacles -->
+    <div class="card">
+      <div class="card-hd"><div class="card-title">Obstacles</div></div>
+      <div class="card-body">
+        <div class="obs-list" id="obs-list"></div>
+        <button class="btn-add-obs" id="btn-add-obs">＋ Add obstacle</button>
+        <div class="sl-divider"></div>
+        <div class="info-row"><span class="info-label">Collision</span><span class="info-val" id="i-coll">none</span></div>
+        <div class="info-row"><span class="info-label">Configuration q</span><span class="info-val" id="i-q">—</span></div>
+        <div class="info-row"><span class="info-label">EE position</span><span class="info-val" id="i-ee">—</span></div>
+      </div>
+    </div>
+
+    <!-- Legend + hint -->
+    <div style="display:flex;flex-direction:column;gap:1.25rem;">
+      <div class="card">
+        <div class="card-hd"><div class="card-title">Legend</div></div>
+        <div class="card-body">
+          <div class="legend-grid">
+            <div class="leg-item"><div class="leg-line" style="background:#22c55e"></div>Link 1 (θ₁)</div>
+            <div class="leg-item"><div class="leg-line" style="background:#f59e0b"></div>Link 2 (θ₂)</div>
+            <div class="leg-item"><div class="leg-dot" style="background:#ef4444"></div>End-effector</div>
+            <div class="leg-item"><div class="leg-dot" style="background:#7c3aed"></div>Config q</div>
+            <!-- <div class="leg-item"><div class="leg-rect" style="background:rgba(220,38,38,0.5)"></div>Obstacles</div> -->
+            <div class="leg-item"><div class="leg-rect" style="background:rgba(220,38,38,0.22)"></div>C-obstacle</div>
+            <div class="leg-item"><div class="leg-rect" style="background:rgba(34,197,94,0.15);border:1px solid #bbf7d0"></div>Workspace</div>
+          </div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-hd"><div class="card-title">How to use</div></div>
+        <div class="card-body">
+          <div class="hint-box">
+            1. Click <strong>Add obstacle</strong> to place a new one.<br>
+            2. <strong>Drag</strong> any obstacle — C-obstacle updates on release.<br>
+            3. Click an obstacle in the list to select/highlight it.<br>
+            4. <strong>Click</strong> C-space to teleport the robot.
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<script>
+'use strict';
+
+// ══════════════════════════════════════════════════════════════════
+// STATE
+// ══════════════════════════════════════════════════════════════════
+let q1 = 30, q2 = 60, a1 = 1.0, a2 = 0.7;
+
+// Each obstacle: { id, x, y, w, h, color }
+const OBS_COLORS = [
+  '#dc2626','#ea580c','#d97706','#7c3aed','#0284c7','#059669'
+];
+let obstacles = [
+  { id: 1, x: 0.55, y: 0.20, w: 0.40, h: 0.32, color: OBS_COLORS[0] }
+];
+let nextId = 2;
+let selectedObsId = null;  // highlighted in list
+
+const CS_RES = 2;
+const CELLS  = Math.round(360 / CS_RES);
+let csObsBitmap = new Uint8Array(CELLS * CELLS);
+
+const offCvs = document.createElement('canvas');
+offCvs.width = offCvs.height = CELLS;
+const offCtx = offCvs.getContext('2d');
+
+// ══════════════════════════════════════════════════════════════════
+// DOM
+// ══════════════════════════════════════════════════════════════════
+const wsCvs = document.getElementById('ws-canvas');
+const csCvs = document.getElementById('cs-canvas');
+const wsCtx = wsCvs.getContext('2d');
+const csCtx = csCvs.getContext('2d');
+
+// ══════════════════════════════════════════════════════════════════
+// FK & COLLISION
+// ══════════════════════════════════════════════════════════════════
+function fk(t1d, t2d, _a1, _a2) {
+  const t1 = t1d * Math.PI / 180, t2 = t2d * Math.PI / 180;
+  return {
+    j1: { x: 0, y: 0 },
+    j2: { x: _a1*Math.cos(t1), y: _a1*Math.sin(t1) },
+    ee: { x: _a1*Math.cos(t1)+_a2*Math.cos(t1+t2), y: _a1*Math.sin(t1)+_a2*Math.sin(t1+t2) },
+  };
+}
+
+function segHitsBox(x1,y1,x2,y2,o) {
+  const dx=x2-x1, dy=y2-y1; let tMin=0, tMax=1;
+  const clip=(p,q)=>{ if(p===0) return q>=0; const t=q/p; if(p<0) tMin=Math.max(tMin,t); else tMax=Math.min(tMax,t); return tMin<=tMax; };
+  return clip(-dx,x1-o.x)&&clip(dx,o.x+o.w-x1)&&clip(-dy,y1-o.y)&&clip(dy,o.y+o.h-y1);
+}
+
+function robotHitsAny(t1d,t2d,_a1,_a2,obsArr) {
+  if(!obsArr.length) return false;
+  const {j1,j2,ee}=fk(t1d,t2d,_a1,_a2);
+  return obsArr.some(o=>segHitsBox(j1.x,j1.y,j2.x,j2.y,o)||segHitsBox(j2.x,j2.y,ee.x,ee.y,o));
+}
+
+// ══════════════════════════════════════════════════════════════════
+// PRECOMPUTE C-OBSTACLE (union of all obstacles)
+// ══════════════════════════════════════════════════════════════════
+function recomputeCsObs() {
+  csObsBitmap.fill(0);
+  if(!obstacles.length){ offCtx.clearRect(0,0,CELLS,CELLS); return; }
+  for(let row=0;row<CELLS;row++){
+    const t2=-180+row*CS_RES;
+    for(let col=0;col<CELLS;col++){
+      const t1=-180+col*CS_RES;
+      if(robotHitsAny(t1,t2,a1,a2,obstacles)) csObsBitmap[row*CELLS+col]=1;
+    }
+  }
+  const img=offCtx.createImageData(CELLS,CELLS);
+  for(let i=0;i<CELLS*CELLS;i++){
+    if(csObsBitmap[i]){ const b=i*4; img.data[b]=220; img.data[b+1]=38; img.data[b+2]=38; img.data[b+3]=160; }
+  }
+  offCtx.putImageData(img,0,0);
+}
+
+// ══════════════════════════════════════════════════════════════════
+// CANVAS HELPERS
+// ══════════════════════════════════════════════════════════════════
+function resizeCvs() {
+  [wsCvs,csCvs].forEach(c=>{
+    const r=c.parentElement.getBoundingClientRect();
+    c.width=r.width||480; c.height=r.height||480;
+  });
+}
+
+function getWsScale() { return (wsCvs.width*0.40)/(a1+a2); }
+function w2c(wx,wy){ const cx=wsCvs.width/2,cy=wsCvs.height/2,s=getWsScale(); return {x:cx+wx*s,y:cy-wy*s}; }
+function c2w(cx_,cy_){ const cx=wsCvs.width/2,cy=wsCvs.height/2,s=getWsScale(); return {wx:(cx_-cx)/s,wy:(cy-cy_)/s}; }
+
+const CS_PAD=32;
+function csToPixX(deg){ return CS_PAD+(deg+180)/360*(csCvs.width-2*CS_PAD); }
+function csToPixY(deg){ return CS_PAD+(deg+180)/360*(csCvs.height-2*CS_PAD); }
+function csPixToDeg(px,py){ return { d1:Math.round((px-CS_PAD)/(csCvs.width-2*CS_PAD)*360-180), d2:Math.round((py-CS_PAD)/(csCvs.height-2*CS_PAD)*360-180) }; }
+
+// ══════════════════════════════════════════════════════════════════
+// DRAW — WORKSPACE
+// ══════════════════════════════════════════════════════════════════
+function drawWorkspace() {
+  const W=wsCvs.width,H=wsCvs.height,cx=W/2,cy=H/2,s=getWsScale();
+  wsCtx.clearRect(0,0,W,H);
+  wsCtx.fillStyle='#f8fafc'; wsCtx.fillRect(0,0,W,H);
+
+  // Grid
+  const step=s*0.5; wsCtx.strokeStyle='#e5e7eb'; wsCtx.lineWidth=1;
+  for(let x=cx%step;x<W;x+=step){wsCtx.beginPath();wsCtx.moveTo(x,0);wsCtx.lineTo(x,H);wsCtx.stroke();}
+  for(let y=cy%step;y<H;y+=step){wsCtx.beginPath();wsCtx.moveTo(0,y);wsCtx.lineTo(W,y);wsCtx.stroke();}
+
+  // Axes
+  wsCtx.strokeStyle='#cbd5e1'; wsCtx.lineWidth=1.5;
+  wsCtx.beginPath();wsCtx.moveTo(0,cy);wsCtx.lineTo(W,cy);wsCtx.stroke();
+  wsCtx.beginPath();wsCtx.moveTo(cx,0);wsCtx.lineTo(cx,H);wsCtx.stroke();
+  wsCtx.fillStyle='#94a3b8'; wsCtx.font='12px IBM Plex Mono, monospace';
+  wsCtx.fillText('x',W-16,cy-6); wsCtx.fillText('y',cx+6,14);
+
+  // Workspace annulus
+  const maxR=a1+a2,minR=Math.abs(a1-a2);
+  wsCtx.save();
+  wsCtx.globalAlpha=0.13; wsCtx.fillStyle='#22c55e';
+  wsCtx.beginPath();wsCtx.arc(cx,cy,maxR*s,0,Math.PI*2);wsCtx.arc(cx,cy,minR*s,0,Math.PI*2,true);wsCtx.fill();
+  wsCtx.globalAlpha=1; wsCtx.setLineDash([5,5]); wsCtx.strokeStyle='#86efac'; wsCtx.lineWidth=1;
+  wsCtx.beginPath();wsCtx.arc(cx,cy,maxR*s,0,Math.PI*2);wsCtx.stroke();
+  if(minR>0.01){wsCtx.beginPath();wsCtx.arc(cx,cy,minR*s,0,Math.PI*2);wsCtx.stroke();}
+  wsCtx.setLineDash([]); wsCtx.restore();
+
+  // Obstacles
+  const inColl = robotHitsAny(q1,q2,a1,a2,obstacles);
+  obstacles.forEach(o=>{
+    const oX=cx+o.x*s, oY=cy-(o.y+o.h)*s, oW=o.w*s, oH=o.h*s;
+    const isSelected = o.id===selectedObsId;
+    const isDrag = draggingObs && draggingObs.id===o.id;
+    wsCtx.save();
+    // Fill
+    wsCtx.globalAlpha = isDrag ? 0.75 : 0.5;
+    wsCtx.fillStyle=o.color; wsCtx.fillRect(oX,oY,oW,oH);
+    wsCtx.globalAlpha=1;
+    // Stroke
+    wsCtx.strokeStyle=o.color; wsCtx.lineWidth = isSelected ? 2.5 : 1.5;
+    wsCtx.strokeRect(oX,oY,oW,oH);
+    // Selection highlight
+    if(isSelected){
+      wsCtx.strokeStyle='#0f172a'; wsCtx.lineWidth=1; wsCtx.globalAlpha=0.3;
+      wsCtx.setLineDash([3,3]); wsCtx.strokeRect(oX-2,oY-2,oW+4,oH+4);
+      wsCtx.setLineDash([]);
+    }
+    // Label
+    wsCtx.globalAlpha=1; wsCtx.fillStyle=o.color;
+    wsCtx.font='bold 10px IBM Plex Sans, sans-serif';
+    wsCtx.fillText(`O${o.id}`,oX+5,oY+14);
+    wsCtx.restore();
+  });
+
+  // Robot
+  const {j1,j2,ee}=fk(q1,q2,a1,a2);
+  const p0=w2c(j1.x,j1.y),p1=w2c(j2.x,j2.y),p2=w2c(ee.x,ee.y);
+  const l1Hit=obstacles.some(o=>segHitsBox(j1.x,j1.y,j2.x,j2.y,o));
+  const l2Hit=obstacles.some(o=>segHitsBox(j2.x,j2.y,ee.x,ee.y,o));
+
+  wsCtx.lineCap='round'; wsCtx.lineWidth=4;
+  wsCtx.strokeStyle=l1Hit?'#dc2626':'#22c55e';
+  wsCtx.beginPath();wsCtx.moveTo(p0.x,p0.y);wsCtx.lineTo(p1.x,p1.y);wsCtx.stroke();
+  wsCtx.strokeStyle=l2Hit?'#dc2626':'#f59e0b';
+  wsCtx.beginPath();wsCtx.moveTo(p1.x,p1.y);wsCtx.lineTo(p2.x,p2.y);wsCtx.stroke();
+
+  [[p0,7,'#0f172a'],[p1,5,'white'],[p2,7,'#ef4444']].forEach(([p,r,c])=>{
+    wsCtx.beginPath();wsCtx.arc(p.x,p.y,r,0,Math.PI*2);
+    wsCtx.fillStyle=c;wsCtx.fill();
+    wsCtx.strokeStyle='#0f172a';wsCtx.lineWidth=1.5;wsCtx.stroke();
+  });
+  wsCtx.fillStyle='#ef4444'; wsCtx.font='11px IBM Plex Mono, monospace';
+  wsCtx.fillText(`(${ee.x.toFixed(2)}, ${ee.y.toFixed(2)})`,p2.x+9,p2.y-9);
+
+  // Sidebar
+  document.getElementById('i-q').textContent=`(${q1}°, ${q2}°)`;
+  document.getElementById('i-ee').textContent=`(${ee.x.toFixed(2)}, ${ee.y.toFixed(2)})`;
+  const collEl=document.getElementById('i-coll'), badge=document.getElementById('coll-badge');
+  if(inColl){
+    collEl.textContent='YES'; collEl.className='info-val warn';
+    badge.textContent='● Collision'; badge.className='coll-badge warn';
+  } else {
+    collEl.textContent='none'; collEl.className='info-val';
+    badge.textContent='● Free'; badge.className='coll-badge ok';
+  }
+}
+
+// ══════════════════════════════════════════════════════════════════
+// DRAW — C-SPACE
+// ══════════════════════════════════════════════════════════════════
+function drawCspace() {
+  const W=csCvs.width,H=csCvs.height,pad=CS_PAD,iW=W-2*pad,iH=H-2*pad;
+  csCtx.clearRect(0,0,W,H);
+  csCtx.fillStyle='#f8fafc'; csCtx.fillRect(0,0,W,H);
+
+  // C-obstacle bitmap
+  csCtx.save(); csCtx.imageSmoothingEnabled=false;
+  csCtx.drawImage(offCvs,pad,pad,iW,iH); csCtx.restore();
+
+  // Grid 45°
+  csCtx.strokeStyle='#e5e7eb'; csCtx.lineWidth=1;
+  for(let d=-180;d<=180;d+=45){
+    const px=csToPixX(d),py=csToPixY(d);
+    csCtx.beginPath();csCtx.moveTo(px,pad);csCtx.lineTo(px,H-pad);csCtx.stroke();
+    csCtx.beginPath();csCtx.moveTo(pad,py);csCtx.lineTo(W-pad,py);csCtx.stroke();
+  }
+
+  // Zero axes
+  csCtx.strokeStyle='#cbd5e1'; csCtx.lineWidth=1.5;
+  const zx=csToPixX(0),zy=csToPixY(0);
+  csCtx.beginPath();csCtx.moveTo(zx,pad);csCtx.lineTo(zx,H-pad);csCtx.stroke();
+  csCtx.beginPath();csCtx.moveTo(pad,zy);csCtx.lineTo(W-pad,zy);csCtx.stroke();
+
+  csCtx.strokeStyle='#e2e8f0'; csCtx.lineWidth=1;
+  csCtx.strokeRect(pad,pad,iW,iH);
+
+  csCtx.fillStyle='#94a3b8'; csCtx.font='10px IBM Plex Mono, monospace';
+  [-180,-90,0,90,180].forEach(d=>{
+    csCtx.fillText(d+'°',csToPixX(d)-14,H-pad+15);
+    csCtx.fillText(d+'°',2,csToPixY(d)+4);
+  });
+  csCtx.fillStyle='#64748b'; csCtx.font='500 11px IBM Plex Sans, sans-serif';
+  csCtx.fillText('θ₁',W/2-6,H-4);
+  csCtx.save();csCtx.translate(11,H/2+10);csCtx.rotate(-Math.PI/2);
+  csCtx.fillText('θ₂',0,0);csCtx.restore();
+
+  // Current config dot
+  const inColl=robotHitsAny(q1,q2,a1,a2,obstacles);
+  const px=csToPixX(q1),py=csToPixY(q2),dotColor=inColl?'#dc2626':'#7c3aed';
+
+  csCtx.save(); csCtx.globalAlpha=0.18;
+  csCtx.strokeStyle=dotColor; csCtx.lineWidth=1; csCtx.setLineDash([4,4]);
+  csCtx.beginPath();csCtx.moveTo(px,pad);csCtx.lineTo(px,H-pad);csCtx.stroke();
+  csCtx.beginPath();csCtx.moveTo(pad,py);csCtx.lineTo(W-pad,py);csCtx.stroke();
+  csCtx.setLineDash([]); csCtx.restore();
+
+  csCtx.beginPath();csCtx.arc(px,py,7,0,Math.PI*2);
+  csCtx.fillStyle=dotColor;csCtx.fill();
+  csCtx.strokeStyle='white';csCtx.lineWidth=2;csCtx.stroke();
+
+  csCtx.fillStyle=dotColor; csCtx.font='500 11px IBM Plex Mono, monospace';
+  const lx=px+10<W-90?px+10:px-90;
+  csCtx.fillText(`(${q1}°, ${q2}°)`,lx,py-9);
+}
+
+// ══════════════════════════════════════════════════════════════════
+// RENDER
+// ══════════════════════════════════════════════════════════════════
+function render(){ drawWorkspace(); drawCspace(); }
+function fullRecompute(){ recomputeCsObs(); render(); }
+
+// ══════════════════════════════════════════════════════════════════
+// OBSTACLE LIST UI
+// ══════════════════════════════════════════════════════════════════
+function renderObsList() {
+  const list=document.getElementById('obs-list');
+  list.innerHTML='';
+  if(!obstacles.length){
+    list.innerHTML='<p style="font-size:.78rem;color:#94a3b8;text-align:center;padding:.5rem 0">No obstacles</p>';
+    return;
+  }
+  obstacles.forEach(o=>{
+    const item=document.createElement('div');
+    item.className='obs-item'+(o.id===selectedObsId?' selected':'');
+    item.innerHTML=`
+      <div class="obs-swatch" style="background:${o.color}"></div>
+      <span class="obs-label">Obstacle ${o.id} &nbsp;(${o.x.toFixed(2)}, ${o.y.toFixed(2)})</span>
+      <button class="obs-del" title="Remove" data-id="${o.id}">✕</button>
+    `;
+    item.addEventListener('click',e=>{
+      if(e.target.closest('.obs-del')) return;
+      selectedObsId = o.id===selectedObsId ? null : o.id;
+      renderObsList(); render();
+    });
+    item.querySelector('.obs-del').addEventListener('click',e=>{
+      e.stopPropagation();
+      obstacles=obstacles.filter(x=>x.id!==o.id);
+      if(selectedObsId===o.id) selectedObsId=null;
+      renderObsList(); fullRecompute();
+    });
+    list.appendChild(item);
+  });
+}
+
+document.getElementById('btn-add-obs').addEventListener('click',()=>{
+  const color=OBS_COLORS[(nextId-1)%OBS_COLORS.length];
+  // Place new obstacle near center with slight offset
+  const newObs={ id:nextId++, x: 0.1+(obstacles.length*0.15)%0.8, y: 0.1+(obstacles.length*0.1)%0.6, w:0.35, h:0.28, color };
+  obstacles.push(newObs);
+  selectedObsId=newObs.id;
+  renderObsList(); fullRecompute();
+});
+
+// ══════════════════════════════════════════════════════════════════
+// SYNC CONTROLS
+// ══════════════════════════════════════════════════════════════════
+function syncQ1(v){ q1=v; document.getElementById('q1-slider').value=v; document.getElementById('q1-num').value=v; document.getElementById('q1-disp').textContent=v+'°'; }
+function syncQ2(v){ q2=v; document.getElementById('q2-slider').value=v; document.getElementById('q2-num').value=v; document.getElementById('q2-disp').textContent=v+'°'; }
+document.getElementById('q1-slider').addEventListener('input',e=>{ syncQ1(parseInt(e.target.value)); render(); });
+document.getElementById('q1-num').addEventListener('change',e=>{ syncQ1(Math.max(-180,Math.min(180,parseInt(e.target.value)||0))); render(); });
+document.getElementById('q2-slider').addEventListener('input',e=>{ syncQ2(parseInt(e.target.value)); render(); });
+document.getElementById('q2-num').addEventListener('change',e=>{ syncQ2(Math.max(-180,Math.min(180,parseInt(e.target.value)||0))); render(); });
+// ══════════════════════════════════════════════════════════════════
+// CLICK C-SPACE → teleport
+// ══════════════════════════════════════════════════════════════════
+csCvs.addEventListener('click',e=>{
+  const r=csCvs.getBoundingClientRect();
+  const sx=csCvs.width/r.width, sy=csCvs.height/r.height;
+  const {d1,d2}=csPixToDeg((e.clientX-r.left)*sx,(e.clientY-r.top)*sy);
+  syncQ1(Math.max(-180,Math.min(180,d1)));
+  syncQ2(Math.max(-180,Math.min(180,d2)));
+  render();
+});
+
+// ══════════════════════════════════════════════════════════════════
+// DRAG OBSTACLES
+// ══════════════════════════════════════════════════════════════════
+let draggingObs=null, dragOffX=0, dragOffY=0;
+
+function getWXY(e){
+  const r=wsCvs.getBoundingClientRect();
+  const sx=wsCvs.width/r.width, sy=wsCvs.height/r.height;
+  return c2w((e.clientX-r.left)*sx,(e.clientY-r.top)*sy);
+}
+
+function findObsAt(wx,wy){
+  // Iterate in reverse so topmost (last drawn) is picked first
+  for(let i=obstacles.length-1;i>=0;i--){
+    const o=obstacles[i];
+    if(wx>=o.x&&wx<=o.x+o.w&&wy>=o.y&&wy<=o.y+o.h) return o;
+  }
+  return null;
+}
+
+wsCvs.addEventListener('mousedown',e=>{
+  const {wx,wy}=getWXY(e);
+  const hit=findObsAt(wx,wy);
+  if(hit){
+    draggingObs=hit; dragOffX=wx-hit.x; dragOffY=wy-hit.y;
+    selectedObsId=hit.id;
+    renderObsList(); render();
+    wsCvs.style.cursor='grabbing'; e.preventDefault();
+  } else {
+    // Click on empty space → deselect
+    selectedObsId=null; renderObsList(); render();
+  }
+});
+
+window.addEventListener('mousemove',e=>{
+  if(!draggingObs){
+    const {wx,wy}=getWXY(e);
+    wsCvs.style.cursor=findObsAt(wx,wy)?'grab':'default';
+    return;
+  }
+  const {wx,wy}=getWXY(e);
+  draggingObs.x=wx-dragOffX; draggingObs.y=wy-dragOffY;
+  renderObsList(); render();
+});
+
+window.addEventListener('mouseup',()=>{
+  if(draggingObs){ draggingObs=null; wsCvs.style.cursor='grab'; fullRecompute(); renderObsList(); }
+});
+
+// Touch
+wsCvs.addEventListener('touchstart',e=>{
+  const t=e.touches[0];
+  const {wx,wy}=getWXY({clientX:t.clientX,clientY:t.clientY});
+  const hit=findObsAt(wx,wy);
+  if(hit){ draggingObs=hit; dragOffX=wx-hit.x; dragOffY=wy-hit.y; selectedObsId=hit.id; renderObsList(); render(); e.preventDefault(); }
+},{passive:false});
+window.addEventListener('touchmove',e=>{
+  if(!draggingObs) return;
+  const t=e.touches[0]; const {wx,wy}=getWXY({clientX:t.clientX,clientY:t.clientY});
+  draggingObs.x=wx-dragOffX; draggingObs.y=wy-dragOffY; renderObsList(); render();
+},{passive:true});
+window.addEventListener('touchend',()=>{ if(draggingObs){ draggingObs=null; fullRecompute(); renderObsList(); } });
+
+// ══════════════════════════════════════════════════════════════════
+// INIT
+// ══════════════════════════════════════════════════════════════════
+function init(){
+  resizeCvs();
+  syncQ1(30); syncQ2(60);
+  renderObsList();
+  fullRecompute();
+}
+
+const ro=new ResizeObserver(()=>{ resizeCvs(); render(); });
+[wsCvs.parentElement,csCvs.parentElement].forEach(el=>ro.observe(el));
+
+init();
+</script>
+</body>
+</html>
