@@ -1,0 +1,1302 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>3D A* Motion Planning — AIR Lab @ Ewha</title>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@300;400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: 'IBM Plex Sans', sans-serif; background: #f8fafc; color: #0f172a; min-height: 100vh; overflow-x: hidden; }
+
+/* ── Nav / Topbar ── */
+.topbar { background: white; border-bottom: 1px solid #e2e8f0; padding: .7rem 1.5rem; display: flex; align-items: center; gap: .5rem; font-size: .84rem; flex-wrap: wrap; }
+.topbar a { text-decoration: none; color: #00462A; font-weight: 500; }
+.topbar a:hover { text-decoration: underline; }
+.topbar .sep { color: #94a3b8; }
+.topbar .cur { color: #0f172a; font-weight: 600; }
+
+/* ── Page ── */
+.page { max-width: 1440px; margin: 0 auto; padding: 1.5rem; }
+.page-title { font-size: 1.75rem; font-weight: 700; margin-bottom: .4rem; }
+.page-desc { color: #64748b; font-size: .9rem; max-width: 760px; margin-bottom: 1.25rem; line-height: 1.6; }
+
+/* ── Cards ── */
+.card { background: white; border: 1px solid #e2e8f0; border-radius: 16px; box-shadow: 0 1px 3px rgba(0,0,0,.06); }
+.card-hd { padding: 1rem 1.35rem .6rem; display: flex; align-items: center; justify-content: space-between; gap: .75rem; flex-wrap: wrap; }
+.card-title { font-size: .98rem; font-weight: 600; }
+.card-body { padding: .75rem 1.35rem 1.2rem; }
+.card-body-tight { padding: .6rem; }
+
+/* ── Main layout ── */
+.main-row { display: grid; grid-template-columns: 1fr 1fr; gap: 1.25rem; align-items: start; }
+.right-col { display: flex; flex-direction: column; gap: 1.25rem; }
+
+@media (max-width: 1000px) {
+  .main-row { grid-template-columns: 1fr; }
+}
+
+/* ── 3D canvas wrappers ── */
+.viz-wrap { width: 100%; aspect-ratio: 4/3; position: relative; border-radius: 10px; overflow: hidden; border: 1px solid #e2e8f0; background: #f1f5f9; }
+.viz-wrap canvas { display: block; width: 100% !important; height: 100% !important; }
+.canvas-hint { font-size: .73rem; color: #94a3b8; margin-top: .4rem; }
+
+/* ── Axis chips ── */
+.axis-legend { display: flex; gap: .5rem; }
+.axis-chip { font-size: .73rem; font-weight: 600; padding: .13rem .5rem; border-radius: 999px; color: white; }
+
+/* ── Sliders ── */
+.sl-group { margin-bottom: .85rem; }
+.sl-group:last-child { margin-bottom: 0; }
+.sl-label { display: flex; justify-content: space-between; font-size: .83rem; margin-bottom: .28rem; }
+.sl-label .sl-name { color: #475569; }
+.sl-label .sl-val { font-family: 'IBM Plex Mono', monospace; color: #0f172a; font-weight: 500; }
+input[type=range] { -webkit-appearance: none; appearance: none; width: 100%; height: 6px; background: #e2e8f0; border-radius: 3px; outline: none; cursor: pointer; }
+input[type=range]::-webkit-slider-thumb { -webkit-appearance: none; width: 17px; height: 17px; border-radius: 50%; background: #0f172a; cursor: pointer; border: 2px solid white; box-shadow: 0 1px 3px rgba(0,0,0,.25); }
+.sl-divider { border-top: 1px solid #f1f5f9; margin: .7rem 0; }
+
+/* ── Info rows ── */
+.info-row { display: flex; justify-content: space-between; align-items: center; gap: 1rem; border-bottom: 1px solid #f1f5f9; padding: .42rem 0; font-size: .82rem; }
+.info-row:last-child { border-bottom: none; }
+.info-label { color: #64748b; font-weight: 500; }
+.info-val { font-family: 'IBM Plex Mono', monospace; text-align: right; }
+.info-val.ok  { color: #15803d; font-weight: 600; }
+.info-val.err { color: #dc2626; font-weight: 600; }
+
+/* ── Buttons ── */
+.btn-row { display: flex; gap: .6rem; flex-wrap: wrap; margin-top: .9rem; }
+.btn {
+  padding: .45rem 1.1rem; border-radius: 8px; border: none; cursor: pointer;
+  font-family: 'IBM Plex Sans', sans-serif; font-size: .84rem; font-weight: 500;
+  transition: background .15s, transform .1s, box-shadow .15s;
+}
+.btn:active { transform: scale(.97); }
+.btn-primary { background: #00462A; color: white; }
+.btn-primary:hover { background: #005a35; box-shadow: 0 2px 8px rgba(0,70,42,.25); }
+.btn-primary:disabled { background: #94a3b8; cursor: not-allowed; transform: none; box-shadow: none; }
+.btn-secondary { background: #f1f5f9; color: #0f172a; border: 1px solid #e2e8f0; }
+.btn-secondary:hover { background: #e2e8f0; }
+.btn-secondary:disabled { color: #94a3b8; cursor: not-allowed; }
+.btn-danger { background: #fef2f2; color: #dc2626; border: 1px solid #fecaca; }
+.btn-danger:hover { background: #fee2e2; }
+
+/* ── Section label ── */
+.sec-lbl { font-size: .78rem; font-weight: 600; text-transform: uppercase; letter-spacing: .04em; color: #94a3b8; margin: .9rem 0 .5rem; }
+.sec-lbl:first-child { margin-top: 0; }
+
+/* ── Legend ── */
+.legend-grid { display: grid; grid-template-columns: 1fr 1fr; gap: .3rem .75rem; }
+.leg-item { display: flex; align-items: center; gap: .45rem; font-size: .79rem; color: #475569; }
+.leg-dot  { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; }
+.leg-line { width: 18px; height: 3px; border-radius: 2px; flex-shrink: 0; }
+.leg-rect { width: 14px; height: 9px; border-radius: 2px; flex-shrink: 0; }
+
+/* ── Hint box ── */
+.hint-box { background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: .55rem .75rem; font-size: .78rem; color: #64748b; line-height: 1.7; }
+
+/* ── Status badge ── */
+.status-badge { display: inline-flex; align-items: center; gap: .3rem; font-size: .75rem; font-weight: 600; padding: .15rem .55rem; border-radius: 999px; }
+.status-badge.idle   { background: #f1f5f9; color: #64748b; border: 1px solid #e2e8f0; }
+.status-badge.run    { background: #fffbeb; color: #d97706; border: 1px solid #fde68a; }
+.status-badge.ok     { background: #f0fdf4; color: #15803d; border: 1px solid #bbf7d0; }
+.status-badge.fail   { background: #fef2f2; color: #dc2626; border: 1px solid #fecaca; }
+
+/* ── Obstacle list ── */
+.obs-list { display: flex; flex-direction: column; gap: .45rem; margin-bottom: .65rem; }
+.obs-item { display: flex; align-items: center; gap: .45rem; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: .32rem .55rem; font-size: .79rem; }
+.obs-swatch { width: 11px; height: 11px; border-radius: 3px; flex-shrink: 0; }
+.obs-label { flex: 1; font-family: 'IBM Plex Mono', monospace; color: #475569; font-size: .76rem; }
+
+@media (max-width: 640px) {
+  .topbar { padding: .6rem 1rem; font-size: .78rem; }
+  .page { padding: 1rem; }
+  .page-title { font-size: 1.25rem; }
+  .btn-row { gap: .4rem; }
+  .btn { padding: .42rem .85rem; font-size: .8rem; }
+}
+</style>
+</head>
+<body>
+
+<!-- ── Topbar breadcrumb ── -->
+<div class="topbar">
+  <a href="../index.html">Intelligent Robotics</a>
+  <span class="sep">/</span>
+  Motion Planning
+  <span class="sep">/</span>
+  <span class="cur">3D A* Planning</span>
+</div>
+
+<!-- ── Page ── -->
+<div class="page">
+  <h1 class="page-title">3D A* Motion Planning — 3-Link Robot Arm</h1>
+  <p class="page-desc">
+    A* search finds a collision-free path in a 3-dimensional configuration space (θ₁, θ₂, θ₃).
+    Each grid node is a joint-angle triple; collision is tested by checking whether any link
+    segment intersects an obstacle box. The visited nodes and solution path are shown directly
+    in C-space, while the arm animates in the 3D workspace.
+  </p>
+
+  <div class="main-row">
+
+    <!-- ════════ LEFT: Workspace 3D ════════ -->
+    <div class="card">
+      <div class="card-hd">
+        <div class="card-title">Workspace — W ⊂ ℝ³</div>
+        <div style="display:flex;align-items:center;gap:.6rem;">
+          <span id="ws-status" class="status-badge idle">● Ready</span>
+          <div class="axis-legend">
+            <span class="axis-chip" style="background:#ef4444">x</span>
+            <span class="axis-chip" style="background:#22c55e">y</span>
+            <span class="axis-chip" style="background:#3b82f6">z</span>
+          </div>
+        </div>
+      </div>
+      <div class="card-body-tight">
+        <div class="viz-wrap" id="ws-wrap"></div>
+        <p class="canvas-hint">Orbit: left-drag · Zoom: scroll · Pan: right-drag</p>
+      </div>
+    </div>
+
+    <!-- ════════ RIGHT column ════════ -->
+    <div class="right-col">
+
+      <!-- C-space 3D -->
+      <div class="card">
+        <div class="card-hd">
+          <div class="card-title">C-Space — C ⊂ ℝ³ (θ₁, θ₂, θ₃)</div>
+          <div class="axis-legend">
+            <span class="axis-chip" style="background:#ef4444">θ₁</span>
+            <span class="axis-chip" style="background:#22c55e">θ₂</span>
+            <span class="axis-chip" style="background:#3b82f6">θ₃</span>
+          </div>
+        </div>
+        <div class="card-body-tight">
+          <div class="viz-wrap" id="cs-wrap"></div>
+          <p class="canvas-hint">
+            <span style="color:#3b82f6">■</span> Visited &nbsp;
+            <span style="color:#22c55e">■</span> Path &nbsp;
+            <span style="color:#ef4444">■</span> C-obstacle &nbsp;
+            <span style="color:#f59e0b">●</span> Start &nbsp;
+            <span style="color:#a855f7">●</span> Goal
+          </p>
+        </div>
+      </div>
+
+      <!-- Controls -->
+      <div class="card">
+        <div class="card-hd">
+          <div class="card-title">Controls</div>
+          <span id="astar-status" class="status-badge idle">● Idle</span>
+        </div>
+        <div class="card-body">
+
+          <div class="sec-lbl">Start Configuration</div>
+          <!-- θ1 start -->
+          <div class="sl-group">
+            <div class="sl-label">
+              <span class="sl-name">θ₁ start</span>
+              <span class="sl-val" id="s1-disp">-120°</span>
+            </div>
+            <input type="range" id="s1" min="-180" max="180" value="-120" step="1">
+          </div>
+          <!-- θ2 start -->
+          <div class="sl-group">
+            <div class="sl-label">
+              <span class="sl-name">θ₂ start</span>
+              <span class="sl-val" id="s2-disp">-10°</span>
+            </div>
+            <input type="range" id="s2" min="-10" max="90" value="-10" step="1">
+          </div>
+          <!-- θ3 start -->
+          <div class="sl-group">
+            <div class="sl-label">
+              <span class="sl-name">θ₃ start</span>
+              <span class="sl-val" id="s3-disp">-60°</span>
+            </div>
+            <input type="range" id="s3" min="-60" max="60" value="-60" step="1">
+          </div>
+
+          <div class="sl-divider"></div>
+          <div class="sec-lbl">Goal Configuration</div>
+
+          <!-- θ1 goal -->
+          <div class="sl-group">
+            <div class="sl-label">
+              <span class="sl-name">θ₁ goal</span>
+              <span class="sl-val" id="g1-disp">100°</span>
+            </div>
+            <input type="range" id="g1" min="-180" max="180" value="100" step="1">
+          </div>
+          <!-- θ2 goal -->
+          <div class="sl-group">
+            <div class="sl-label">
+              <span class="sl-name">θ₂ goal</span>
+              <span class="sl-val" id="g2-disp">60°</span>
+            </div>
+            <input type="range" id="g2" min="-10" max="90" value="60" step="1">
+          </div>
+          <!-- θ3 goal -->
+          <div class="sl-group">
+            <div class="sl-label">
+              <span class="sl-name">θ₃ goal</span>
+              <span class="sl-val" id="g3-disp">60°</span>
+            </div>
+            <input type="range" id="g3" min="-60" max="60" value="60" step="1">
+          </div>
+
+          <div class="sl-divider"></div>
+          <div class="sec-lbl">Algorithm Settings</div>
+
+          <div class="sl-group">
+            <div class="sl-label">
+              <span class="sl-name">Grid resolution N (per axis)</span>
+              <span class="sl-val" id="res-disp">15</span>
+            </div>
+            <input type="range" id="res" min="8" max="20" value="15" step="1">
+          </div>
+
+          <div class="sl-group">
+            <div class="sl-label">
+              <span class="sl-name">Animation speed</span>
+              <span class="sl-val" id="spd-disp">medium</span>
+            </div>
+            <input type="range" id="spd" min="1" max="5" value="3" step="1">
+          </div>
+
+          <!-- Action buttons -->
+          <div class="btn-row">
+            <button class="btn btn-primary" id="btn-run">▶ Run A*</button>
+            <button class="btn btn-secondary" id="btn-anim" disabled>⟳ Animate Path</button>
+            <button class="btn btn-danger" id="btn-reset">↺ Reset</button>
+          </div>
+
+          <div class="sl-divider"></div>
+          <div class="sec-lbl">Statistics</div>
+          <div class="info-row"><span class="info-label">Status</span><span class="info-val" id="i-status">—</span></div>
+          <div class="info-row"><span class="info-label">Nodes visited</span><span class="info-val" id="i-visited">—</span></div>
+          <div class="info-row"><span class="info-label">Path length</span><span class="info-val" id="i-path">—</span></div>
+          <div class="info-row"><span class="info-label">C-space size</span><span class="info-val" id="i-cspace">—</span></div>
+          <div class="info-row"><span class="info-label">Compute time</span><span class="info-val" id="i-time">—</span></div>
+
+        </div>
+      </div>
+
+      <!-- Obstacles + Legend -->
+      <div style="display:grid; grid-template-columns:1fr 1fr; gap:1.25rem;">
+
+        <div class="card">
+          <div class="card-hd"><div class="card-title">Obstacles</div></div>
+          <div class="card-body">
+            <div class="obs-list" id="obs-list"></div>
+            <div class="hint-box" style="margin-top:.1rem;">
+              Box obstacles in workspace. Re-run A* after editing.
+            </div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-hd"><div class="card-title">Legend</div></div>
+          <div class="card-body">
+            <div class="sec-lbl" style="margin-top:0">Workspace</div>
+            <div class="legend-grid" style="margin-bottom:.7rem;">
+              <div class="leg-item"><div class="leg-line" style="background:#22c55e;height:4px"></div>Link 1</div>
+              <div class="leg-item"><div class="leg-line" style="background:#f59e0b;height:4px"></div>Link 2</div>
+              <div class="leg-item"><div class="leg-line" style="background:#ec4899;height:4px"></div>Link 3</div>
+              <div class="leg-item"><div class="leg-dot" style="background:#ef4444"></div>End-eff.</div>
+              <div class="leg-item"><div class="leg-line" style="background:#a855f7;height:2px"></div>EE path</div>
+              <div class="leg-item"><div class="leg-rect" style="background:rgba(239,68,68,.35)"></div>Obstacle</div>
+              <div class="leg-item"><div class="leg-line" style="background:#a855f7;height:4px;opacity:.4"></div>Goal (ghost)</div>
+            </div>
+            <div class="sec-lbl">C-Space</div>
+            <div class="legend-grid">
+              <div class="leg-item"><div class="leg-dot" style="background:#3b82f6"></div>Visited</div>
+              <div class="leg-item"><div class="leg-dot" style="background:#22c55e"></div>Path</div>
+              <div class="leg-item"><div class="leg-dot" style="background:#ef4444;opacity:.6"></div>C-obstacle</div>
+              <div class="leg-item"><div class="leg-dot" style="background:#f59e0b"></div>Start</div>
+              <div class="leg-item"><div class="leg-dot" style="background:#a855f7"></div>Goal</div>
+            </div>
+          </div>
+        </div>
+
+      </div><!-- end grid -->
+
+    </div><!-- end right-col -->
+
+  </div><!-- end main-row -->
+</div><!-- end page -->
+
+<!-- ── Three.js from CDN ── -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script src="https://cdn.jsdelivr.net/gh/mrdoob/three.js@r128/examples/js/controls/OrbitControls.js"></script>
+
+<script>
+'use strict';
+
+// Z-up convention (robotics standard: XY is ground plane, Z points up)
+THREE.Object3D.DefaultUp.set(0, 0, 1);
+
+// ══════════════════════════════════════════════════════════════════════════════
+// ROBOT PARAMETERS
+// ══════════════════════════════════════════════════════════════════════════════
+const L1 = 1.5, L2 = 1.2, L3 = 0.9; // link lengths
+
+// ══════════════════════════════════════════════════════════════════════════════
+// DEFAULT OBSTACLES  { cx, cy, cz, hw, hh, hd }  (half-extents for AABB test)
+// ══════════════════════════════════════════════════════════════════════════════
+let obstacles = [
+  { label: 'Box A', cx:  1.2, cy:  0.5, cz:  1.0, hw: 0.35, hh: 0.35, hd: 0.35, color: 0xef4444 },
+  { label: 'Box B', cx: -0.8, cy: -0.3, cz:  0.8, hw: 0.3,  hh: 0.3,  hd: 0.4,  color: 0xf97316 },
+];
+
+// ══════════════════════════════════════════════════════════════════════════════
+// FORWARD KINEMATICS  (Z-up convention: XY is ground plane, Z points up)
+// Compute joint positions for a 3-link arm given (t1, t2, t3) in radians.
+//
+// Neutral pose (t1=t2=t3=0): arm points straight up along +Z.
+//   joint0 = (0, 0, 0)
+//   joint1 = (0, 0, L1)
+//   joint2 = (0, 0, L1+L2)
+//   joint3 = (0, 0, L1+L2+L3)
+//
+// θ1: base yaw — rotates the whole arm around Z axis
+// θ2: elevation of link2 — tilts link2 away from vertical, around the axis
+//     that is perpendicular to the current arm plane (Rz(t1) * Y)
+// θ3: further elevation of link3 — same rotation axis as θ2
+//
+// Returns: [p0, p1, p2, p3] — base + 3 joint endpoints as {x,y,z}
+// ══════════════════════════════════════════════════════════════════════════════
+function forwardKinematics(t1, t2, t3) {
+  const Z = new THREE.Vector3(0, 0, 1);
+
+  // Joint 0: base at origin
+  const p0 = new THREE.Vector3(0, 0, 0);
+
+  // Link 1 always goes straight up (t1 is pure yaw, doesn't tilt link1)
+  const p1 = new THREE.Vector3(0, 0, L1);
+
+  // Elevation axis at joint1: Rz(t1) applied to local Y = (-sin(t1), cos(t1), 0)
+  const elevAxis = new THREE.Vector3(-Math.sin(t1), Math.cos(t1), 0);
+
+  // θ2: tilt link2 away from Z around elevAxis
+  const q2 = new THREE.Quaternion().setFromAxisAngle(elevAxis, t2);
+  const dir2 = Z.clone().applyQuaternion(q2);
+  const p2 = p1.clone().addScaledVector(dir2, L2);
+
+  // θ3: further tilt link3 relative to link2, same elevation axis
+  const q3 = new THREE.Quaternion().setFromAxisAngle(elevAxis, t3);
+  const dir3 = dir2.clone().applyQuaternion(q3);
+  const p3 = p2.clone().addScaledVector(dir3, L3);
+
+  return [
+    { x: p0.x, y: p0.y, z: p0.z },
+    { x: p1.x, y: p1.y, z: p1.z },
+    { x: p2.x, y: p2.y, z: p2.z },
+    { x: p3.x, y: p3.y, z: p3.z },
+  ];
+}
+
+// ══════════════════════════════════════════════════════════════════════════════
+// COLLISION DETECTION: Segment vs AABB
+//
+// Tests whether the line segment from point A to point B intersects
+// an axis-aligned bounding box (AABB) centered at (cx,cy,cz) with
+// half-extents (hw, hh, hd).
+//
+// Method: slab method — parameterize the ray and compute entry/exit t
+// along each axis slab. If intervals overlap, the segment hits the box.
+// ══════════════════════════════════════════════════════════════════════════════
+function segmentAABB(ax, ay, az, bx, by, bz, cx, cy, cz, hw, hh, hd) {
+  // Translate so box is centered at origin
+  const ox = ax - cx, oy = ay - cy, oz = az - cz;
+  const dx = bx - ax, dy = by - ay, dz = bz - az;
+
+  let tmin = 0, tmax = 1; // t in [0,1] for segment
+  const axes = [
+    { o: ox, d: dx, h: hw },
+    { o: oy, d: dy, h: hh },
+    { o: oz, d: dz, h: hd },
+  ];
+  for (const { o, d, h } of axes) {
+    if (Math.abs(d) < 1e-10) {
+      // Parallel to slab — check if origin is inside
+      if (Math.abs(o) > h) return false;
+    } else {
+      const inv = 1 / d;
+      let t1 = (-h - o) * inv;
+      let t2 = ( h - o) * inv;
+      if (t1 > t2) { const tmp = t1; t1 = t2; t2 = tmp; }
+      tmin = Math.max(tmin, t1);
+      tmax = Math.min(tmax, t2);
+      if (tmin > tmax) return false;
+    }
+  }
+  return true;
+}
+
+// ══════════════════════════════════════════════════════════════════════════════
+// CONFIGURATION COLLISION CHECK
+//
+// Given joint angles (t1,t2,t3) in radians, check if the arm collides with
+// any obstacle. We test each of the 3 link segments against all obstacle AABBs.
+// ══════════════════════════════════════════════════════════════════════════════
+function configInCollision(t1, t2, t3) {
+  const pts = forwardKinematics(t1, t2, t3);
+  // z ≥ 0 constraint: reject any configuration where a joint goes below ground
+  for (const pt of pts) {
+    if (pt.z < 0) return true;
+  }
+  for (const obs of obstacles) {
+    for (let i = 0; i < 3; i++) {
+      const a = pts[i], b = pts[i + 1];
+      if (segmentAABB(a.x, a.y, a.z, b.x, b.y, b.z,
+                      obs.cx, obs.cy, obs.cz, obs.hw, obs.hh, obs.hd)) {
+        return true;
+      }
+    }
+  }
+  return false;
+}
+
+// ══════════════════════════════════════════════════════════════════════════════
+// C-SPACE DISCRETIZATION
+//
+// We divide the joint ranges into N equally-spaced steps:
+//   θ1 ∈ [-180°, 180°]   N steps
+//   θ2 ∈ [  -10°,  90°]  N steps  (z≥0 constraint)
+//   θ3 ∈ [  -60°,  60°]  N steps  (z≥0 constraint)
+//
+// Each grid node is indexed (i, j, k) ∈ [0, N-1]³ and corresponds to angles:
+//   t1(i) = -π + i * 2π / (N-1)
+//   t2(j) = -10°·π/180 + j * (π/2 + 10°·π/180) / (N-1)
+//   t3(k) = -π/3 + k * 2π/3 / (N-1)
+// ══════════════════════════════════════════════════════════════════════════════
+const T1_MIN = -Math.PI,      T1_MAX = Math.PI;
+const T2_MIN = -10 * Math.PI / 180, T2_MAX = Math.PI / 2;   // -10° to 90°
+const T3_MIN = -Math.PI / 3,        T3_MAX = Math.PI / 3;   // -60° to 60°
+
+function idxToAngles(i, j, k, N) {
+  const t1 = T1_MIN + i * (T1_MAX - T1_MIN) / (N - 1);
+  const t2 = T2_MIN + j * (T2_MAX - T2_MIN) / (N - 1);
+  const t3 = T3_MIN + k * (T3_MAX - T3_MIN) / (N - 1);
+  return [t1, t2, t3];
+}
+
+// Find the nearest grid index for a given angle triple
+function anglesToIdx(t1, t2, t3, N) {
+  const i = Math.round((t1 - T1_MIN) / (T1_MAX - T1_MIN) * (N - 1));
+  const j = Math.round((t2 - T2_MIN) / (T2_MAX - T2_MIN) * (N - 1));
+  const k = Math.round((t3 - T3_MIN) / (T3_MAX - T3_MIN) * (N - 1));
+  return [
+    Math.max(0, Math.min(N - 1, i)),
+    Math.max(0, Math.min(N - 1, j)),
+    Math.max(0, Math.min(N - 1, k)),
+  ];
+}
+
+function nodeKey(i, j, k, N) { return i * N * N + j * N + k; }
+
+// ══════════════════════════════════════════════════════════════════════════════
+// A* SEARCH IN C-SPACE
+//
+// Uses a min-heap (binary heap) open set. The heuristic is Euclidean distance
+// in joint-angle space (in radians) — an admissible heuristic since the cost
+// of each grid step is the actual angle distance.
+//
+// 6-connectivity: each node can move ±1 along each of the 3 joint axes.
+// ══════════════════════════════════════════════════════════════════════════════
+
+// Simple min-heap for A* open set
+class MinHeap {
+  constructor() { this.data = []; }
+  push(item) {
+    this.data.push(item);
+    this._bubbleUp(this.data.length - 1);
+  }
+  pop() {
+    const top = this.data[0];
+    const last = this.data.pop();
+    if (this.data.length > 0) {
+      this.data[0] = last;
+      this._sinkDown(0);
+    }
+    return top;
+  }
+  get size() { return this.data.length; }
+  _bubbleUp(idx) {
+    while (idx > 0) {
+      const parent = (idx - 1) >> 1;
+      if (this.data[parent].f <= this.data[idx].f) break;
+      [this.data[parent], this.data[idx]] = [this.data[idx], this.data[parent]];
+      idx = parent;
+    }
+  }
+  _sinkDown(idx) {
+    const n = this.data.length;
+    while (true) {
+      let smallest = idx;
+      const l = 2 * idx + 1, r = 2 * idx + 2;
+      if (l < n && this.data[l].f < this.data[smallest].f) smallest = l;
+      if (r < n && this.data[r].f < this.data[smallest].f) smallest = r;
+      if (smallest === idx) break;
+      [this.data[smallest], this.data[idx]] = [this.data[idx], this.data[smallest]];
+      idx = smallest;
+    }
+  }
+}
+
+// Heuristic: Euclidean distance in joint space (normalized by step size)
+function heuristic(i, j, k, gi, gj, gk) {
+  return Math.sqrt((i - gi) ** 2 + (j - gj) ** 2 + (k - gk) ** 2);
+}
+
+// 6-connected neighbors (±1 along each axis)
+const NEIGHBORS_6 = [
+  [1,0,0],[-1,0,0],[0,1,0],[0,-1,0],[0,0,1],[0,0,-1]
+];
+
+/**
+ * Run A* on the discretized C-space.
+ * Returns { path, visited, collisionNodes, time } where:
+ *   path          = array of [i,j,k] from start to goal (null if no path)
+ *   visited       = array of [i,j,k] nodes expanded
+ *   collisionNodes = array of [i,j,k] collision nodes (for visualization)
+ */
+function runAstar(N, startDeg, goalDeg) {
+  const t0 = performance.now();
+
+  const [si, sj, sk] = anglesToIdx(
+    startDeg[0] * Math.PI / 180,
+    startDeg[1] * Math.PI / 180,
+    startDeg[2] * Math.PI / 180, N);
+  const [gi, gj, gk] = anglesToIdx(
+    goalDeg[0] * Math.PI / 180,
+    goalDeg[1] * Math.PI / 180,
+    goalDeg[2] * Math.PI / 180, N);
+
+  // Pre-compute collision map (expensive but necessary for large N)
+  // We compute lazily during search to keep startup fast.
+  const collisionCache = new Map();
+  function isColliding(i, j, k) {
+    const key = nodeKey(i, j, k, N);
+    if (collisionCache.has(key)) return collisionCache.get(key);
+    const [t1, t2, t3] = idxToAngles(i, j, k, N);
+    const result = configInCollision(t1, t2, t3);
+    collisionCache.set(key, result);
+    return result;
+  }
+
+  // Check start and goal
+  if (isColliding(si, sj, sk)) {
+    return { path: null, visited: [], collisionNodes: [], time: performance.now() - t0,
+             error: 'Start configuration is in collision!' };
+  }
+  if (isColliding(gi, gj, gk)) {
+    return { path: null, visited: [], collisionNodes: [], time: performance.now() - t0,
+             error: 'Goal configuration is in collision!' };
+  }
+
+  const startKey = nodeKey(si, sj, sk, N);
+  const goalKey  = nodeKey(gi, gj, gk, N);
+
+  const gScore = new Map();    // cost from start
+  const cameFrom = new Map();  // for path reconstruction
+  const visited = [];          // for visualization
+  const collisionNodes = [];   // sample of collision nodes (for C-space viz)
+
+  gScore.set(startKey, 0);
+
+  const open = new MinHeap();
+  open.push({ f: heuristic(si, sj, sk, gi, gj, gk), i: si, j: sj, k: sk });
+
+  const closed = new Set();
+
+  // Limit collision node sampling for performance
+  let collSampleCount = 0;
+  const MAX_COLL_SAMPLES = 500;
+
+  while (open.size > 0) {
+    const { i, j, k } = open.pop();
+    const key = nodeKey(i, j, k, N);
+
+    if (closed.has(key)) continue;
+    closed.add(key);
+    visited.push([i, j, k]);
+
+    if (key === goalKey) {
+      // Reconstruct path
+      const path = [];
+      let cur = key;
+      while (cur !== undefined) {
+        const [pi, pj, pk] = [Math.floor(cur / (N * N)), Math.floor((cur % (N * N)) / N), cur % N];
+        path.unshift([pi, pj, pk]);
+        cur = cameFrom.get(cur);
+      }
+      // Collect some collision nodes for visualization
+      if (collSampleCount < MAX_COLL_SAMPLES) {
+        // sample a few more collision nodes
+        sampleCollisionNodes(N, collisionNodes, MAX_COLL_SAMPLES);
+      }
+      return { path, visited, collisionNodes, time: performance.now() - t0, error: null };
+    }
+
+    const gCur = gScore.get(key);
+
+    for (const [di, dj, dk] of NEIGHBORS_6) {
+      const ni = i + di, nj = j + dj, nk = k + dk;
+      if (ni < 0 || ni >= N || nj < 0 || nj >= N || nk < 0 || nk >= N) continue;
+
+      const nkey = nodeKey(ni, nj, nk, N);
+      if (closed.has(nkey)) continue;
+
+      if (isColliding(ni, nj, nk)) {
+        if (collSampleCount < MAX_COLL_SAMPLES) {
+          collisionNodes.push([ni, nj, nk]);
+          collSampleCount++;
+        }
+        continue;
+      }
+
+      const tentativeG = gCur + 1; // uniform step cost
+      if (!gScore.has(nkey) || tentativeG < gScore.get(nkey)) {
+        gScore.set(nkey, tentativeG);
+        cameFrom.set(nkey, key);
+        const f = tentativeG + heuristic(ni, nj, nk, gi, gj, gk);
+        open.push({ f, i: ni, j: nj, k: nk });
+      }
+    }
+  }
+
+  // Sample collision nodes even on failure
+  sampleCollisionNodes(N, collisionNodes, MAX_COLL_SAMPLES);
+  return { path: null, visited, collisionNodes, time: performance.now() - t0,
+           error: 'No path found — configuration space may be blocked.' };
+}
+
+// Sample collision nodes uniformly across the grid (for visualization)
+function sampleCollisionNodes(N, out, maxCount) {
+  if (out.length >= maxCount) return;
+  const step = Math.max(1, Math.floor(N / 5));
+  for (let i = 0; i < N; i += step) {
+    for (let j = 0; j < N; j += step) {
+      for (let k = 0; k < N; k += step) {
+        if (out.length >= maxCount) return;
+        const [t1, t2, t3] = idxToAngles(i, j, k, N);
+        if (configInCollision(t1, t2, t3)) {
+          out.push([i, j, k]);
+        }
+      }
+    }
+  }
+}
+
+// ══════════════════════════════════════════════════════════════════════════════
+// THREE.JS WORKSPACE SCENE
+// ══════════════════════════════════════════════════════════════════════════════
+let wsScene, wsCamera, wsRenderer, wsControls;
+let armGroup, goalArmGroup, obstacleGroup, pathLine, eePathPoints = [];
+
+// Arm mesh references (update instead of recreating)
+let armMeshes = { joint0: null, link1: null, joint1: null, link2: null, joint2: null, link3: null, joint3: null };
+
+function initWorkspace() {
+  const wrap = document.getElementById('ws-wrap');
+  const W = wrap.clientWidth || wrap.offsetWidth || 600;
+  const H = wrap.clientHeight || wrap.offsetHeight || (W * 3 / 4);
+
+  wsScene = new THREE.Scene();
+  wsScene.background = new THREE.Color(0xf1f5f9);
+  wsScene.fog = new THREE.FogExp2(0xf1f5f9, 0.04);
+
+  wsCamera = new THREE.PerspectiveCamera(45, W / H, 0.01, 100);
+  wsCamera.position.set(6, -6, 5);
+  wsCamera.lookAt(0, 0, 1);
+
+  wsRenderer = new THREE.WebGLRenderer({ antialias: true });
+  wsRenderer.setPixelRatio(window.devicePixelRatio);
+  wsRenderer.setSize(W, H);
+  wrap.appendChild(wsRenderer.domElement);
+
+  wsControls = new THREE.OrbitControls(wsCamera, wsRenderer.domElement);
+  wsControls.enableDamping = true;
+  wsControls.dampingFactor = 0.08;
+
+  // Lighting
+  wsScene.add(new THREE.AmbientLight(0xffffff, 0.5));
+  const dirLight = new THREE.DirectionalLight(0xffffff, 0.9);
+  dirLight.position.set(5, 8, 5);
+  wsScene.add(dirLight);
+  const fill = new THREE.DirectionalLight(0x8ecfff, 0.3);
+  fill.position.set(-5, -2, -3);
+  wsScene.add(fill);
+
+  // Grid — rotated to lie in the XY plane (z=0) for Z-up convention
+  const grid = new THREE.GridHelper(10, 20, 0xc8d3dc, 0xe2e8f0);
+  grid.rotation.x = Math.PI / 2;
+  wsScene.add(grid);
+
+  // Axes helper
+  const axesHelper = new THREE.AxesHelper(1.2);
+  wsScene.add(axesHelper);
+
+  // Arm group
+  armGroup = new THREE.Group();
+  wsScene.add(armGroup);
+
+  // Goal arm group (ghost)
+  goalArmGroup = new THREE.Group();
+  wsScene.add(goalArmGroup);
+
+  // Obstacle group
+  obstacleGroup = new THREE.Group();
+  wsScene.add(obstacleGroup);
+  buildObstacleMeshes();
+
+  // Path line (initially empty)
+  const pathGeo = new THREE.BufferGeometry();
+  pathGeo.setAttribute('position', new THREE.BufferAttribute(new Float32Array(0), 3));
+  const pathMat = new THREE.LineBasicMaterial({ color: 0xa855f7, linewidth: 2 });
+  pathLine = new THREE.Line(pathGeo, pathMat);
+  wsScene.add(pathLine);
+
+  // Initial arm draw
+  drawArm(
+    parseFloat(document.getElementById('s1').value) * Math.PI / 180,
+    parseFloat(document.getElementById('s2').value) * Math.PI / 180,
+    parseFloat(document.getElementById('s3').value) * Math.PI / 180
+  );
+
+  // Initial goal arm draw
+  drawGoalArm(
+    parseFloat(document.getElementById('g1').value) * Math.PI / 180,
+    parseFloat(document.getElementById('g2').value) * Math.PI / 180,
+    parseFloat(document.getElementById('g3').value) * Math.PI / 180
+  );
+
+  window.addEventListener('resize', onWSResize);
+  animateWS();
+}
+
+function onWSResize() {
+  const wrap = document.getElementById('ws-wrap');
+  const W = wrap.clientWidth, H = wrap.clientHeight;
+  wsCamera.aspect = W / H;
+  wsCamera.updateProjectionMatrix();
+  wsRenderer.setSize(W, H);
+}
+
+function buildObstacleMeshes() {
+  while (obstacleGroup.children.length) obstacleGroup.remove(obstacleGroup.children[0]);
+  for (const obs of obstacles) {
+    const geo = new THREE.BoxGeometry(obs.hw * 2, obs.hh * 2, obs.hd * 2);
+    const mat = new THREE.MeshPhongMaterial({
+      color: obs.color, opacity: 0.55, transparent: true, shininess: 30
+    });
+    const mesh = new THREE.Mesh(geo, mat);
+    mesh.position.set(obs.cx, obs.cy, obs.cz);
+    obstacleGroup.add(mesh);
+    // Wireframe edges
+    const edges = new THREE.EdgesGeometry(geo);
+    const eLine = new THREE.LineSegments(edges, new THREE.LineBasicMaterial({ color: obs.color, opacity: 0.8, transparent: true }));
+    eLine.position.copy(mesh.position);
+    obstacleGroup.add(eLine);
+  }
+}
+
+// Draw a cylinder between two points (used for links)
+function makeCylinder(from, to, radius, color) {
+  const dir = new THREE.Vector3(to.x - from.x, to.y - from.y, to.z - from.z);
+  const length = dir.length();
+  if (length < 1e-6) return null;
+  const geo = new THREE.CylinderGeometry(radius, radius, length, 8);
+  const mat = new THREE.MeshPhongMaterial({ color, shininess: 60 });
+  const mesh = new THREE.Mesh(geo, mat);
+  // Orient cylinder: default cylinder goes along Y; we want it along `dir`
+  const mid = new THREE.Vector3((from.x + to.x) / 2, (from.y + to.y) / 2, (from.z + to.z) / 2);
+  mesh.position.copy(mid);
+  mesh.quaternion.setFromUnitVectors(new THREE.Vector3(0, 1, 0), dir.normalize());
+  return mesh;
+}
+
+function makeSphere(pos, radius, color) {
+  const geo = new THREE.SphereGeometry(radius, 10, 10);
+  const mat = new THREE.MeshPhongMaterial({ color, shininess: 80 });
+  const mesh = new THREE.Mesh(geo, mat);
+  mesh.position.set(pos.x, pos.y, pos.z);
+  return mesh;
+}
+
+function drawArm(t1, t2, t3) {
+  // Clear previous arm meshes
+  while (armGroup.children.length) armGroup.remove(armGroup.children[0]);
+
+  const pts = forwardKinematics(t1, t2, t3);
+  const colors = [0x22c55e, 0xf59e0b, 0xec4899];
+  const jointColors = [0x94a3b8, 0x22c55e, 0xf59e0b, 0xef4444];
+  const jointRadii = [0.1, 0.09, 0.08, 0.11];
+
+  // Links (cylinders)
+  for (let i = 0; i < 3; i++) {
+    const cyl = makeCylinder(pts[i], pts[i + 1], 0.055, colors[i]);
+    if (cyl) armGroup.add(cyl);
+  }
+  // Joints (spheres)
+  for (let i = 0; i < 4; i++) {
+    const sph = makeSphere(pts[i], jointRadii[i], jointColors[i]);
+    armGroup.add(sph);
+  }
+}
+
+function drawGoalArm(t1, t2, t3) {
+  if (!goalArmGroup) return;
+  while (goalArmGroup.children.length) goalArmGroup.remove(goalArmGroup.children[0]);
+
+  const pts = forwardKinematics(t1, t2, t3);
+  const ghostColor = 0xa855f7;
+  const opacity = 0.35;
+
+  // Links (semi-transparent cylinders)
+  for (let i = 0; i < 3; i++) {
+    const from = pts[i], to = pts[i + 1];
+    const dir = new THREE.Vector3(to.x - from.x, to.y - from.y, to.z - from.z);
+    const length = dir.length();
+    if (length < 1e-6) continue;
+    const geo = new THREE.CylinderGeometry(0.055, 0.055, length, 8);
+    const mat = new THREE.MeshPhongMaterial({ color: ghostColor, opacity, transparent: true, shininess: 40 });
+    const mesh = new THREE.Mesh(geo, mat);
+    const mid = new THREE.Vector3((from.x + to.x) / 2, (from.y + to.y) / 2, (from.z + to.z) / 2);
+    mesh.position.copy(mid);
+    mesh.quaternion.setFromUnitVectors(new THREE.Vector3(0, 1, 0), dir.normalize());
+    goalArmGroup.add(mesh);
+  }
+  // Joints (semi-transparent spheres)
+  const jointRadii = [0.1, 0.09, 0.08, 0.11];
+  for (let i = 0; i < 4; i++) {
+    const geo = new THREE.SphereGeometry(jointRadii[i], 10, 10);
+    const mat = new THREE.MeshPhongMaterial({ color: ghostColor, opacity, transparent: true, shininess: 60 });
+    const mesh = new THREE.Mesh(geo, mat);
+    mesh.position.set(pts[i].x, pts[i].y, pts[i].z);
+    goalArmGroup.add(mesh);
+  }
+}
+
+function drawGoalArmFromSliders() {
+  const t1 = parseFloat(document.getElementById('g1').value) * Math.PI / 180;
+  const t2 = parseFloat(document.getElementById('g2').value) * Math.PI / 180;
+  const t3 = parseFloat(document.getElementById('g3').value) * Math.PI / 180;
+  if (goalArmGroup) drawGoalArm(t1, t2, t3);
+}
+
+function animateWS() {
+  requestAnimationFrame(animateWS);
+  wsControls.update();
+  wsRenderer.render(wsScene, wsCamera);
+}
+
+// ══════════════════════════════════════════════════════════════════════════════
+// THREE.JS C-SPACE SCENE
+// ══════════════════════════════════════════════════════════════════════════════
+let csScene, csCamera, csRenderer, csControls;
+let csVisitedPts, csPathPts, csCollPts, csStartSph, csGoalSph;
+
+function initCspace() {
+  const wrap = document.getElementById('cs-wrap');
+  const W = wrap.clientWidth || wrap.offsetWidth || 600;
+  const H = wrap.clientHeight || wrap.offsetHeight || (W * 3 / 4);
+
+  csScene = new THREE.Scene();
+  csScene.background = new THREE.Color(0xf1f5f9);
+
+  csCamera = new THREE.PerspectiveCamera(45, W / H, 0.01, 200);
+  csCamera.position.set(12, -10, 12);
+  csCamera.lookAt(0, 0, 0);
+
+  csRenderer = new THREE.WebGLRenderer({ antialias: true });
+  csRenderer.setPixelRatio(window.devicePixelRatio);
+  csRenderer.setSize(W, H);
+  wrap.appendChild(csRenderer.domElement);
+
+  csControls = new THREE.OrbitControls(csCamera, csRenderer.domElement);
+  csControls.enableDamping = true;
+  csControls.dampingFactor = 0.08;
+
+  csScene.add(new THREE.AmbientLight(0xffffff, 0.8));
+
+  // Axes helper (scaled to match normalized C-space box size ~10)
+  const axes = new THREE.AxesHelper(5.5);
+  csScene.add(axes);
+
+  // Bounding box for C-space (cube of side 10, centered at 0)
+  const boxGeo = new THREE.BoxGeometry(10, 10, 10);
+  const boxEdges = new THREE.EdgesGeometry(boxGeo);
+  const boxLine = new THREE.LineSegments(boxEdges, new THREE.LineBasicMaterial({ color: 0x334155, opacity: 0.5, transparent: true }));
+  csScene.add(boxLine);
+
+  // Axis labels as sprites
+  addCsLabel('θ₁', 5.8, 0, 0, '#ef4444');
+  addCsLabel('θ₂', 0, 5.8, 0, '#22c55e');
+  addCsLabel('θ₃', 0, 0, 5.8, '#3b82f6');
+
+  // Point clouds (will be rebuilt after A* runs)
+  csVisitedPts = makePointCloud([], 0x3b82f6, 0.08);
+  csPathPts    = makePointCloud([], 0x22c55e, 0.14);
+  csCollPts    = makePointCloud([], 0xef4444, 0.06);
+  csScene.add(csVisitedPts);
+  csScene.add(csPathPts);
+  csScene.add(csCollPts);
+
+  // Start / goal spheres
+  const sgGeo = new THREE.SphereGeometry(0.22, 10, 10);
+  csStartSph = new THREE.Mesh(sgGeo, new THREE.MeshPhongMaterial({ color: 0xf59e0b, shininess: 80 }));
+  csGoalSph  = new THREE.Mesh(sgGeo.clone(), new THREE.MeshPhongMaterial({ color: 0xa855f7, shininess: 80 }));
+  csScene.add(csStartSph);
+  csScene.add(csGoalSph);
+
+  updateCsStartGoal();
+
+  window.addEventListener('resize', onCSResize);
+  animateCS();
+}
+
+function addCsLabel(text, x, y, z, color) {
+  // Use a canvas-based sprite
+  const canvas = document.createElement('canvas');
+  canvas.width = 128; canvas.height = 64;
+  const ctx = canvas.getContext('2d');
+  ctx.fillStyle = color;
+  ctx.font = 'bold 36px IBM Plex Sans, sans-serif';
+  ctx.textAlign = 'center';
+  ctx.textBaseline = 'middle';
+  ctx.fillText(text, 64, 32);
+  const tex = new THREE.CanvasTexture(canvas);
+  const mat = new THREE.SpriteMaterial({ map: tex, transparent: true });
+  const sprite = new THREE.Sprite(mat);
+  sprite.position.set(x, y, z);
+  sprite.scale.set(1.2, 0.6, 1);
+  csScene.add(sprite);
+}
+
+function onCSResize() {
+  const wrap = document.getElementById('cs-wrap');
+  const W = wrap.clientWidth, H = wrap.clientHeight;
+  csCamera.aspect = W / H;
+  csCamera.updateProjectionMatrix();
+  csRenderer.setSize(W, H);
+}
+
+// Convert grid index to C-space scene coords (mapped to [-5, 5] cube)
+function idxToScene(i, j, k, N) {
+  const x = (i / (N - 1)) * 10 - 5;
+  const y = (j / (N - 1)) * 10 - 5;
+  const z = (k / (N - 1)) * 10 - 5;
+  return [x, y, z];
+}
+
+function makePointCloud(points, color, size) {
+  const positions = new Float32Array(points.length * 3);
+  for (let p = 0; p < points.length; p++) {
+    positions[p * 3]     = points[p][0];
+    positions[p * 3 + 1] = points[p][1];
+    positions[p * 3 + 2] = points[p][2];
+  }
+  const geo = new THREE.BufferGeometry();
+  geo.setAttribute('position', new THREE.BufferAttribute(positions, 3));
+  const mat = new THREE.PointsMaterial({ color, size, sizeAttenuation: true });
+  return new THREE.Points(geo, mat);
+}
+
+function updatePointCloud(pts3js, sceneCoords, color, size) {
+  const n = sceneCoords.length;
+  const pos = new Float32Array(n * 3);
+  for (let i = 0; i < n; i++) {
+    pos[i * 3]     = sceneCoords[i][0];
+    pos[i * 3 + 1] = sceneCoords[i][1];
+    pos[i * 3 + 2] = sceneCoords[i][2];
+  }
+  pts3js.geometry.setAttribute('position', new THREE.BufferAttribute(pos, 3));
+  pts3js.geometry.attributes.position.needsUpdate = true;
+  pts3js.material.color.set(color);
+  pts3js.material.size = size;
+}
+
+function updateCsStartGoal() {
+  const N = parseInt(document.getElementById('res').value);
+  const s = [
+    parseFloat(document.getElementById('s1').value),
+    parseFloat(document.getElementById('s2').value),
+    parseFloat(document.getElementById('s3').value),
+  ];
+  const g = [
+    parseFloat(document.getElementById('g1').value),
+    parseFloat(document.getElementById('g2').value),
+    parseFloat(document.getElementById('g3').value),
+  ];
+  const [si, sj, sk] = anglesToIdx(s[0]*Math.PI/180, s[1]*Math.PI/180, s[2]*Math.PI/180, N);
+  const [gi, gj, gk] = anglesToIdx(g[0]*Math.PI/180, g[1]*Math.PI/180, g[2]*Math.PI/180, N);
+  const [sx, sy, sz] = idxToScene(si, sj, sk, N);
+  const [gx, gy, gz] = idxToScene(gi, gj, gk, N);
+  if (csStartSph) csStartSph.position.set(sx, sy, sz);
+  if (csGoalSph)  csGoalSph.position.set(gx, gy, gz);
+}
+
+function animateCS() {
+  requestAnimationFrame(animateCS);
+  csControls.update();
+  csRenderer.render(csScene, csCamera);
+}
+
+// ══════════════════════════════════════════════════════════════════════════════
+// MAIN A* RUNNER
+// ══════════════════════════════════════════════════════════════════════════════
+let lastPath = null;
+let animHandle = null;
+
+function setStatus(txt, cls) {
+  const badge = document.getElementById('astar-status');
+  badge.textContent = '● ' + txt;
+  badge.className = 'status-badge ' + cls;
+}
+
+function runAstarUI() {
+  setStatus('Running…', 'run');
+  document.getElementById('btn-run').disabled = true;
+  document.getElementById('btn-anim').disabled = true;
+
+  const N = parseInt(document.getElementById('res').value);
+  const startDeg = [
+    parseFloat(document.getElementById('s1').value),
+    parseFloat(document.getElementById('s2').value),
+    parseFloat(document.getElementById('s3').value),
+  ];
+  const goalDeg = [
+    parseFloat(document.getElementById('g1').value),
+    parseFloat(document.getElementById('g2').value),
+    parseFloat(document.getElementById('g3').value),
+  ];
+
+  // Run synchronously (A* is fast enough at N≤20)
+  setTimeout(() => {
+    const result = runAstar(N, startDeg, goalDeg);
+
+    // Update stats
+    document.getElementById('i-visited').textContent = result.visited.length.toLocaleString();
+    document.getElementById('i-cspace').textContent  = (N ** 3).toLocaleString() + ' nodes';
+    document.getElementById('i-time').textContent    = result.time.toFixed(1) + ' ms';
+
+    if (result.error && !result.path) {
+      setStatus('Failed', 'fail');
+      document.getElementById('i-status').textContent = result.error;
+      document.getElementById('i-status').className = 'info-val err';
+      document.getElementById('i-path').textContent = '—';
+    } else {
+      setStatus('Path found', 'ok');
+      document.getElementById('i-status').textContent = 'Path found';
+      document.getElementById('i-status').className = 'info-val ok';
+      document.getElementById('i-path').textContent = result.path.length + ' steps';
+      lastPath = result.path;
+      document.getElementById('btn-anim').disabled = false;
+
+      // Draw end-effector path in workspace
+      drawEEPath(result.path, N);
+    }
+
+    // Update C-space viz
+    const visitedScene = result.visited.map(([i, j, k]) => idxToScene(i, j, k, N));
+    const collScene    = result.collisionNodes.map(([i, j, k]) => idxToScene(i, j, k, N));
+    updatePointCloud(csVisitedPts, visitedScene, 0x3b82f6, 0.09);
+    updatePointCloud(csCollPts,    collScene,    0xef4444, 0.06);
+
+    if (result.path) {
+      const pathScene = result.path.map(([i, j, k]) => idxToScene(i, j, k, N));
+      updatePointCloud(csPathPts, pathScene, 0x22c55e, 0.16);
+    } else {
+      updatePointCloud(csPathPts, [], 0x22c55e, 0.16);
+    }
+
+    // Move arm to start
+    drawArm(startDeg[0] * Math.PI / 180, startDeg[1] * Math.PI / 180, startDeg[2] * Math.PI / 180);
+
+    document.getElementById('btn-run').disabled = false;
+    document.getElementById('ws-status').textContent = result.path ? '● Path ready' : '● No path';
+    document.getElementById('ws-status').className = 'status-badge ' + (result.path ? 'ok' : 'fail');
+  }, 10);
+}
+
+// Draw the end-effector trace for the computed path
+function drawEEPath(path, N) {
+  eePathPoints = path.map(([i, j, k]) => {
+    const [t1, t2, t3] = idxToAngles(i, j, k, N);
+    const pts = forwardKinematics(t1, t2, t3);
+    const ee = pts[3];
+    return new THREE.Vector3(ee.x, ee.y, ee.z);
+  });
+
+  const positions = new Float32Array(eePathPoints.length * 3);
+  eePathPoints.forEach((v, i) => { positions[i * 3] = v.x; positions[i * 3 + 1] = v.y; positions[i * 3 + 2] = v.z; });
+  pathLine.geometry.setAttribute('position', new THREE.BufferAttribute(positions, 3));
+  pathLine.geometry.attributes.position.needsUpdate = true;
+  pathLine.geometry.setDrawRange(0, eePathPoints.length);
+}
+
+// ══════════════════════════════════════════════════════════════════════════════
+// PATH ANIMATION
+// Step through path configs, smoothly animating the arm
+// ══════════════════════════════════════════════════════════════════════════════
+function animatePath() {
+  if (!lastPath || lastPath.length === 0) return;
+
+  if (animHandle) clearTimeout(animHandle);
+
+  const N = parseInt(document.getElementById('res').value);
+  const spdVal = parseInt(document.getElementById('spd').value);
+  const delay = [200, 120, 70, 35, 15][spdVal - 1]; // ms per step
+
+  let step = 0;
+  document.getElementById('btn-anim').disabled = true;
+  document.getElementById('btn-run').disabled = true;
+
+  function nextStep() {
+    if (step >= lastPath.length) {
+      document.getElementById('btn-anim').disabled = false;
+      document.getElementById('btn-run').disabled = false;
+      setStatus('Done', 'ok');
+      return;
+    }
+    const [i, j, k] = lastPath[step];
+    const [t1, t2, t3] = idxToAngles(i, j, k, N);
+    drawArm(t1, t2, t3);
+    setStatus(`Animating ${step + 1}/${lastPath.length}`, 'run');
+    step++;
+    animHandle = setTimeout(nextStep, delay);
+  }
+  nextStep();
+}
+
+// ══════════════════════════════════════════════════════════════════════════════
+// RESET
+// ══════════════════════════════════════════════════════════════════════════════
+function resetAll() {
+  if (animHandle) clearTimeout(animHandle);
+  lastPath = null;
+  eePathPoints = [];
+
+  // Clear path line
+  pathLine.geometry.setAttribute('position', new THREE.BufferAttribute(new Float32Array(0), 3));
+  pathLine.geometry.attributes.position.needsUpdate = true;
+
+  // Clear C-space points
+  updatePointCloud(csVisitedPts, [], 0x3b82f6, 0.09);
+  updatePointCloud(csPathPts,    [], 0x22c55e, 0.16);
+  updatePointCloud(csCollPts,    [], 0xef4444, 0.06);
+
+  // Arm to start
+  const t1 = parseFloat(document.getElementById('s1').value) * Math.PI / 180;
+  const t2 = parseFloat(document.getElementById('s2').value) * Math.PI / 180;
+  const t3 = parseFloat(document.getElementById('s3').value) * Math.PI / 180;
+  drawArm(t1, t2, t3);
+
+  setStatus('Idle', 'idle');
+  document.getElementById('ws-status').textContent = '● Ready';
+  document.getElementById('ws-status').className = 'status-badge idle';
+  document.getElementById('i-status').textContent = '—';
+  document.getElementById('i-status').className = 'info-val';
+  document.getElementById('i-visited').textContent = '—';
+  document.getElementById('i-path').textContent = '—';
+  document.getElementById('i-cspace').textContent = '—';
+  document.getElementById('i-time').textContent = '—';
+  document.getElementById('btn-anim').disabled = true;
+  document.getElementById('btn-run').disabled = false;
+}
+
+// ══════════════════════════════════════════════════════════════════════════════
+// OBSTACLE LIST UI
+// ══════════════════════════════════════════════════════════════════════════════
+function buildObsList() {
+  const list = document.getElementById('obs-list');
+  list.innerHTML = '';
+  obstacles.forEach((obs, idx) => {
+    const item = document.createElement('div');
+    item.className = 'obs-item';
+    const swatch = document.createElement('div');
+    swatch.className = 'obs-swatch';
+    swatch.style.background = '#' + obs.color.toString(16).padStart(6, '0');
+    const label = document.createElement('div');
+    label.className = 'obs-label';
+    label.textContent = `${obs.label} (${obs.cx.toFixed(1)}, ${obs.cy.toFixed(1)}, ${obs.cz.toFixed(1)})`;
+    item.appendChild(swatch);
+    item.appendChild(label);
+    list.appendChild(item);
+  });
+}
+
+// ══════════════════════════════════════════════════════════════════════════════
+// SLIDER BINDINGS
+// ══════════════════════════════════════════════════════════════════════════════
+const speedLabels = ['very slow', 'slow', 'medium', 'fast', 'very fast'];
+
+function bindSlider(id, dispId, suffix, onChange) {
+  const el = document.getElementById(id);
+  const disp = document.getElementById(dispId);
+  function update() {
+    const v = el.value;
+    disp.textContent = suffix ? v + suffix : v;
+    if (onChange) onChange(v);
+  }
+  el.addEventListener('input', update);
+  update(); // init display
+}
+
+function drawArmFromStart() {
+  const t1 = parseFloat(document.getElementById('s1').value) * Math.PI / 180;
+  const t2 = parseFloat(document.getElementById('s2').value) * Math.PI / 180;
+  const t3 = parseFloat(document.getElementById('s3').value) * Math.PI / 180;
+  if (armGroup) drawArm(t1, t2, t3);
+}
+
+// ══════════════════════════════════════════════════════════════════════════════
+// INIT
+// ══════════════════════════════════════════════════════════════════════════════
+window.addEventListener('load', () => {
+  // Slider bindings (must run after DOM is ready and Three.js scenes are init)
+  bindSlider('s1', 's1-disp', '°', () => { updateCsStartGoal(); drawArmFromStart(); });
+  bindSlider('s2', 's2-disp', '°', () => { updateCsStartGoal(); drawArmFromStart(); });
+  bindSlider('s3', 's3-disp', '°', () => { updateCsStartGoal(); drawArmFromStart(); });
+  bindSlider('g1', 'g1-disp', '°', () => { updateCsStartGoal(); drawGoalArmFromSliders(); });
+  bindSlider('g2', 'g2-disp', '°', () => { updateCsStartGoal(); drawGoalArmFromSliders(); });
+  bindSlider('g3', 'g3-disp', '°', () => { updateCsStartGoal(); drawGoalArmFromSliders(); });
+  bindSlider('res', 'res-disp', '', () => updateCsStartGoal());
+  bindSlider('spd', 'spd-disp', '', v => {
+    document.getElementById('spd-disp').textContent = speedLabels[v - 1];
+  });
+
+  // Button event listeners
+  document.getElementById('btn-run').addEventListener('click', runAstarUI);
+  document.getElementById('btn-anim').addEventListener('click', animatePath);
+  document.getElementById('btn-reset').addEventListener('click', resetAll);
+
+  try {
+    initWorkspace();
+    wsRenderer.render(wsScene, wsCamera);
+  } catch (e) {
+    console.error('initWorkspace failed:', e);
+  }
+
+  try {
+    initCspace();
+    csRenderer.render(csScene, csCamera);
+  } catch (e) {
+    console.error('initCspace failed:', e);
+  }
+
+  buildObsList();
+  updateCsStartGoal();
+  drawArmFromStart();
+
+  window.addEventListener('resize', () => {
+    onWSResize();
+    onCSResize();
+  });
+});
+</script>
+</body>
+</html>
