@@ -1,0 +1,914 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Sampling-based Planning — AIR Lab @ Ewha</title>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@300;400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: 'IBM Plex Sans', sans-serif; background: #f8fafc; color: #0f172a; min-height: 100vh; }
+
+.topbar { background: white; border-bottom: 1px solid #e2e8f0; padding: .7rem 1.5rem; display: flex; align-items: center; gap: .5rem; font-size: .84rem; flex-wrap: wrap; }
+.topbar a { text-decoration: none; color: #00462A; font-weight: 500; }
+.topbar a:hover { text-decoration: underline; }
+.topbar .sep { color: #94a3b8; }
+.topbar .cur { color: #0f172a; font-weight: 600; }
+
+.page { max-width: 1440px; margin: 0 auto; padding: 1.5rem; }
+.page-title { font-size: 1.75rem; font-weight: 700; margin-bottom: .4rem; }
+.page-desc { color: #64748b; font-size: .9rem; max-width: 780px; margin-bottom: 1.25rem; line-height: 1.6; }
+
+.card { background: white; border: 1px solid #e2e8f0; border-radius: 16px; box-shadow: 0 1px 3px rgba(0,0,0,.06); }
+.card-hd { padding: .85rem 1.25rem .55rem; display: flex; align-items: center; justify-content: space-between; gap: .75rem; flex-wrap: wrap; }
+.card-title { font-size: .95rem; font-weight: 600; }
+.card-sub  { font-size: .75rem; color: #64748b; margin-top: .1rem; }
+.card-body { padding: .75rem 1.25rem 1.1rem; }
+.card-body-tight { padding: .55rem; }
+
+/* Shared controls */
+.shared-bar { display: flex; align-items: flex-end; gap: 1.75rem; flex-wrap: wrap; }
+.sl-inline { display: flex; flex-direction: column; gap: .25rem; font-size: .82rem; }
+.sl-inline label { color: #475569; font-weight: 500; }
+.sl-inline .sl-row { display: flex; align-items: center; gap: .5rem; }
+.sl-inline .val { font-family: 'IBM Plex Mono', monospace; min-width: 3rem; font-size: .78rem; }
+
+/* Algo row */
+.algo-row { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 1.25rem; align-items: start; }
+@media (max-width: 1100px) { .algo-row { grid-template-columns: 1fr 1fr; } }
+@media (max-width: 700px)  { .algo-row { grid-template-columns: 1fr; } }
+
+/* Canvas */
+.canvas-wrap { width: 100%; aspect-ratio: 4/3; border-radius: 10px; overflow: hidden; background: #f1f5f9; border: 1px solid #e2e8f0; cursor: crosshair; }
+.canvas-wrap canvas { display: block; width: 100% !important; height: 100% !important; }
+.canvas-hint { font-size: .7rem; color: #94a3b8; margin-top: .3rem; text-align: center; }
+
+/* Sliders */
+.sl-group { margin-bottom: .6rem; }
+.sl-group:last-child { margin-bottom: 0; }
+.sl-label { display: flex; justify-content: space-between; font-size: .8rem; margin-bottom: .2rem; }
+.sl-name { color: #475569; }
+.sl-val  { font-family: 'IBM Plex Mono', monospace; font-weight: 500; }
+input[type=range] { -webkit-appearance: none; appearance: none; width: 100%; height: 5px; background: #e2e8f0; border-radius: 3px; outline: none; cursor: pointer; }
+input[type=range]::-webkit-slider-thumb { -webkit-appearance: none; width: 15px; height: 15px; border-radius: 50%; background: #0f172a; cursor: pointer; border: 2px solid white; box-shadow: 0 1px 3px rgba(0,0,0,.25); }
+
+/* Info rows */
+.info-row { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #f1f5f9; padding: .32rem 0; font-size: .79rem; }
+.info-row:last-child { border-bottom: none; }
+.info-label { color: #64748b; }
+.info-val   { font-family: 'IBM Plex Mono', monospace; text-align: right; }
+.info-val.ok  { color: #15803d; font-weight: 600; }
+.info-val.err { color: #dc2626; font-weight: 600; }
+
+/* Buttons */
+.btn-row { display: flex; gap: .5rem; flex-wrap: wrap; margin-top: .75rem; }
+.btn { padding: .4rem .95rem; border-radius: 8px; border: none; cursor: pointer; font-family: 'IBM Plex Sans', sans-serif; font-size: .82rem; font-weight: 500; transition: background .15s; }
+.btn:active { transform: scale(.97); }
+.btn:disabled { opacity: .45; cursor: not-allowed; transform: none !important; }
+.btn-primary   { background: #00462A; color: white; }
+.btn-primary:not(:disabled):hover   { background: #005a35; }
+.btn-secondary { background: #f1f5f9; color: #0f172a; border: 1px solid #e2e8f0; }
+.btn-secondary:not(:disabled):hover { background: #e2e8f0; }
+.btn-danger    { background: #fef2f2; color: #dc2626; border: 1px solid #fecaca; }
+.btn-danger:not(:disabled):hover    { background: #fee2e2; }
+
+/* Status badge */
+.badge { display: inline-flex; align-items: center; font-size: .72rem; font-weight: 600; padding: .12rem .48rem; border-radius: 999px; white-space: nowrap; }
+.badge.idle { background: #f1f5f9; color: #64748b; border: 1px solid #e2e8f0; }
+.badge.run  { background: #fffbeb; color: #d97706; border: 1px solid #fde68a; }
+.badge.ok   { background: #f0fdf4; color: #15803d; border: 1px solid #bbf7d0; }
+.badge.fail { background: #fef2f2; color: #dc2626; border: 1px solid #fecaca; }
+
+.sec-lbl { font-size: .74rem; font-weight: 600; text-transform: uppercase; letter-spacing: .04em; color: #94a3b8; margin: .7rem 0 .35rem; }
+.sec-lbl:first-child { margin-top: 0; }
+.divider { border-top: 1px solid #f1f5f9; margin: .55rem 0; }
+
+/* Algo accent */
+.algo-prm     .card-hd { border-bottom: 2px solid #3b82f6; }
+.algo-rrt     .card-hd { border-bottom: 2px solid #f59e0b; }
+.algo-rrtstar .card-hd { border-bottom: 2px solid #22c55e; }
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <a href="../index.html">Intelligent Robotics</a>
+  <span class="sep">/</span>
+  Motion Planning
+  <span class="sep">/</span>
+  <span class="cur">Sampling-based Planning</span>
+</div>
+
+<div class="page">
+  <h1 class="page-title">Sampling-based Motion Planning</h1>
+  <p class="page-desc">
+    Three sampling-based planners on the same maze environment.
+    <strong>PRM</strong> builds an offline roadmap.
+    <strong>RRT</strong> grows a tree fast — first feasible path, no optimization.
+    <strong>RRT*</strong> adds rewiring and runs longer to asymptotically improve path cost.
+    <span style="color:#22c55e;font-weight:600">Left-click</span> a canvas to move start ·
+    <span style="color:#a855f7;font-weight:600">Right-click</span> to move goal.
+  </p>
+
+  <!-- Shared controls -->
+  <div class="card" style="margin-bottom:1.25rem;">
+    <div class="card-hd">
+      <div class="card-title">Shared Settings</div>
+      <div style="display:flex;gap:.5rem;">
+        <button class="btn btn-primary"   id="btn-run-all">▶ Run All</button>
+        <button class="btn btn-danger"    id="btn-reset-all">↺ Reset All</button>
+      </div>
+    </div>
+    <div class="card-body">
+      <div class="shared-bar">
+        <div class="sl-inline">
+          <label>Animation speed</label>
+          <div class="sl-row">
+            <input type="range" id="spd" min="1" max="5" value="3" step="1" style="width:110px">
+            <span class="val" id="spd-disp">medium</span>
+          </div>
+        </div>
+        <div class="sl-inline">
+          <label>Step size</label>
+          <div class="sl-row">
+            <input type="range" id="step-size" min="2" max="15" value="6" step="1" style="width:110px">
+            <span class="val" id="step-disp">6</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 3-panel comparison -->
+  <div class="algo-row">
+
+    <!-- ── PRM ── -->
+    <div class="card algo-prm">
+      <div class="card-hd">
+        <div>
+          <div class="card-title">PRM — Probabilistic Roadmap</div>
+          <div class="card-sub">offline roadmap · multi-query</div>
+        </div>
+        <span id="prm-badge" class="badge idle">● Idle</span>
+      </div>
+      <div class="card-body-tight">
+        <div class="canvas-wrap" id="prm-wrap"><canvas id="prm-canvas"></canvas></div>
+        <p class="canvas-hint">edges = #cbd5e1 · path = <span style="color:#3b82f6">■</span> blue</p>
+      </div>
+      <div class="card-body">
+        <div class="sec-lbl">Parameters</div>
+        <div class="sl-group">
+          <div class="sl-label"><span class="sl-name">Samples N</span><span class="sl-val" id="prm-n-disp">200</span></div>
+          <input type="range" id="prm-n" min="50" max="600" value="200" step="10">
+        </div>
+        <div class="sl-group">
+          <div class="sl-label"><span class="sl-name">Connect radius r</span><span class="sl-val" id="prm-r-disp">15</span></div>
+          <input type="range" id="prm-r" min="5" max="40" value="15" step="1">
+        </div>
+        <div class="divider"></div>
+        <div class="sec-lbl">Statistics</div>
+        <div class="info-row"><span class="info-label">Nodes sampled</span><span class="info-val" id="prm-s-nodes">—</span></div>
+        <div class="info-row"><span class="info-label">Edges built</span><span class="info-val" id="prm-s-edges">—</span></div>
+        <div class="info-row"><span class="info-label">Path length</span><span class="info-val" id="prm-s-path">—</span></div>
+        <div class="info-row"><span class="info-label">Compute time</span><span class="info-val" id="prm-s-time">—</span></div>
+        <div class="btn-row">
+          <button class="btn btn-primary"   id="prm-run">▶ Run</button>
+          <button class="btn btn-secondary" id="prm-step">Step</button>
+          <button class="btn btn-danger"    id="prm-reset">↺ Reset</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── RRT ── -->
+    <div class="card algo-rrt">
+      <div class="card-hd">
+        <div>
+          <div class="card-title">RRT — Rapidly-exploring Random Tree</div>
+          <div class="card-sub">single-query · fast · suboptimal</div>
+        </div>
+        <span id="rrt-badge" class="badge idle">● Idle</span>
+      </div>
+      <div class="card-body-tight">
+        <div class="canvas-wrap" id="rrt-wrap"><canvas id="rrt-canvas"></canvas></div>
+        <p class="canvas-hint">tree = #94a3b8 · path = <span style="color:#f59e0b">■</span> orange</p>
+      </div>
+      <div class="card-body">
+        <div class="sec-lbl">Parameters</div>
+        <div class="sl-group">
+          <div class="sl-label"><span class="sl-name">Max iterations</span><span class="sl-val" id="rrt-iter-disp">5,000</span></div>
+          <input type="range" id="rrt-iter" min="500" max="15000" value="5000" step="500">
+        </div>
+        <div class="divider"></div>
+        <div class="sec-lbl">Statistics</div>
+        <div class="info-row"><span class="info-label">Tree nodes</span><span class="info-val" id="rrt-s-nodes">—</span></div>
+        <div class="info-row"><span class="info-label">Iterations</span><span class="info-val" id="rrt-s-iter">—</span></div>
+        <div class="info-row"><span class="info-label">Path length</span><span class="info-val" id="rrt-s-path">—</span></div>
+        <div class="info-row"><span class="info-label">Compute time</span><span class="info-val" id="rrt-s-time">—</span></div>
+        <div class="btn-row">
+          <button class="btn btn-primary"   id="rrt-run">▶ Run</button>
+          <button class="btn btn-secondary" id="rrt-step">Step</button>
+          <button class="btn btn-danger"    id="rrt-reset">↺ Reset</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── RRT* ── -->
+    <div class="card algo-rrtstar">
+      <div class="card-hd">
+        <div>
+          <div class="card-title">RRT* — Optimal RRT</div>
+          <div class="card-sub">asymptotically optimal · keeps improving</div>
+        </div>
+        <span id="rrtstar-badge" class="badge idle">● Idle</span>
+      </div>
+      <div class="card-body-tight">
+        <div class="canvas-wrap" id="rrtstar-wrap"><canvas id="rrtstar-canvas"></canvas></div>
+        <p class="canvas-hint">tree = #94a3b8 · path = <span style="color:#22c55e">■</span> green (improves over time)</p>
+      </div>
+      <div class="card-body">
+        <div class="sec-lbl">Parameters</div>
+        <div class="sl-group">
+          <div class="sl-label"><span class="sl-name">Max iterations</span><span class="sl-val" id="rrtstar-iter-disp">8,000</span></div>
+          <input type="range" id="rrtstar-iter" min="500" max="20000" value="8000" step="500">
+        </div>
+        <div class="sl-group">
+          <div class="sl-label"><span class="sl-name">Near radius γ</span><span class="sl-val" id="rrtstar-r-disp">12</span></div>
+          <input type="range" id="rrtstar-r" min="5" max="35" value="12" step="1">
+        </div>
+        <div class="divider"></div>
+        <div class="sec-lbl">Statistics</div>
+        <div class="info-row"><span class="info-label">Tree nodes</span><span class="info-val" id="rrtstar-s-nodes">—</span></div>
+        <div class="info-row"><span class="info-label">Iterations</span><span class="info-val" id="rrtstar-s-iter">—</span></div>
+        <div class="info-row"><span class="info-label">Best path length</span><span class="info-val" id="rrtstar-s-path">—</span></div>
+        <div class="info-row"><span class="info-label">Rewires</span><span class="info-val" id="rrtstar-s-rewires">—</span></div>
+        <div class="btn-row">
+          <button class="btn btn-primary"   id="rrtstar-run">▶ Run</button>
+          <button class="btn btn-secondary" id="rrtstar-step">Step</button>
+          <button class="btn btn-danger"    id="rrtstar-reset">↺ Reset</button>
+        </div>
+      </div>
+    </div>
+
+  </div><!-- end algo-row -->
+</div><!-- end page -->
+
+<script>
+'use strict';
+
+// ══════════════════════════════════════════════════════════════════════════════
+// WORLD  (W×H units; obstacles are axis-aligned boxes)
+// Three vertical walls alternating gap-top / gap-bottom / gap-top
+// forcing a snake path: up → right → down → right → up → right
+// ══════════════════════════════════════════════════════════════════════════════
+const W = 100, H = 75;
+
+const OBSTACLES = [
+  { x: 24, y: 0,  w: 9, h: 58, color: '#ef4444' },  // Wall 1 — gap y=58–75
+  { x: 49, y: 17, w: 9, h: 58, color: '#f97316' },  // Wall 2 — gap y=0–17
+  { x: 74, y: 0,  w: 9, h: 58, color: '#8b5cf6' },  // Wall 3 — gap y=58–75
+];
+
+let startPt = { x: 5,  y: 35 };
+let goalPt  = { x: 94, y: 38 };
+
+// ── Helpers ──────────────────────────────────────────────────────────────────
+function dist(a, b)  { return Math.hypot(a.x - b.x, a.y - b.y); }
+function dist2(a, b) { return (a.x-b.x)**2 + (a.y-b.y)**2; }
+
+function pathLen(path) {
+  let s = 0;
+  for (let i = 1; i < path.length; i++) s += dist(path[i-1], path[i]);
+  return s;
+}
+
+// ── Collision ─────────────────────────────────────────────────────────────────
+function ptFree(px, py) {
+  if (px < 0 || px > W || py < 0 || py > H) return false;
+  for (const o of OBSTACLES)
+    if (px >= o.x && px <= o.x+o.w && py >= o.y && py <= o.y+o.h) return false;
+  return true;
+}
+
+// Segment vs AABB — 2D slab method
+function segFree(ax, ay, bx, by) {
+  for (const o of OBSTACLES) {
+    const cx = o.x + o.w/2, cy = o.y + o.h/2;
+    const hw = o.w/2,       hh = o.h/2;
+    const ox = ax-cx, oy = ay-cy;
+    const dx = bx-ax, dy = by-ay;
+    let tmin = 0, tmax = 1;
+    let blocked = false;
+    for (const [or, dr, h] of [[ox,dx,hw],[oy,dy,hh]]) {
+      if (Math.abs(dr) < 1e-10) {
+        if (Math.abs(or) > h) { blocked = true; break; }
+      } else {
+        const inv = 1/dr;
+        let t1 = (-h-or)*inv, t2 = (h-or)*inv;
+        if (t1>t2) { const tmp=t1; t1=t2; t2=tmp; }
+        tmin = Math.max(tmin, t1);
+        tmax = Math.min(tmax, t2);
+        if (tmin > tmax) { blocked = true; break; }
+      }
+    }
+    if (!blocked) return false; // segment intersects this obstacle
+  }
+  return true;
+}
+
+function randomFree() {
+  for (let i = 0; i < 200; i++) {
+    const x = Math.random() * W, y = Math.random() * H;
+    if (ptFree(x, y)) return {x, y};
+  }
+  return null;
+}
+
+// ── World ↔ Canvas ────────────────────────────────────────────────────────────
+function w2c(wx, wy, cw, ch) {
+  return { x: (wx/W)*cw, y: ch - (wy/H)*ch };
+}
+function c2w(cx, cy, cw, ch) {
+  return { x: (cx/cw)*W, y: ((ch-cy)/ch)*H };
+}
+
+// ══════════════════════════════════════════════════════════════════════════════
+// DRAWING PRIMITIVES
+// ══════════════════════════════════════════════════════════════════════════════
+function drawBase(ctx, cw, ch) {
+  ctx.fillStyle = '#f1f5f9';
+  ctx.fillRect(0, 0, cw, ch);
+
+  // Grid
+  ctx.strokeStyle = '#e2e8f0';
+  ctx.lineWidth = 0.5;
+  for (let x = 0; x <= W; x += 10) {
+    const {x: cx} = w2c(x, 0, cw, ch);
+    ctx.beginPath(); ctx.moveTo(cx, 0); ctx.lineTo(cx, ch); ctx.stroke();
+  }
+  for (let y = 0; y <= H; y += 10) {
+    const {y: cy} = w2c(0, y, cw, ch);
+    ctx.beginPath(); ctx.moveTo(0, cy); ctx.lineTo(cw, cy); ctx.stroke();
+  }
+
+  // Obstacles
+  for (const o of OBSTACLES) {
+    const p1 = w2c(o.x,       o.y+o.h, cw, ch);
+    const p2 = w2c(o.x+o.w,   o.y,     cw, ch);
+    ctx.fillStyle   = o.color + '38';
+    ctx.fillRect(p1.x, p1.y, p2.x-p1.x, p2.y-p1.y);
+    ctx.strokeStyle = o.color;
+    ctx.lineWidth   = 1.5;
+    ctx.strokeRect(p1.x, p1.y, p2.x-p1.x, p2.y-p1.y);
+  }
+}
+
+function drawEndpoints(ctx, cw, ch) {
+  for (const [pt, color, label] of [[startPt,'#22c55e','S'],[goalPt,'#a855f7','G']]) {
+    const p = w2c(pt.x, pt.y, cw, ch);
+    ctx.beginPath(); ctx.arc(p.x, p.y, 7, 0, Math.PI*2);
+    ctx.fillStyle = color; ctx.fill();
+    ctx.strokeStyle = 'white'; ctx.lineWidth = 2; ctx.stroke();
+    ctx.fillStyle = 'white';
+    ctx.font = 'bold 8px IBM Plex Sans, sans-serif';
+    ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+    ctx.fillText(label, p.x, p.y);
+  }
+}
+
+function drawPolyline(ctx, cw, ch, pts, color, lw) {
+  if (!pts || pts.length < 2) return;
+  ctx.strokeStyle = color; ctx.lineWidth = lw; ctx.lineJoin = 'round';
+  ctx.beginPath();
+  const p0 = w2c(pts[0].x, pts[0].y, cw, ch);
+  ctx.moveTo(p0.x, p0.y);
+  for (let i = 1; i < pts.length; i++) {
+    const p = w2c(pts[i].x, pts[i].y, cw, ch);
+    ctx.lineTo(p.x, p.y);
+  }
+  ctx.stroke();
+}
+
+// ══════════════════════════════════════════════════════════════════════════════
+// PRM
+// ══════════════════════════════════════════════════════════════════════════════
+let prm = null;
+
+function prmInit() {
+  prm = { nodes:[], edges:[], path:null, phase:'idle', animEdge:0,
+          stats:{ nodes:0, edges:0, pathLen:0, time:0 } };
+}
+
+function prmBuild() {
+  const N = parseInt(document.getElementById('prm-n').value);
+  const r = parseFloat(document.getElementById('prm-r').value);
+  const t0 = performance.now();
+
+  const nodes = [{ ...startPt }, { ...goalPt }];
+  for (let i = 0; i < N-2; i++) {
+    const pt = randomFree();
+    if (pt) nodes.push(pt);
+  }
+
+  const edges = [];
+  for (let i = 0; i < nodes.length; i++) {
+    for (let j = i+1; j < nodes.length; j++) {
+      if (dist(nodes[i], nodes[j]) <= r &&
+          segFree(nodes[i].x, nodes[i].y, nodes[j].x, nodes[j].y)) {
+        edges.push({ a:i, b:j, w:dist(nodes[i], nodes[j]) });
+      }
+    }
+  }
+
+  // Dijkstra: node[0]=start, node[1]=goal
+  const n = nodes.length;
+  const d = new Array(n).fill(Infinity);
+  const prev = new Array(n).fill(-1);
+  d[0] = 0;
+  const adj = Array.from({length:n}, ()=>[]);
+  for (const e of edges) {
+    adj[e.a].push({to:e.b, w:e.w});
+    adj[e.b].push({to:e.a, w:e.w});
+  }
+  const vis = new Uint8Array(n);
+  for (let iter = 0; iter < n; iter++) {
+    let u = -1;
+    for (let i = 0; i < n; i++) if (!vis[i] && (u===-1 || d[i]<d[u])) u=i;
+    if (u===-1 || d[u]===Infinity) break;
+    vis[u] = 1;
+    if (u===1) break;
+    for (const {to,w} of adj[u]) if (d[u]+w < d[to]) { d[to]=d[u]+w; prev[to]=u; }
+  }
+
+  let path = null;
+  if (d[1] < Infinity) {
+    path = [];
+    let cur = 1;
+    while (cur !== -1) { path.unshift(nodes[cur]); cur = prev[cur]; }
+  }
+
+  prm.nodes = nodes;
+  prm.edges = edges;
+  prm.path  = path;
+  prm.stats.nodes   = nodes.length;
+  prm.stats.edges   = edges.length;
+  prm.stats.pathLen = path ? pathLen(path) : 0;
+  prm.stats.time    = performance.now() - t0;
+}
+
+function prmRun() {
+  prmBuild();
+  prm.phase     = 'anim';
+  prm.animEdge  = 0;
+  setBadge('prm', 'Building…', 'run');
+  startTick();
+}
+
+function prmDraw(ctx, cw, ch) {
+  if (!prm || prm.phase === 'idle') return;
+  const { nodes, edges, path, animEdge, phase } = prm;
+  const limit = (phase === 'anim') ? animEdge : edges.length;
+
+  ctx.strokeStyle = '#cbd5e1'; ctx.lineWidth = 0.8;
+  for (let i = 0; i < limit; i++) {
+    const {a, b} = edges[i];
+    const pa = w2c(nodes[a].x, nodes[a].y, cw, ch);
+    const pb = w2c(nodes[b].x, nodes[b].y, cw, ch);
+    ctx.beginPath(); ctx.moveTo(pa.x, pa.y); ctx.lineTo(pb.x, pb.y); ctx.stroke();
+  }
+  ctx.fillStyle = '#3b82f6';
+  for (let i = 2; i < nodes.length; i++) {
+    const p = w2c(nodes[i].x, nodes[i].y, cw, ch);
+    ctx.beginPath(); ctx.arc(p.x, p.y, 1.8, 0, Math.PI*2); ctx.fill();
+  }
+  if (phase === 'done') drawPolyline(ctx, cw, ch, path, '#3b82f6', 3);
+  else if (phase === 'fail') {/* no path */}
+}
+
+// ══════════════════════════════════════════════════════════════════════════════
+// RRT
+// ══════════════════════════════════════════════════════════════════════════════
+let rrt = null;
+
+function rrtInit() {
+  rrt = { nodes:[{...startPt, parent:-1, cost:0}], path:null,
+          phase:'idle', iter:0, maxIter:0, t0:0,
+          stats:{time:0} };
+}
+
+function rrtStep(iters) {
+  if (!rrt || rrt.phase !== 'run') return;
+  const stepSize  = parseFloat(document.getElementById('step-size').value);
+  const goalBias  = 0;
+  const goalR     = stepSize * 1.5;
+  const { nodes } = rrt;
+
+  for (let it = 0; it < iters; it++) {
+    if (rrt.iter >= rrt.maxIter) {
+      rrt.phase = rrt.path ? 'done' : 'fail';
+      rrt.stats.time = performance.now() - rrt.t0;
+      return;
+    }
+    rrt.iter++;
+
+    const qr = (Math.random() < goalBias)
+      ? { ...goalPt }
+      : { x: Math.random()*W, y: Math.random()*H };
+
+    let nearIdx = 0, nearD2 = Infinity;
+    for (let i = 0; i < nodes.length; i++) {
+      const d = dist2(nodes[i], qr);
+      if (d < nearD2) { nearD2 = d; nearIdx = i; }
+    }
+    const qn = nodes[nearIdx];
+    const d  = Math.sqrt(nearD2);
+    const qnew = d <= stepSize
+      ? { x:qr.x, y:qr.y }
+      : { x:qn.x+(qr.x-qn.x)/d*stepSize, y:qn.y+(qr.y-qn.y)/d*stepSize };
+
+    if (!ptFree(qnew.x, qnew.y)) continue;
+    if (!segFree(qn.x, qn.y, qnew.x, qnew.y)) continue;
+
+    nodes.push({ ...qnew, parent:nearIdx, cost:qn.cost+dist(qn, qnew) });
+    const ni = nodes.length - 1;
+
+    if (dist(qnew, goalPt) < goalR && segFree(qnew.x, qnew.y, goalPt.x, goalPt.y)) {
+      const path = [{...goalPt}];
+      let cur = ni;
+      while (cur !== -1) { path.unshift({...nodes[cur]}); cur = nodes[cur].parent; }
+      rrt.path = path;
+      rrt.phase = 'done';
+      rrt.stats.time = performance.now() - rrt.t0;
+      return;
+    }
+  }
+}
+
+function rrtDraw(ctx, cw, ch) {
+  if (!rrt || rrt.phase === 'idle') return;
+  const { nodes, path } = rrt;
+  ctx.strokeStyle = '#94a3b8'; ctx.lineWidth = 0.8;
+  for (let i = 1; i < nodes.length; i++) {
+    const n = nodes[i], p = nodes[n.parent];
+    const a = w2c(n.x, n.y, cw, ch), b = w2c(p.x, p.y, cw, ch);
+    ctx.beginPath(); ctx.moveTo(a.x, a.y); ctx.lineTo(b.x, b.y); ctx.stroke();
+  }
+  drawPolyline(ctx, cw, ch, path, '#f59e0b', 3);
+}
+
+// ══════════════════════════════════════════════════════════════════════════════
+// RRT*
+// ══════════════════════════════════════════════════════════════════════════════
+let rrtStar = null;
+
+function rrtStarInit() {
+  rrtStar = { nodes:[{...startPt, parent:-1, cost:0}], path:null,
+              bestCost:Infinity, phase:'idle', iter:0, maxIter:0,
+              rewires:0, t0:0, stats:{time:0} };
+}
+
+function rrtStarStep(iters) {
+  if (!rrtStar || rrtStar.phase !== 'run') return;
+  const stepSize = parseFloat(document.getElementById('step-size').value);
+  const goalBias = 0;
+  const nearR    = parseFloat(document.getElementById('rrtstar-r').value);
+  const goalR    = stepSize * 1.5;
+  const { nodes } = rrtStar;
+
+  for (let it = 0; it < iters; it++) {
+    if (rrtStar.iter >= rrtStar.maxIter) {
+      rrtStar.phase = rrtStar.path ? 'done' : 'fail';
+      rrtStar.stats.time = performance.now() - rrtStar.t0;
+      return;
+    }
+    rrtStar.iter++;
+
+    const qr = (Math.random() < goalBias)
+      ? { ...goalPt }
+      : { x:Math.random()*W, y:Math.random()*H };
+
+    let nearIdx = 0, nearD2 = Infinity;
+    for (let i = 0; i < nodes.length; i++) {
+      const d = dist2(nodes[i], qr);
+      if (d < nearD2) { nearD2 = d; nearIdx = i; }
+    }
+    const qn = nodes[nearIdx];
+    const d  = Math.sqrt(nearD2);
+    const qnew = d <= stepSize
+      ? { x:qr.x, y:qr.y }
+      : { x:qn.x+(qr.x-qn.x)/d*stepSize, y:qn.y+(qr.y-qn.y)/d*stepSize };
+
+    if (!ptFree(qnew.x, qnew.y)) continue;
+    if (!segFree(qn.x, qn.y, qnew.x, qnew.y)) continue;
+
+    // Near nodes
+    const near = [];
+    for (let i = 0; i < nodes.length; i++)
+      if (dist(nodes[i], qnew) <= nearR) near.push(i);
+
+    // Choose best parent
+    let bestParent = nearIdx;
+    let bestCost   = qn.cost + dist(qn, qnew);
+    for (const ni of near) {
+      const c = nodes[ni].cost + dist(nodes[ni], qnew);
+      if (c < bestCost && segFree(nodes[ni].x, nodes[ni].y, qnew.x, qnew.y)) {
+        bestCost = c; bestParent = ni;
+      }
+    }
+
+    const newNode = { ...qnew, parent:bestParent, cost:bestCost };
+    nodes.push(newNode);
+    const newIdx = nodes.length - 1;
+
+    // Rewire
+    for (const ni of near) {
+      if (ni === bestParent) continue;
+      const nc = bestCost + dist(qnew, nodes[ni]);
+      if (nc < nodes[ni].cost && segFree(qnew.x, qnew.y, nodes[ni].x, nodes[ni].y)) {
+        nodes[ni].parent = newIdx;
+        nodes[ni].cost   = nc;
+        rrtStar.rewires++;
+      }
+    }
+
+    // Update goal path if reachable
+    if (dist(qnew, goalPt) < goalR && segFree(qnew.x, qnew.y, goalPt.x, goalPt.y)) {
+      const gc = bestCost + dist(qnew, goalPt);
+      if (gc < rrtStar.bestCost) {
+        rrtStar.bestCost = gc;
+        const path = [{...goalPt}];
+        let cur = newIdx;
+        while (cur !== -1) { path.unshift({...nodes[cur]}); cur = nodes[cur].parent; }
+        rrtStar.path = path;
+      }
+    }
+  }
+}
+
+function rrtStarDraw(ctx, cw, ch) {
+  if (!rrtStar || rrtStar.phase === 'idle') return;
+  const { nodes, path } = rrtStar;
+  ctx.strokeStyle = '#94a3b8'; ctx.lineWidth = 0.8;
+  for (let i = 1; i < nodes.length; i++) {
+    const n = nodes[i], p = nodes[n.parent];
+    const a = w2c(n.x, n.y, cw, ch), b = w2c(p.x, p.y, cw, ch);
+    ctx.beginPath(); ctx.moveTo(a.x, a.y); ctx.lineTo(b.x, b.y); ctx.stroke();
+  }
+  drawPolyline(ctx, cw, ch, path, '#22c55e', 3);
+}
+
+// ══════════════════════════════════════════════════════════════════════════════
+// CANVAS RESIZE + REDRAW
+// ══════════════════════════════════════════════════════════════════════════════
+function syncCanvas(id) {
+  const canvas = document.getElementById(id+'-canvas');
+  const wrap   = document.getElementById(id+'-wrap');
+  const W2 = wrap.clientWidth, H2 = wrap.clientHeight;
+  if (canvas.width !== W2 || canvas.height !== H2) {
+    canvas.width = W2; canvas.height = H2;
+  }
+  return canvas;
+}
+
+function redrawAll() {
+  for (const id of ['prm','rrt','rrtstar']) {
+    const canvas = syncCanvas(id);
+    const ctx = canvas.getContext('2d');
+    const cw = canvas.width, ch = canvas.height;
+    drawBase(ctx, cw, ch);
+    if (id === 'prm')     prmDraw(ctx, cw, ch);
+    if (id === 'rrt')     rrtDraw(ctx, cw, ch);
+    if (id === 'rrtstar') rrtStarDraw(ctx, cw, ch);
+    drawEndpoints(ctx, cw, ch);
+  }
+  updateStats();
+}
+
+// ══════════════════════════════════════════════════════════════════════════════
+// STATS
+// ══════════════════════════════════════════════════════════════════════════════
+function updateStats() {
+  if (prm && prm.phase !== 'idle') {
+    set('prm-s-nodes', prm.stats.nodes);
+    set('prm-s-edges', prm.stats.edges);
+    set('prm-s-path',  prm.path ? prm.stats.pathLen.toFixed(1) : '—');
+    set('prm-s-time',  prm.stats.time.toFixed(1) + ' ms');
+  }
+  if (rrt && rrt.phase !== 'idle') {
+    set('rrt-s-nodes', rrt.nodes.length);
+    set('rrt-s-iter',  rrt.iter.toLocaleString());
+    set('rrt-s-path',  rrt.path ? pathLen(rrt.path).toFixed(1) : '—');
+    set('rrt-s-time',  rrt.stats.time ? rrt.stats.time.toFixed(1)+' ms' : (performance.now()-rrt.t0).toFixed(0)+' ms');
+  }
+  if (rrtStar && rrtStar.phase !== 'idle') {
+    set('rrtstar-s-nodes',   rrtStar.nodes.length);
+    set('rrtstar-s-iter',    rrtStar.iter.toLocaleString());
+    set('rrtstar-s-path',    rrtStar.bestCost < Infinity ? rrtStar.bestCost.toFixed(1) : '—');
+    set('rrtstar-s-rewires', rrtStar.rewires.toLocaleString());
+  }
+}
+function set(id, val) { document.getElementById(id).textContent = val; }
+
+// ══════════════════════════════════════════════════════════════════════════════
+// STATUS BADGE
+// ══════════════════════════════════════════════════════════════════════════════
+function setBadge(id, text, cls) {
+  const el = document.getElementById(id+'-badge');
+  el.textContent = '● ' + text;
+  el.className = 'badge ' + cls;
+}
+
+// ══════════════════════════════════════════════════════════════════════════════
+// ANIMATION LOOP
+// ══════════════════════════════════════════════════════════════════════════════
+const SPD_LABELS = ['very slow','slow','medium','fast','very fast'];
+const SPD_ITERS  = [2, 8, 25, 80, 250];
+let animHandle = null;
+
+function anyActive() {
+  return (prm && prm.phase === 'anim') ||
+         (rrt && rrt.phase === 'run') ||
+         (rrtStar && rrtStar.phase === 'run');
+}
+
+function tick() {
+  const iters = SPD_ITERS[parseInt(document.getElementById('spd').value) - 1];
+
+  // PRM edge animation
+  if (prm && prm.phase === 'anim') {
+    prm.animEdge = Math.min(prm.animEdge + iters * 5, prm.edges.length);
+    if (prm.animEdge >= prm.edges.length) {
+      prm.phase = prm.path ? 'done' : 'fail';
+      setBadge('prm', prm.path ? 'Path found' : 'No path', prm.path ? 'ok' : 'fail');
+    }
+  }
+
+  // RRT
+  if (rrt && rrt.phase === 'run') {
+    rrtStep(iters);
+    if (rrt.phase === 'done') setBadge('rrt', 'Path found', 'ok');
+    else if (rrt.phase === 'fail') setBadge('rrt', 'No path', 'fail');
+  }
+
+  // RRT*
+  if (rrtStar && rrtStar.phase === 'run') {
+    rrtStarStep(iters);
+    if (rrtStar.phase !== 'run') {
+      setBadge('rrtstar', rrtStar.path ? 'Path found' : 'No path', rrtStar.path ? 'ok' : 'fail');
+    } else if (rrtStar.path) {
+      setBadge('rrtstar', `Optimizing… (${rrtStar.iter.toLocaleString()})`, 'run');
+    }
+  }
+
+  redrawAll();
+
+  if (anyActive()) animHandle = requestAnimationFrame(tick);
+  else animHandle = null;
+}
+
+function startTick() {
+  if (!animHandle) animHandle = requestAnimationFrame(tick);
+}
+
+// ══════════════════════════════════════════════════════════════════════════════
+// RESET HELPERS
+// ══════════════════════════════════════════════════════════════════════════════
+function prmReset() {
+  prmInit();
+  setBadge('prm','Idle','idle');
+  ['prm-s-nodes','prm-s-edges','prm-s-path','prm-s-time'].forEach(id=>set(id,'—'));
+  redrawAll();
+}
+function rrtReset() {
+  rrtInit();
+  setBadge('rrt','Idle','idle');
+  ['rrt-s-nodes','rrt-s-iter','rrt-s-path','rrt-s-time'].forEach(id=>set(id,'—'));
+  redrawAll();
+}
+function rrtStarReset() {
+  rrtStarInit();
+  setBadge('rrtstar','Idle','idle');
+  ['rrtstar-s-nodes','rrtstar-s-iter','rrtstar-s-path','rrtstar-s-rewires'].forEach(id=>set(id,'—'));
+  redrawAll();
+}
+
+// ══════════════════════════════════════════════════════════════════════════════
+// CANVAS CLICK — move start / goal
+// ══════════════════════════════════════════════════════════════════════════════
+function bindCanvasInteraction(canvasId) {
+  const canvas = document.getElementById(canvasId + '-canvas');
+  function handle(e, isGoal) {
+    e.preventDefault();
+    const rect = canvas.getBoundingClientRect();
+    const cx = (e.clientX - rect.left) * (canvas.width / rect.width);
+    const cy = (e.clientY - rect.top)  * (canvas.height / rect.height);
+    const pt = c2w(cx, cy, canvas.width, canvas.height);
+    if (!ptFree(pt.x, pt.y)) return;
+    if (isGoal) { goalPt.x  = pt.x; goalPt.y  = pt.y; }
+    else        { startPt.x = pt.x; startPt.y = pt.y; }
+    prmReset(); rrtReset(); rrtStarReset();
+  }
+  canvas.addEventListener('click',       e => handle(e, false));
+  canvas.addEventListener('contextmenu', e => handle(e, true));
+}
+
+// ══════════════════════════════════════════════════════════════════════════════
+// INIT
+// ══════════════════════════════════════════════════════════════════════════════
+window.addEventListener('load', () => {
+  prmInit(); rrtInit(); rrtStarInit();
+
+  // Slider display helpers
+  function sld(id, dispId, fmt) {
+    const el = document.getElementById(id);
+    const disp = document.getElementById(dispId);
+    el.addEventListener('input', () => { disp.textContent = fmt(el.value); });
+    disp.textContent = fmt(el.value);
+  }
+  sld('spd',          'spd-disp',          v => SPD_LABELS[v-1]);
+  sld('step-size',    'step-disp',         v => v);
+  sld('prm-n',        'prm-n-disp',        v => v);
+  sld('prm-r',        'prm-r-disp',        v => v);
+  sld('rrt-iter',     'rrt-iter-disp',     v => (+v).toLocaleString());
+  sld('rrtstar-iter', 'rrtstar-iter-disp', v => (+v).toLocaleString());
+  sld('rrtstar-r',    'rrtstar-r-disp',    v => v);
+
+  // Buttons — individual
+  document.getElementById('prm-run').addEventListener('click', () => {
+    prmRun();
+  });
+  document.getElementById('rrt-run').addEventListener('click', () => {
+    rrtInit();
+    rrt.phase = 'run';
+    rrt.maxIter = parseInt(document.getElementById('rrt-iter').value);
+    rrt.t0 = performance.now();
+    setBadge('rrt','Running…','run');
+    startTick();
+  });
+  document.getElementById('rrtstar-run').addEventListener('click', () => {
+    rrtStarInit();
+    rrtStar.phase = 'run';
+    rrtStar.maxIter = parseInt(document.getElementById('rrtstar-iter').value);
+    rrtStar.t0 = performance.now();
+    setBadge('rrtstar','Running…','run');
+    startTick();
+  });
+
+  document.getElementById('prm-reset').addEventListener('click', prmReset);
+  document.getElementById('rrt-reset').addEventListener('click', rrtReset);
+  document.getElementById('rrtstar-reset').addEventListener('click', rrtStarReset);
+
+  // Run All / Reset All
+  document.getElementById('btn-run-all').addEventListener('click', () => {
+    document.getElementById('prm-run').click();
+    document.getElementById('rrt-run').click();
+    document.getElementById('rrtstar-run').click();
+  });
+  document.getElementById('btn-reset-all').addEventListener('click', () => {
+    prmReset(); rrtReset(); rrtStarReset();
+  });
+
+  // Per-algo Step buttons — start paused if idle, then advance one tick
+  function makeStepHandler(startFn, activeFn) {
+    return () => {
+      if (animHandle) { cancelAnimationFrame(animHandle); animHandle = null; }
+      if (!activeFn()) startFn();  // initialise if not yet started
+      tick();
+      if (animHandle) { cancelAnimationFrame(animHandle); animHandle = null; }
+    };
+  }
+
+  document.getElementById('prm-step').addEventListener('click', makeStepHandler(
+    () => { prmBuild(); prm.phase = 'anim'; prm.animEdge = 0; setBadge('prm','Paused','run'); },
+    () => prm && prm.phase === 'anim'
+  ));
+
+  document.getElementById('rrt-step').addEventListener('click', makeStepHandler(
+    () => {
+      rrtInit(); rrt.phase = 'run';
+      rrt.maxIter = parseInt(document.getElementById('rrt-iter').value);
+      rrt.t0 = performance.now();
+      setBadge('rrt','Paused','run');
+    },
+    () => rrt && rrt.phase === 'run'
+  ));
+
+  document.getElementById('rrtstar-step').addEventListener('click', makeStepHandler(
+    () => {
+      rrtStarInit(); rrtStar.phase = 'run';
+      rrtStar.maxIter = parseInt(document.getElementById('rrtstar-iter').value);
+      rrtStar.t0 = performance.now();
+      setBadge('rrtstar','Paused','run');
+    },
+    () => rrtStar && rrtStar.phase === 'run'
+  ));
+
+  // Canvas interactions
+  ['prm','rrt','rrtstar'].forEach(bindCanvasInteraction);
+
+  // Initial draw
+  redrawAll();
+  window.addEventListener('resize', redrawAll);
+});
+</script>
+</body>
+</html>
