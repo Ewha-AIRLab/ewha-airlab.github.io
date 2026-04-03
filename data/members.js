@@ -35,44 +35,31 @@ const MEMBERS_DATA = {
     ]
   },
 
-  // ── Student / Staff Groups ──
-  // Each group object:
-  // student: {
-  //   title: "Ph.D. Students",
-  //   type: "student",   // "student" | "staff" | "alumni"
-  //   members: [
-  //     {
-  //       name: "Full Name",
-  //       period: "2024 – present",
-  //       focus: "Research interests",
-  //       email: "name@ewha.ac.kr",  // optional
-  //       website: "#",              // optional
-  //       photo: null,               // optional, e.g. "assets/members/name.jpg"
-  //     }
-  //   ]
-  // },
-
-  // groups: [
-  //   // Example (uncomment to show):
-  //   {
-  //     title: "Graduate Students",
-  //     type: "student",
-  //     members: [
-  //       { name: "Student Name", period: "2025 – present", focus: "Research focus", email: "", website: "#" }
-  //     ]
-  //   },
-  //   {
-  //     title: "Research Staff",
-  //     type: "staff",
-  //     members: []
-  //   },
-  //   {
-  //     title: "Alumni",
-  //     type: "alumni",
-  //     members: [
-  //       { name: "Graduate Name, Ph.D. (2025)", now: "→ Postdoc, Some University" }
-  //     ]
-  //   },
-  // ]
+  // ── Student / Staff / Alumni Groups ──
+  // type: "student" | "staff" | "alumni"
+  // Alumni fields: name, now (current position)
+  // Others fields: name, focus, email (optional), website (optional), photo (optional)
+  groups: [
+    {
+      title: "Undergraduate",
+      type: "intern",
+      members: [
+        {
+          name:    "Ahhyeon Jeong",             // required
+          focus:   "",      // required
+          email:   "hp432300@ewha.ac.kr",        // optional — shows email icon
+          website: "",            // optional — shows globe icon
+          photo:   "assets/members/ahyeon.jpg" // optional — shows placeholder if omitted
+        },
+      ]
+    },
+    // {
+    //   title: "Alumni",
+    //   type: "alumni",
+    //   members: [
+    //     { name: "Graduate Name, Ph.D. (2025)", now: "→ Postdoc, Some University" }
+    //   ]
+    // },
+  ]
 
 };

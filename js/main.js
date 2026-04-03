@@ -277,10 +277,8 @@ function renderMembers() {
         return `<div class="mem-card">
           <div class="photo-slot mem-photo-slot">${photo}</div>
           <div class="mem-info">
-            <div class="mem-name">${m.name}</div>
-            <div class="mem-period">${m.period}</div>
-            <div class="mem-focus">${m.focus}</div>
-            <div class="mem-links">${emailLnk}${webLnk}</div>
+            <div class="mem-name">${m.name}${emailLnk}${webLnk}</div>
+            ${m.focus ? `<div class="mem-focus">${m.focus}</div>` : ''}
           </div>
         </div>`;
       }).join('');
