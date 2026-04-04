@@ -4,7 +4,7 @@
 // Shared helpers
 // ─────────────────────────────────────────────
 
-const PHOTO_SVG = `<svg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg"><rect width="200" height="200" fill="#e8e8e6"/><circle cx="100" cy="75" r="35" fill="#c8c8c5"/><ellipse cx="100" cy="185" rx="65" ry="50" fill="#c8c8c5"/></svg>`;
+const PHOTO_SVG = `<svg viewBox="0 0 200 250" xmlns="http://www.w3.org/2000/svg"><rect width="200" height="250" fill="#f4f8f5"/><circle cx="100" cy="125" r="72" fill="#ddeae3"/><circle cx="100" cy="98" r="30" fill="#b4cec2"/><ellipse cx="100" cy="192" rx="52" ry="40" fill="#b4cec2"/></svg>`;
 
 const EMAIL_SVG  = `<svg viewBox="0 0 24 24"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="M2 7l10 7 10-7"/></svg>`;
 const GLOBE_SVG  = `<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 3c-2.5 3-4 5.5-4 9s1.5 6 4 9M12 3c2.5 3 4 5.5 4 9s-1.5 6-4 9M3 12h18"/></svg>`;
@@ -79,12 +79,16 @@ function setActiveNav(page) {
 function renderHome() {
   const recentPubs = [...PUBLICATIONS].filter(p => p.featured).sort((a,b) => b.year - a.year);
 
-  const carouselItems = recentPubs.map(p => `
-    <div class="carousel-item">
-      <div class="pub-thumb-slot">
+  const carouselItems = recentPubs.map(p => {
+    const lnk = (p.links || []).find(l => l.label === 'Website' || l.label === 'Webpage') ||
+                (p.links || []).find(l => !l.award);
+    const inner = `<div class="pub-thumb-slot">
         ${p.thumbnail ? `<img src="${p.thumbnail}" alt="" loading="lazy" onerror="this.parentElement.innerHTML=''">` : ''}
-      </div>
-    </div>`).join('');
+      </div>`;
+    return `<div class="carousel-item">
+      ${lnk ? `<a href="${lnk.url}" target="_blank" rel="noopener" class="carousel-thumb-lnk">${inner}</a>` : inner}
+    </div>`;
+  }).join('');
 
   const catPillCls   = { award:'pa', publication:'pm', grant:'pb', position:'pc', talk:'py', media:'pg', news:'pg' };
   const catPillLabel = { publication:'PAPER', news:'NEWS', award:'AWARD', talk:'TALK', grant:'GRANT', media:'MEDIA' };
@@ -254,7 +258,7 @@ function renderMembers() {
           <div class="alumni-now">${m.now}</div>
         </div>`).join('');
       groupsHtml += `<div class="grp">
-        <div class="grp-title">${grp.title} <span class="grp-n">${String(grp.members.length).padStart(2,'0')}</span></div>
+        <div class="grp-title">${grp.title}</div>
         <div class="alumni-grid">${items}</div>
       </div>`;
     } else if (grp.type === 'staff') {
@@ -266,24 +270,26 @@ function renderMembers() {
           <td><span class="mem-badge" style="background:var(--gl);color:var(--ink2)">Staff</span></td>
         </tr>`).join('');
       groupsHtml += `<div class="grp">
-        <div class="grp-title">${grp.title} <span class="grp-n">${String(grp.members.length).padStart(2,'0')}</span></div>
+        <div class="grp-title">${grp.title}</div>
         <table class="staff-tbl">${rows}</table>
       </div>`;
     } else {
       const cards = grp.members.map(m => {
         const photo = m.photo ? `<img src="${m.photo}" alt="${m.name}">` : PHOTO_SVG;
-        const emailLnk = m.email ? `<a href="mailto:${m.email}" class="mem-icon-lnk" title="Email">${EMAIL_SVG}</a>` : '';
-        const webLnk = m.website ? `<a href="${m.website}" class="mem-icon-lnk" title="Personal website">${GLOBE_SVG}</a>` : '';
+        const emailLnk = m.email ? `<span class="mem-email-lnk">${EMAIL_SVG}<a href="mailto:${m.email}">${m.email}</a></span>` : '';
+        const webLnk = m.website ? `<a href="${m.website}" class="mem-icon-lnk" target="_blank" rel="noopener" title="Website">${GLOBE_SVG}</a>` : '';
         return `<div class="mem-card">
           <div class="photo-slot mem-photo-slot">${photo}</div>
           <div class="mem-info">
-            <div class="mem-name">${m.name}${emailLnk}${webLnk}</div>
+            <div class="mem-name">${m.name}</div>
+            ${m.role  ? `<div class="mem-role">${m.role}</div>` : ''}
+            ${(emailLnk || webLnk) ? `<div class="mem-links">${emailLnk}${webLnk}</div>` : ''}
             ${m.focus ? `<div class="mem-focus">${m.focus}</div>` : ''}
           </div>
         </div>`;
       }).join('');
       groupsHtml += `<div class="grp">
-        <div class="grp-title">${grp.title} <span class="grp-n">${String(grp.members.length).padStart(2,'0')}</span></div>
+        <div class="grp-title">${grp.title}</div>
         <div class="mem-grid">${cards}</div>
       </div>`;
     }
@@ -320,7 +326,7 @@ function renderMembers() {
       <div style="border:1px solid var(--green);border-radius:6px;padding:1.5rem 2rem;display:grid;grid-template-columns:1fr auto;align-items:center;gap:1rem;">
         <div>
           <div style="font-weight:600;margin-bottom:.3rem;">Join Us!</div>
-          <div style="font-size:.85rem;color:var(--ink2);">We are actively looking for self-motivated <b>undergraduate interns</b> and <b>graduate students (M.S./Ph.D.)</b> with a passion for robotics and AI! If you are interested in joining us, please reach out to Dr. Song.</div>
+          <div style="font-size:.88rem;color:var(--ink2);">We are actively looking for self-motivated <b>undergraduate interns</b> and <b>graduate students (M.S./Ph.D.)</b> with a passion for robotics and AI! If you are interested in joining us, please reach out to Prof. Song.</div>
         </div>
         <a href="mailto:${pi.email}" class="btn btn-g" style="white-space:nowrap;">Contact</a>
       </div>
@@ -524,49 +530,44 @@ function applyPubFilter(filter) {
 // ─────────────────────────────────────────────
 
 function renderResearch() {
-  const projects = RESEARCH_DATA.projects.map(p => `
-    <div class="proj-card">
-      <div class="proj-left">
-        <div class="proj-title">${p.title}</div>
-        <div class="proj-agency">${p.agency}</div>
-        <div class="proj-desc">${p.desc}</div>
-      </div>
-      <div class="proj-right">
-        <span class="proj-status ps-active">${p.status === 'active' ? 'Active' : 'Completed'}</span>
-        <div class="proj-budget">${p.budget}</div>
-        <div class="proj-period">${p.period}</div>
-      </div>
-    </div>`).join('');
+  const areas = RESEARCH_DATA.areas.map(area => {
+    const img = area.image
+      ? `<img src="${area.image}" alt="${area.title}" class="ra-img">`
+      : `<div class="ra-img-placeholder"></div>`;
 
-  const areas = RESEARCH_DATA.areas.map(a => `
-    <div class="ra-card">
-      <div class="ra-bar" style="background:${a.color};"></div>
-      <div class="ra-icon">${a.icon}</div>
-      <div class="ra-name">${a.name}</div>
-      <div class="ra-desc">${a.desc}</div>
-    </div>`).join('');
+    const paperItems = area.papers.map(title => {
+      const pub = PUBLICATIONS.find(p => p.title === title);
+      if (!pub) return '';
+      const mainLink = (pub.links || []).find(l => l.label === 'Webpage' || l.label === 'Website')
+                    || (pub.links || []).find(l => l.label === 'Paper');
+      const href = mainLink ? mainLink.url : '#';
+      return `<li>
+        <a href="${href}" target="_blank" rel="noopener" class="ra-paper-link">
+          <span class="ra-paper-venue">${pub.venue_short} ${pub.year}</span>
+          <span class="ra-paper-title">${pub.title}</span>
+        </a>
+      </li>`;
+    }).join('');
+
+    return `<div class="ra-area-card">
+      <div class="ra-area-img">${img}</div>
+      <div class="ra-area-body">
+        <h2 class="ra-area-title">${area.title}</h2>
+        <div class="ra-area-desc">${area.desc}</div>
+        ${paperItems ? `<div class="ra-paper-label">Related Publications</div><ul class="ra-paper-list">${paperItems}</ul>` : ''}
+      </div>
+    </div>`;
+  }).join('');
 
   document.getElementById('page-content').innerHTML = `
     <div class="page-hd">
       <div class="wrap">
         <h1>Projects</h1>
-        <div class="page-sub">Active projects and research grants</div>
+        <div class="page-sub">Research areas</div>
       </div>
     </div>
     <div class="res-body"><div class="wrap">
-      <div class="res-intro">
-        <!-- div class="sec-eye">Overview</!-->
-        <h2 class="sec-h2" style="margin-bottom:1rem;">Active <em>Projects</em></h2>
-        <!-- p>AIR Lab currently runs funded research projects spanning robot learning, safe human-robot coexistence, foundation model integration, and dexterous manipulation.</!-->
-      </div>
-      <div class="proj-list">${projects}</div>
-      <!--
-      <div style="margin-top:3rem;padding-top:3rem;border-top:1px solid var(--gmd);">
-        <div class="sec-eye">Themes</div>
-        <h2 class="sec-h2">Research <em>Areas</em></h2>
-        <div class="ra-grid" style="grid-template-columns:repeat(4,1fr);">${areas}</div>
-        -->
-      </div>
+      <div class="ra-area-list">${areas}</div>
     </div></div>`;
 }
 

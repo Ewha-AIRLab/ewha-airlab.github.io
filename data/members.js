@@ -45,12 +45,22 @@ const MEMBERS_DATA = {
       type: "intern",
       members: [
         {
-          name:    "Ahhyeon Jeong",             // required
-          focus:   "",      // required
-          email:   "hp432300@ewha.ac.kr",        // optional — shows email icon
-          website: "",            // optional — shows globe icon
-          photo:   "assets/members/ahyeon.jpg" // optional — shows placeholder if omitted
+          name:    "Ahhyeon Jeong",
+          role:    "Undergraduate Intern",
+          focus:   "",
+          email:   "hp432300@ewha.ac.kr",
+          website: "",
+          photo:   "assets/members/ahyeon.jpg"
         },
+        // {
+        //   name:    "Gaeun Bang",
+        //   role:    "Undergraduate Intern",
+        //   focus:   "",
+        //   email:   "hp432300@ewha.ac.kr",
+        //   website: "",
+        //   photo:   ""
+        // },
+        
       ]
     },
     // {
