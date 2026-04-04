@@ -218,22 +218,17 @@ function initCarousel() {
   window.addEventListener('resize', window._carouselResize);
 
   // Touch swipe
-  let touchStartX = 0, touchStartY = 0, didSwipe = false;
-  track.addEventListener('touchstart', e => {
+  const vp = track.parentElement;
+  let touchStartX = 0, didSwipe = false;
+  vp.addEventListener('touchstart', e => {
     touchStartX = e.touches[0].clientX;
-    touchStartY = e.touches[0].clientY;
     didSwipe = false;
   }, { passive: true });
-  track.addEventListener('touchmove', e => {
-    const dx = e.touches[0].clientX - touchStartX;
-    const dy = e.touches[0].clientY - touchStartY;
-    if (Math.abs(dx) > Math.abs(dy)) e.preventDefault();
-  }, { passive: false });
-  track.addEventListener('touchend', e => {
+  vp.addEventListener('touchend', e => {
     const dx = e.changedTouches[0].clientX - touchStartX;
     if (Math.abs(dx) > 40) { didSwipe = true; index += dx < 0 ? 1 : -1; update(true); }
   }, { passive: true });
-  track.addEventListener('click', e => {
+  vp.addEventListener('click', e => {
     if (didSwipe) { e.preventDefault(); e.stopPropagation(); didSwipe = false; }
   }, { capture: true });
 

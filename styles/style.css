@@ -478,6 +478,7 @@ body { font-family: 'IBM Plex Sans', sans-serif; background: var(--w); color: va
   gap: .75rem;
   transition: transform .35s cubic-bezier(.4,0,.2,1);
   will-change: transform;
+  touch-action: pan-y;
 }
 .carousel-item { flex: 0 0 calc((100% - 2.25rem) / 4); min-width: 0; }
 .carousel-item .pub-thumb-slot { width: 100%; aspect-ratio: 16/9; }
