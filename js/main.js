@@ -218,10 +218,11 @@ function initCarousel() {
   window.addEventListener('resize', window._carouselResize);
 
   // Touch swipe
-  let touchStartX = 0, touchStartY = 0;
+  let touchStartX = 0, touchStartY = 0, didSwipe = false;
   track.addEventListener('touchstart', e => {
     touchStartX = e.touches[0].clientX;
     touchStartY = e.touches[0].clientY;
+    didSwipe = false;
   }, { passive: true });
   track.addEventListener('touchmove', e => {
     const dx = e.touches[0].clientX - touchStartX;
@@ -230,8 +231,11 @@ function initCarousel() {
   }, { passive: false });
   track.addEventListener('touchend', e => {
     const dx = e.changedTouches[0].clientX - touchStartX;
-    if (Math.abs(dx) > 40) { index += dx < 0 ? 1 : -1; update(true); }
+    if (Math.abs(dx) > 40) { didSwipe = true; index += dx < 0 ? 1 : -1; update(true); }
   }, { passive: true });
+  track.addEventListener('click', e => {
+    if (didSwipe) { e.preventDefault(); e.stopPropagation(); didSwipe = false; }
+  }, { capture: true });
 
   update(false);
 }
