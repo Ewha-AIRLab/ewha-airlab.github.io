@@ -407,7 +407,7 @@ body { font-family: 'IBM Plex Sans', sans-serif; background: var(--w); color: va
   .pi-bio { font-size: .83rem; }
   .pi-meta { gap: .3rem .75rem; }
   .pi-meta span { font-size: .76rem; }
-  .mem-grid { grid-template-columns: repeat(3, minmax(0, 210px)); gap: 1.5rem; }
+  .mem-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 1.5rem; }
   .mem-info { padding: .7rem .75rem; }
   .mem-name { font-size: 1rem; }
   .mem-role { font-size: .72rem; }
@@ -459,7 +459,7 @@ body { font-family: 'IBM Plex Sans', sans-serif; background: var(--w); color: va
 ═══════════════════════════════ */
 @media (max-width: 400px) {
   .pi-block { grid-template-columns: 1fr; }
-  .pi-photo-slot { width: 100px; height: 120px; }
+  .pi-photo-slot { width: 50%; aspect-ratio: 4/5; height: auto; }
   .mem-grid { gap: .5rem; }
   .mem-info { padding: .6rem; }
   .alumni-grid { grid-template-columns: 1fr; }
