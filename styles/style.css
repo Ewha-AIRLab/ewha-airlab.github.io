@@ -213,7 +213,7 @@ body { font-family: 'IBM Plex Sans', sans-serif; background: var(--w); color: va
 .mem-role  { font-size: .85rem; color: var(--ink3); font-weight: 400; margin-bottom: .25rem; font-style: italic; }
 .mem-focus { font-size: .85rem; color: var(--ink2); line-height: 1.6; }
 .mem-badge { display: inline-block; font-size: .62rem; font-weight: 700; text-transform: uppercase; letter-spacing: .07em; padding: .15rem .45rem; border-radius: 3px; }
-.mem-links { display: flex; gap: .6rem; align-items: center; margin-top: .1rem; margin-bottom: .25rem; }
+.mem-links { display: flex; flex-direction: column; gap: .2rem; margin-top: .1rem; margin-bottom: .25rem; }
 .mem-icon-lnk { display: flex; align-items: center; justify-content: center; width: 26px; height: 26px; border-radius: 5px; background: var(--gp); color: var(--green); text-decoration: none; transition: background .15s, color .15s; flex-shrink: 0; }
 .mem-icon-lnk:hover { background: var(--green); color: #fff; }
 .mem-icon-lnk svg { width: 13px; height: 13px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }

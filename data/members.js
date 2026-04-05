@@ -46,20 +46,21 @@ const MEMBERS_DATA = {
       members: [
         {
           name:    "Ahhyeon Jeong",
-          role:    "Undergraduate Intern",
+          role:    "Undergraduate Student",
           focus:   "",
           email:   "hp432300@ewha.ac.kr",
           website: "",
           photo:   "assets/members/ahyeon.jpg"
         },
-        // {
-        //   name:    "Gaeun Bang",
-        //   role:    "Undergraduate Intern",
-        //   focus:   "",
-        //   email:   "hp432300@ewha.ac.kr",
-        //   website: "",
-        //   photo:   ""
-        // },
+        {
+          name:    "Gaeun Bang",
+          role:    "Undergraduate Student",
+          focus:   "",
+          email:   "glad@ewha.ac.kr",
+          website: "",
+          github: "https://github.com/gladgaeun",
+          photo:   ""
+        },
         
       ]
     },

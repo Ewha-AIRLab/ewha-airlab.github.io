@@ -4,10 +4,11 @@
 // Shared helpers
 // ─────────────────────────────────────────────
 
-const PHOTO_SVG = `<svg viewBox="0 0 200 250" xmlns="http://www.w3.org/2000/svg"><rect width="200" height="250" fill="#f4f8f5"/><circle cx="100" cy="125" r="72" fill="#ddeae3"/><circle cx="100" cy="98" r="30" fill="#b4cec2"/><ellipse cx="100" cy="192" rx="52" ry="40" fill="#b4cec2"/></svg>`;
+const PHOTO_SVG = `<svg viewBox="0 0 200 250" xmlns="http://www.w3.org/2000/svg"><rect width="200" height="250" fill="#f4f8f5"/><circle cx="100" cy="125" r="72" fill="#ddeae3"/><defs><clipPath id="av"><circle cx="100" cy="125" r="72"/></clipPath></defs><g clip-path="url(#av)"><circle cx="100" cy="108" r="30" fill="#b4cec2"/><ellipse cx="100" cy="192" rx="52" ry="40" fill="#b4cec2"/></g></svg>`;
 
 const EMAIL_SVG  = `<svg viewBox="0 0 24 24"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="M2 7l10 7 10-7"/></svg>`;
 const GLOBE_SVG  = `<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 3c-2.5 3-4 5.5-4 9s1.5 6 4 9M12 3c2.5 3 4 5.5 4 9s-1.5 6-4 9M3 12h18"/></svg>`;
+const GITHUB_SVG = `<svg viewBox="0 0 24 24"><path d="M9 19c-5 1.5-5-2.5-7-3m14 6v-3.87a3.37 3.37 0 0 0-.94-2.61c3.14-.35 6.44-1.54 6.44-7A5.44 5.44 0 0 0 20 4.77 5.07 5.07 0 0 0 19.91 1S18.73.65 16 2.48a13.38 13.38 0 0 0-7 0C6.27.65 5.09 1 5.09 1A5.07 5.07 0 0 0 5 4.77a5.44 5.44 0 0 0-1.5 3.78c0 5.42 3.3 6.61 6.44 7A3.37 3.37 0 0 0 9 18.13V22"/></svg>`;
 
 const BADGE_CLS = {
   'T-RO':'bdg-r','RA-L':'bdg-b','ICRA':'bdg-m','IROS':'bdg-y',
@@ -276,13 +277,14 @@ function renderMembers() {
       const cards = grp.members.map(m => {
         const photo = m.photo ? `<img src="${m.photo}" alt="${m.name}">` : PHOTO_SVG;
         const emailLnk = m.email ? `<span class="mem-email-lnk">${EMAIL_SVG}<a href="mailto:${m.email}">${m.email}</a></span>` : '';
-        const webLnk = m.website ? `<a href="${m.website}" class="mem-icon-lnk" target="_blank" rel="noopener" title="Website">${GLOBE_SVG}</a>` : '';
+        const webLnk    = m.website ? `<span class="mem-email-lnk">${GLOBE_SVG}<a href="${m.website}" target="_blank" rel="noopener">${m.website.replace(/^https?:\/\//, '')}</a></span>` : '';
+        const githubLnk = m.github  ? `<span class="mem-email-lnk">${GITHUB_SVG}<a href="${m.github}" target="_blank" rel="noopener">${m.github.replace(/^https?:\/\/(www\.)?github\.com\//, '')}</a></span>` : '';
         return `<div class="mem-card">
           <div class="photo-slot mem-photo-slot">${photo}</div>
           <div class="mem-info">
             <div class="mem-name">${m.name}</div>
             ${m.role  ? `<div class="mem-role">${m.role}</div>` : ''}
-            ${(emailLnk || webLnk) ? `<div class="mem-links">${emailLnk}${webLnk}</div>` : ''}
+            ${(emailLnk || webLnk || githubLnk) ? `<div class="mem-links">${emailLnk}${webLnk}${githubLnk}</div>` : ''}
             ${m.focus ? `<div class="mem-focus">${m.focus}</div>` : ''}
           </div>
         </div>`;
