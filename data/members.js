@@ -59,7 +59,7 @@ const MEMBERS_DATA = {
           email:   "glad@ewha.ac.kr",
           website: "",
           github: "https://github.com/gladgaeun",
-          photo:   ""
+          photo:   "assets/members/gaeun.jpg"
         },
         
       ]
