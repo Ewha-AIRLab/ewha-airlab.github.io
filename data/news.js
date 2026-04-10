@@ -7,6 +7,12 @@
 const NEWS_DATA = [
 
   {
+    date:  "2026.04",
+    cat:   "talk",
+    title: "Daeun gave a talk at <a href=\"https://www.asiagraphics.org/asiagraphics-workshop-on-intelligent-graphics-at-korea\" target=\"_blank\">Asiagraphics Workshop on Intelligent Graphics</a> (Topic: Social Nav)"
+  },
+
+  {
     date:  "2026.03",
     cat:   "news",
     title: "AIR Lab website now online!"
@@ -21,7 +27,7 @@ const NEWS_DATA = [
   {
     date:  "2026.02",
     cat:   "talk",
-    title: "Daeun gave an invited talk, \"Socially and Contextually Aware Navigation for Robots in Human-Centric Environments\" at Tufts University CS Colloquium"
+    title: "Daeun gave an invited talk at Tufts University CS Colloquium (Topic: Social Nav)"
   },
 
   {
@@ -39,7 +45,7 @@ const NEWS_DATA = [
   {
     date:  "2025.12",
     cat:   "talk",
-    title: "Daeun gave an invited talk, \"Socially and Contextually Aware Navigation for Robots in Human-Centric Environments\" at <a href=\"https://rcilab.khu.ac.kr/\" target=\"_blank\">RCI Lab</a>, KHU"
+    title: "Daeun gave an invited talk at <a href=\"https://rcilab.khu.ac.kr/\" target=\"_blank\">RCI Lab</a>, KHU (Topic: Social Nav)"
   },
 
   // {
@@ -65,7 +71,7 @@ const NEWS_DATA = [
   {
     date:  "2025.10",
     cat:   "talk",
-    title: "Daeun gave two invited talks, \"Socially and Contextually Aware Navigation for Robots in Human-Centric Environments\" at <a href=\"https://www.linkedin.com/groups/13352540/\" target=\"_blank\">KARA</a> and University of Delaware"
+    title: "Daeun gave two invited talks at <a href=\"https://www.linkedin.com/groups/13352540/\" target=\"_blank\">KARA</a> and University of Delaware (Topic: Social Nav)"
   },
 
   {

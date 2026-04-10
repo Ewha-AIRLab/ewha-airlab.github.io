@@ -380,7 +380,7 @@ function renderNews() {
   const usedCats  = new Set(NEWS_DATA.map(i => i.cat));
   const filterBtns = catOrder
     .filter(c => usedCats.has(c))
-    .map(c => `<button class="${catBtnCls[c]||'fbtn'}" onclick="fnews('${c}',this)">${catBtnLbl[c]}</button>`)
+    .map(c => `<button class="${catBtnCls[c]||'fbtn'}" data-filter="${c}" onclick="fnews('${c}',this)">${catBtnLbl[c]}</button>`)
     .join('');
 
   document.getElementById('page-content').innerHTML = `
@@ -392,7 +392,7 @@ function renderNews() {
     </div>
     <div class="news-page-body"><div class="wrap">
       <div class="filters">
-        <button class="fbtn active" onclick="fnews('all',this)">All</button>
+        <button class="fbtn active" data-filter="all" onclick="fnews('all',this)">All</button>
         ${filterBtns}
       </div>
       <div class="news-full-list">${items}</div>
@@ -415,7 +415,8 @@ window.toggleOlderNews = function(btn) {
   const open = list.classList.toggle('hidden') === false;
   btn.querySelector('.not-arrow').textContent = open ? '▾' : '▸';
   if (open) {
-    const activeFilter = document.querySelector('.filters .fbtn.active')?.dataset?.filter || 'all';
+    const activeBtn = document.querySelector('.filters .fbtn.active');
+    const activeFilter = activeBtn?.dataset?.filter || 'all';
     list.querySelectorAll('.news-full-item').forEach(item => {
       item.classList.toggle('hidden', activeFilter !== 'all' && item.dataset.cat !== activeFilter);
     });
