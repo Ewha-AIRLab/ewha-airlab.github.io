@@ -10,7 +10,7 @@ const LAB_INFO = {
   full_name: "Advanced Intelligent Robotics Laboratory",
 
   // Paragraph shown under the hero title on the home page
-  intro: "We focus on building <B>deployable robotic AI systems</B> that perceive, learn, and act in complex, real-world, human-centered environments. We integrate machine learning and motion planning to enable practical autonomy beyond the lab—from navigation to manipulation. AIR Lab advances <B>Robot Intelligence for the Real World</B>!",
+  intro: "We focus on building <B>intelligent robotic systems</B> that perceive, learn, and act in complex, real-world, human-centered environments. We integrate machine learning and motion planning to enable practical autonomy beyond the lab—from navigation to manipulation. AIR Lab advances <B>Robot Intelligence for the Real World</B>!",
 
   // Department / university line shown in the footer
   department: "Dept. of Artificial Intelligence",
@@ -31,8 +31,9 @@ const LAB_INFO = {
 
   // Keyword chips shown below the hero intro (emoji + label, no link)
   keywords: [
-    { emoji: "🤖🧠", label: "Robot Intelligence" },
-    { emoji: "🤖🤝", label: "Human-Robot Interaction" },
+    { emoji: "", label: "Robot Intelligence" },
+    { emoji: "", label: "Human-Robot Interaction" },
+    { emoji: "", label: "Motion Planning" },
     // { emoji: "🛞", label: "Autonomous Navigation" },
     // { emoji: "🦾", label: "Robot Manipulation" },
   ],
