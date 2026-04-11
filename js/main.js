@@ -440,14 +440,18 @@ function buildPubCard(pub) {
           : `<span class="pub-award">🏆 ${l.label}</span>`)
       : `<a href="${l.url}" class="pub-lnk" target="_blank" rel="noopener">${l.label}</a>`
   ).join('');
-  return `<div class="pub-item" data-type="${pub.type}">
+  const typeAttr = Array.isArray(pub.type) ? pub.type.join(' ') : (pub.type || '');
+  return `<div class="pub-item" data-type="${typeAttr}">
     <div class="pub-thumb-slot">${thumb}</div>
     <div>
       <div class="pub-title">${pub.title}</div>
       <div class="pub-authors">${renderAuthors(pub.authors)}</div>
       <div class="pub-venue">
-        ${pub.venue_short ? `<span class="bdg ${badgeCls(pub.venue_short)}" style="flex-shrink:0;font-style:normal;white-space:nowrap;">${pub.venue_short}</span>` : ''}
-        <span class="pub-venue-text">${pub.venue_full}</span>
+        ${(pub.venues || (pub.venue_short || pub.venue_full ? [{ short: pub.venue_short, full: pub.venue_full }] : []))
+          .map(v => `<div class="pub-venue-row">
+            ${v.short ? `<span class="bdg ${badgeCls(v.short)}" style="flex-shrink:0;font-style:normal;white-space:nowrap;">${v.short}</span>` : ''}
+            <span class="pub-venue-text">${v.full||''}</span>
+          </div>`).join('')}
       </div>
       <div class="pub-links">${links}</div>
     </div>
@@ -515,7 +519,7 @@ function applyPubFilter(filter) {
     } else if (filter === 'journal' || filter === 'conference' || filter === 'extended_abstract') {
       let any = false;
       grp.querySelectorAll('.pub-item').forEach(i => {
-        const show = i.dataset.type === filter;
+        const show = i.dataset.type.split(' ').includes(filter);
         i.style.display = show ? '' : 'none';
         if (show) any = true;
       });

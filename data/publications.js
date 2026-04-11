@@ -229,8 +229,9 @@ const PUBLICATIONS = [
     year: 2024,
     title: "TSP-Bot: Robotic Drawing via Traveling Salesman Problem",
     authors: ["**Daeun Song**", "Eunjung Lim", "Jiyoon Park", "Minjung Jung", "Young J. Kim<sup>†</sup>"],
-    venue_short: "UR",
-    venue_full: "International Conference on Ubiquitous Robots (UR), 2024",
+    venues: [
+      { short: "UR", full: "International Conference on Ubiquitous Robots (UR), 2024" },
+    ],
     type: "conference",
     featured: true,
     thumbnail: "assets/publications/teaser/tspart_teaser.gif",
@@ -300,6 +301,24 @@ const PUBLICATIONS = [
       { label: "Video", url: "https://youtu.be/YdqkKA3hWMU?si=z-RkHz92P9FwyFTN" }
     ]
   },
+
+  {
+    year: 2021,
+    title: "TSP Pen Art using a Mobile Manipulator Robot",
+    authors: ["Eunjung Lim", "Jiyoon Park", "**Daeun Song**", "Young J. Kim<sup>†</sup>"],
+    venues: [
+      { short: "KCGS", full: "Korea Computer Graphics Society (KCGS) Conference, 2021" },
+    ],
+    type: "extended_abstract",
+    featured: false,
+    thumbnail: "assets/publications/teaser/kcgs21_teaser.gif",
+    links: [
+      { label: "Best Undergrad Paper Award", award: true, url: "assets/award/TSPArt_BestUndergradPaper_KCGS.jpg"},
+      { label: "Webpage", url: "http://graphics.ewha.ac.kr/TSPArt" },
+      { label: "Paper", url: "https://graphics.ewha.ac.kr/TSPArt/KCGS21.pdf" },
+      { label: "Video", url: "https://youtu.be/3wg57vq3o9Q?si=Ot2Haj_ml1babd0o" },
+    ]
+  },
   {
     year: 2020,
     title: "SL1M: Sparse L1-norm Minimization for contact planning on uneven terrain",
@@ -336,17 +355,37 @@ const PUBLICATIONS = [
     year: 2018,
     title: "Artistic Pen Drawing on an Arbitrary Surface using an Impedance-controlled Robot",
     authors: ["**Daeun Song**", "Taekhee Lee", "Young J. Kim<sup>†</sup>"],
-    venue_short: "ICRA",
-    venue_full: "IEEE International Conference on Robotics and Automation (ICRA), 2018",
-    type: "conference",
+    venues: [
+      { short: "ICRA", full: "IEEE International Conference on Robotics and Automation (ICRA), 2018"},
+      { short: "KRoC", full: "Korea Robotics Society Annual Conference (KRoC), 2018" },
+    ],
+    type: ["conference", "extended_abstract"],
     featured: true,
     thumbnail: "assets/publications/teaser/icra18_teaser.gif",
     links: [
+      { label: "Best Paper Award", award: true, url: "assets/award/SSK_BestPaperAward_KRoC.pdf"},
       { label: "Webpage", url: "http://graphics.ewha.ac.kr/SSK" },
       { label: "Paper", url: "assets/publications/paper/icra18.pdf" },
       { label: "Video", url: "https://youtu.be/myYFfGioqYk?si=YGAMV5YNE-mwNOj9" },
     ]
   },
+  // {
+  //   year: 2018,
+  //   title: "Artistic Pen Drawing on an Arbitrary Surface using an Impedance-controlled Robot",
+  //   authors: ["**Daeun Song**", "Taekhee Lee", "Young J. Kim<sup>†</sup>"],
+  //   venues: [
+  //     { short: "KRoC", full: "Korea Robotics Society Annual Conference (KRoC), 2018" },
+  //   ],
+  //   type: "extended_abstract",
+  //   featured: false,
+  //   thumbnail: "assets/publications/teaser/icra18_teaser.jpg",
+  //   links: [
+  //     { label: "Best Paper Award", award: true, url: "assets/award/SSK_BestPaperAward_KRoC.pdf"},
+  //     // { label: "Webpage", url: "http://graphics.ewha.ac.kr/TSPArt" },
+  //     // { label: "Paper", url: "https://graphics.ewha.ac.kr/TSPArt/KCGS21.pdf" },
+  //     // { label: "Video", url: "https://youtu.be/3wg57vq3o9Q?si=Ot2Haj_ml1babd0o" },
+  //   ]
+  // },
   {
     year: 2018,
     title: "Full-body Animation of Human Locomotion in Reduced Gravity using Physics-based Control",
