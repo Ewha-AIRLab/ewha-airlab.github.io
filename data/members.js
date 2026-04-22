@@ -61,7 +61,15 @@ const MEMBERS_DATA = {
           github: "https://github.com/gladgaeun",
           photo:   "assets/members/gaeun.jpg"
         },
-        
+        {
+          name:    "Taeyeong Kim",
+          role:    "Undergraduate Student",
+          focus:   "",
+          email:   "2371022@ewha.ac.kr",
+          website: "",
+          github: "https://github.com/tykim0O0",
+          photo:   "assets/members/taeyeong.jpg"
+        },
       ]
     },
     // {
