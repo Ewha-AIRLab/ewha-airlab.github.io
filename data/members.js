@@ -70,6 +70,15 @@ const MEMBERS_DATA = {
           github: "https://github.com/tykim0O0",
           photo:   "assets/members/taeyeong.jpg"
         },
+        {
+          name:    "Yujin Lee",
+          role:    "Undergraduate Student",
+          focus:   "",
+          email:   "dldwls06@ewha.ac.kr",
+          website: "",
+          github: "",
+          photo:   ""
+        },
       ]
     },
     // {
