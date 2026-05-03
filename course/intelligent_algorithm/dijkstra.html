@@ -1,0 +1,1377 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Dijkstra's Shortest Path — Intelligent Algorithm @ Ewha</title>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@300;400;500;600&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: 'IBM Plex Sans', sans-serif; background: #f8fafc; color: #0f172a; min-height: 100vh; overflow-x: hidden; }
+
+/* ── Nav / Topbar ── */
+.topbar { background: white; border-bottom: 1px solid #e2e8f0; padding: .7rem 1.5rem; display: flex; align-items: center; gap: .5rem; font-size: .84rem; flex-wrap: wrap; }
+.topbar a { text-decoration: none; color: #00462A; font-weight: 500; }
+.topbar a:hover { text-decoration: underline; }
+.topbar .sep { color: #94a3b8; }
+.topbar .cur { color: #0f172a; font-weight: 600; }
+
+/* ── Page ── */
+.page { max-width: 1440px; margin: 0 auto; padding: 1.5rem; }
+.page-title { font-size: 1.75rem; font-weight: 700; margin-bottom: .4rem; }
+.page-subtitle { font-size: .82rem; font-weight: 600; color: #00462A; text-transform: uppercase; letter-spacing: .06em; margin-bottom: .5rem; }
+.page-desc { color: #64748b; font-size: .9rem; max-width: 880px; margin-bottom: 1.25rem; line-height: 1.6; }
+.page-desc code { background: #f1f5f9; padding: .08rem .35rem; border-radius: 4px; font-family: 'IBM Plex Mono', monospace; font-size: .82em; color: #0f172a; }
+
+/* ── Cards ── */
+.card { background: white; border: 1px solid #e2e8f0; border-radius: 16px; box-shadow: 0 1px 3px rgba(0,0,0,.06); }
+.card-hd { padding: 1rem 1.35rem .55rem; display: flex; align-items: center; justify-content: space-between; gap: .75rem; flex-wrap: wrap; }
+.card-title { font-size: .98rem; font-weight: 600; }
+.card-sub  { font-size: .73rem; color: #64748b; margin-top: .12rem; }
+.card-body { padding: .75rem 1.35rem 1.2rem; }
+.card-body-tight { padding: .6rem; }
+
+/* ── Main layout ── */
+.main-row { display: grid; grid-template-columns: 1fr 360px 300px; gap: 1.25rem; align-items: start; }
+.viz-col  { display: flex; flex-direction: column; gap: 1.25rem; }
+.mid-col  { display: flex; flex-direction: column; gap: 1.25rem; }
+.right-col { display: flex; flex-direction: column; gap: 1.25rem; }
+
+@media (max-width: 1280px) {
+  .main-row { grid-template-columns: 1fr 1fr; }
+  .right-col { grid-column: 1 / -1; flex-direction: row; flex-wrap: wrap; }
+  .right-col > .card { flex: 1 1 280px; }
+}
+@media (max-width: 800px) {
+  .main-row { grid-template-columns: 1fr; }
+  .right-col { flex-direction: column; }
+}
+
+/* ── Map canvas ── */
+.viz-wrap { width: 100%; aspect-ratio: 4/3; position: relative; border-radius: 10px; overflow: hidden; border: 1px solid #cbd5e1; background: #f1f5f9; }
+.viz-wrap svg { display: block; width: 100%; height: 100%; user-select: none; }
+.canvas-hint { font-size: .73rem; color: #94a3b8; margin-top: .4rem; line-height: 1.5; }
+
+/* ── Buttons ── */
+.btn-row { display: flex; gap: .55rem; flex-wrap: wrap; margin-top: .85rem; }
+.btn {
+  padding: .45rem 1rem; border-radius: 8px; border: none; cursor: pointer;
+  font-family: 'IBM Plex Sans', sans-serif; font-size: .82rem; font-weight: 500;
+  transition: background .15s, transform .1s, box-shadow .15s;
+  display: inline-flex; align-items: center; gap: .35rem;
+}
+.btn:active:not(:disabled) { transform: scale(.97); }
+.btn-primary { background: #00462A; color: white; }
+.btn-primary:hover:not(:disabled) { background: #005a35; box-shadow: 0 2px 8px rgba(0,70,42,.25); }
+.btn-primary:disabled { background: #94a3b8; cursor: not-allowed; }
+.btn-secondary { background: #f1f5f9; color: #0f172a; border: 1px solid #e2e8f0; }
+.btn-secondary:hover:not(:disabled) { background: #e2e8f0; }
+.btn-secondary:disabled { color: #94a3b8; cursor: not-allowed; opacity: .6; }
+.btn-danger { background: #fef2f2; color: #dc2626; border: 1px solid #fecaca; }
+.btn-danger:hover:not(:disabled) { background: #fee2e2; }
+
+/* ── Preset selector ── */
+.preset-row { display: flex; gap: .35rem; flex-wrap: wrap; }
+.preset-btn { padding: .4rem .75rem; border-radius: 6px; border: 1px solid #e2e8f0; background: white; font-size: .78rem; font-family: 'IBM Plex Sans', sans-serif; color: #475569; cursor: pointer; transition: all .15s; font-weight: 500; }
+.preset-btn:hover { background: #f1f5f9; }
+.preset-btn.active { background: #00462A; color: white; border-color: #00462A; }
+
+/* ── Section label ── */
+.sec-lbl { font-size: .73rem; font-weight: 600; text-transform: uppercase; letter-spacing: .04em; color: #94a3b8; margin: .9rem 0 .45rem; }
+.sec-lbl:first-child { margin-top: 0; }
+
+/* ── Status badge ── */
+.status-badge { display: inline-flex; align-items: center; gap: .3rem; font-size: .73rem; font-weight: 600; padding: .15rem .55rem; border-radius: 999px; }
+.status-badge.idle   { background: #f1f5f9; color: #64748b; border: 1px solid #e2e8f0; }
+.status-badge.run    { background: #fffbeb; color: #d97706; border: 1px solid #fde68a; }
+.status-badge.ok     { background: #f0fdf4; color: #15803d; border: 1px solid #bbf7d0; }
+.status-badge.fail   { background: #fef2f2; color: #dc2626; border: 1px solid #fecaca; }
+
+/* ── Sliders ── */
+.sl-group { margin-bottom: .7rem; }
+.sl-group:last-child { margin-bottom: 0; }
+.sl-label { display: flex; justify-content: space-between; font-size: .8rem; margin-bottom: .25rem; }
+.sl-label .sl-name { color: #475569; }
+.sl-label .sl-val { font-family: 'IBM Plex Mono', monospace; color: #0f172a; font-weight: 500; }
+input[type=range] { -webkit-appearance: none; appearance: none; width: 100%; height: 6px; background: #e2e8f0; border-radius: 3px; outline: none; cursor: pointer; }
+input[type=range]::-webkit-slider-thumb { -webkit-appearance: none; width: 16px; height: 16px; border-radius: 50%; background: #00462A; cursor: pointer; border: 2px solid white; box-shadow: 0 1px 3px rgba(0,0,0,.25); }
+
+/* ── Info rows ── */
+.info-row { display: flex; justify-content: space-between; align-items: center; gap: .8rem; border-bottom: 1px solid #f1f5f9; padding: .4rem 0; font-size: .8rem; }
+.info-row:last-child { border-bottom: none; }
+.info-label { color: #64748b; font-weight: 500; }
+.info-val { font-family: 'IBM Plex Mono', monospace; text-align: right; }
+.info-val.ok  { color: #15803d; font-weight: 600; }
+.info-val.err { color: #dc2626; font-weight: 600; }
+
+/* ── Distance table ── */
+.dist-table { width: 100%; border-collapse: collapse; font-size: .82rem; font-family: 'IBM Plex Mono', monospace; }
+.dist-table th { background: #f8fafc; color: #64748b; font-weight: 600; padding: .45rem .55rem; text-align: left; border-bottom: 1px solid #e2e8f0; font-size: .72rem; text-transform: uppercase; letter-spacing: .03em; }
+.dist-table td { padding: .45rem .55rem; border-bottom: 1px solid #f1f5f9; }
+.dist-table tr:last-child td { border-bottom: none; }
+.dist-table .v-cell { font-weight: 600; color: #0f172a; }
+.dist-table .d-cell { text-align: right; color: #475569; }
+.dist-table .p-cell { color: #94a3b8; font-size: .76rem; }
+.dist-table tr.finalized { background: #f0fdf4; }
+.dist-table tr.finalized .d-cell { color: #15803d; font-weight: 600; }
+.dist-table tr.current { background: #fffbeb; }
+.dist-table tr.current .d-cell { color: #d97706; font-weight: 600; }
+.dist-table tr.updated { animation: flash 0.6s ease-out; }
+@keyframes flash {
+  0% { background: #dbeafe; }
+  100% { background: transparent; }
+}
+
+/* ── Heap visualization ── */
+.heap-box { background: #fafbfc; border: 1px solid #e2e8f0; border-radius: 10px; padding: .75rem; min-height: 110px; }
+.heap-tree-svg { width: 100%; height: 170px; display: block; }
+.heap-list { display: flex; flex-wrap: wrap; gap: .35rem; margin-top: .5rem; }
+.heap-entry {
+  display: inline-flex; align-items: center; gap: .3rem;
+  padding: .3rem .55rem; border-radius: 6px;
+  font-family: 'IBM Plex Mono', monospace; font-size: .76rem;
+  background: #eff6ff; border: 1px solid #bfdbfe; color: #1e40af;
+  transition: all .25s;
+}
+.heap-entry.root { background: #fef3c7; border-color: #fcd34d; color: #92400e; font-weight: 600; }
+.heap-entry.stale { background: #f1f5f9; border-color: #e2e8f0; color: #94a3b8; text-decoration: line-through; }
+
+/* ── Step log ── */
+.step-log { max-height: 200px; overflow-y: auto; font-size: .77rem; line-height: 1.55; padding: .55rem .7rem; background: #fafbfc; border: 1px solid #e2e8f0; border-radius: 8px; font-family: 'IBM Plex Mono', monospace; color: #475569; }
+.step-log .step-line { padding: .14rem 0; border-bottom: 1px dashed #f1f5f9; }
+.step-log .step-line:last-child { border-bottom: none; }
+.step-log .step-line.highlight { color: #00462A; font-weight: 500; }
+.step-log .step-line.skip { color: #94a3b8; font-style: italic; }
+.step-log .step-line.update { color: #1e40af; }
+.step-log .step-line.final { color: #15803d; font-weight: 500; }
+.step-log::-webkit-scrollbar { width: 6px; }
+.step-log::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 3px; }
+
+/* ── Map styling ── */
+.obstacle {
+  fill: url(#obsPattern);
+  stroke: #475569;
+  stroke-width: 1.5;
+}
+.obstacle-label {
+  font-family: 'IBM Plex Sans', sans-serif;
+  font-size: 11px;
+  font-weight: 600;
+  fill: #475569;
+  text-anchor: middle;
+  dominant-baseline: central;
+  pointer-events: none;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+/* Waypoint nodes — bigger, friendlier than the dense version */
+.gnode-circle {
+  fill: white;
+  stroke: #475569;
+  stroke-width: 2;
+  transition: all .25s;
+}
+.gnode-circle.start { fill: #00462A; stroke: #00462A; }
+.gnode-circle.goal  { fill: #a855f7; stroke: #a855f7; }
+.gnode-circle.finalized { fill: #15803d; stroke: #15803d; }
+.gnode-circle.frontier { fill: #fbbf24; stroke: #d97706; }
+.gnode-circle.current { fill: #f59e0b; stroke: #b45309; stroke-width: 3.5; }
+.gnode-label { font-family: 'IBM Plex Sans', sans-serif; font-size: 14px; font-weight: 600; fill: #0f172a; text-anchor: middle; dominant-baseline: central; pointer-events: none; }
+.gnode-label.on-dark { fill: white; }
+.gnode-dist { font-family: 'IBM Plex Mono', monospace; font-size: 12px; fill: #1e40af; text-anchor: middle; pointer-events: none; font-weight: 600; }
+
+/* Edges */
+.gedge-line { stroke: #cbd5e1; stroke-width: 2; transition: all .25s; }
+.gedge-line.in-tree { stroke: #15803d; stroke-width: 3.5; }
+.gedge-line.relaxing { stroke: #3b82f6; stroke-width: 3; stroke-dasharray: 5 3; animation: dash 0.6s linear infinite; }
+.gedge-line.path { stroke: #a855f7; stroke-width: 4; }
+@keyframes dash { to { stroke-dashoffset: -16; } }
+.gedge-weight {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 12px;
+  fill: #475569;
+  text-anchor: middle;
+  dominant-baseline: central;
+  pointer-events: none;
+  font-weight: 600;
+}
+.gedge-weight-bg { fill: white; stroke: #e2e8f0; stroke-width: 1; pointer-events: none; }
+
+/* Robot — top-down view of a small mobile robot */
+.robot-shadow { fill: rgba(0,0,0,0.18); }
+.robot-chassis { fill: #00462A; stroke: #003820; stroke-width: 1.5; }
+.robot-chassis-highlight { fill: rgba(255,255,255,0.08); }
+.robot-wheel { fill: #1f2937; stroke: #0f172a; stroke-width: 1; }
+.robot-wheel-tread { stroke: #475569; stroke-width: 0.8; fill: none; }
+.robot-sensor { fill: #f1f5f9; stroke: #0f172a; stroke-width: 1.5; }
+.robot-sensor-dot { fill: #0f172a; }
+.robot-led { fill: #fbbf24; stroke: #d97706; stroke-width: 0.5; }
+.robot-led.scanning { animation: scan 1.4s ease-in-out infinite; }
+@keyframes scan {
+  0%, 100% { fill: #fbbf24; }
+  50%      { fill: #fde68a; }
+}
+.robot-direction-cone { fill: #fbbf24; opacity: 0.25; }
+.robot-direction-arrow { stroke: white; stroke-width: 2; fill: none; stroke-linecap: round; stroke-linejoin: round; }
+.robot-antenna { stroke: #003820; stroke-width: 1.5; }
+.robot-antenna-tip { fill: #ef4444; }
+
+/* Goal beacon */
+@keyframes pulse-goal {
+  0%, 100% { opacity: 0.4; r: 22; }
+  50%      { opacity: 0.1; r: 32; }
+}
+.goal-pulse { fill: #a855f7; animation: pulse-goal 1.6s ease-in-out infinite; }
+
+/* ── Robotics callout ── */
+.robotics-callout {
+  background: linear-gradient(135deg, #f0fdf4 0%, #ecfdf5 100%);
+  border: 1px solid #bbf7d0;
+  border-left: 4px solid #00462A;
+  border-radius: 10px;
+  padding: .9rem 1.1rem;
+  margin-bottom: 1.25rem;
+  display: flex; gap: .9rem; align-items: flex-start;
+}
+.robotics-callout-icon { flex-shrink: 0; font-size: 1.4rem; }
+.robotics-callout-body { font-size: .85rem; line-height: 1.6; color: #166534; }
+.robotics-callout-body b { color: #00462A; font-weight: 600; }
+.robotics-callout-body code { background: rgba(0,70,42,.08); padding: .05rem .3rem; border-radius: 4px; font-family: 'IBM Plex Mono', monospace; font-size: .82em; color: #00462A; }
+
+/* Legend */
+.legend-grid { display: grid; grid-template-columns: 1fr 1fr; gap: .35rem .75rem; }
+.leg-item { display: flex; align-items: center; gap: .45rem; font-size: .78rem; color: #475569; }
+.leg-dot  { width: 12px; height: 12px; border-radius: 50%; flex-shrink: 0; border: 2px solid; }
+.leg-rect { width: 14px; height: 10px; border-radius: 2px; flex-shrink: 0; }
+.leg-line { width: 18px; height: 3px; border-radius: 2px; flex-shrink: 0; }
+
+@media (max-width: 640px) {
+  .topbar { padding: .6rem 1rem; font-size: .78rem; }
+  .page { padding: 1rem; }
+  .page-title { font-size: 1.25rem; }
+  .btn-row { gap: .4rem; }
+  .btn { padding: .42rem .85rem; font-size: .8rem; }
+}
+</style>
+</head>
+<body>
+
+<!-- ── Topbar breadcrumb ── -->
+<div class="topbar">
+  <a href="#">Intelligent Algorithm</a>
+  <span class="sep">/</span>
+  Heap &amp; Priority Queue
+  <span class="sep">/</span>
+  <span class="cur">Dijkstra's Shortest Path</span>
+</div>
+
+<!-- ── Page ── -->
+<div class="page">
+  <div class="page-subtitle">Example application to robotics</div>
+  <h1 class="page-title">Dijkstra's Algorithm — Robot Path Planning</h1>
+  <p class="page-desc">
+    A small mobile robot must travel from the <b>start</b> to the <b>goal</b> across a room with one or two
+    obstacles. We pre-place a few <b>waypoints</b> in the free space and connect nearby pairs with edges
+    whose weights are the Euclidean distances. Dijkstra finds the shortest collision-free route using a
+    <b>min-heap</b> as its priority queue — extracting the closest unvisited waypoint and relaxing its
+    outgoing edges at each step.
+  </p>
+
+  <!-- <div class="robotics-callout">
+    <div class="robotics-callout-icon">🤖</div>
+    <div class="robotics-callout-body">
+      <b>Why this is robotics.</b> Real robots plan in physical space, not abstract graphs. The pipeline
+      is: <b>(1)</b> place waypoints in free space, <b>(2)</b> connect them into a graph with weights equal to
+      the cost of travelling each segment, <b>(3)</b> run Dijkstra (or <code>A*</code>) to find the optimal
+      route. The min-heap is what makes step 3 fast enough for real-time replanning.
+    </div>
+  </div> -->
+
+  <div class="main-row">
+
+    <!-- ════════ LEFT: Map ════════ -->
+    <div class="viz-col">
+      <div class="card">
+        <div class="card-hd">
+          <div>
+            <div class="card-title">Robot Workspace — 𝒲 ⊂ ℝ²</div>
+            <div class="card-sub">Numbers on edges = travel distance. Edges that hit an obstacle are removed.</div>
+          </div>
+          <span id="ws-status" class="status-badge idle">● Ready</span>
+        </div>
+        <div class="card-body-tight">
+          <div class="viz-wrap" id="map-wrap">
+            <svg id="map-svg" viewBox="0 0 800 600" preserveAspectRatio="xMidYMid meet">
+              <defs>
+                <pattern id="obsPattern" x="0" y="0" width="14" height="14" patternUnits="userSpaceOnUse" patternTransform="rotate(45)">
+                  <rect width="14" height="14" fill="#fef3c7"/>
+                  <line x1="0" y1="7" x2="14" y2="7" stroke="#d97706" stroke-width="1"/>
+                </pattern>
+                <pattern id="floorPattern" x="0" y="0" width="40" height="40" patternUnits="userSpaceOnUse">
+                  <rect width="40" height="40" fill="#f1f5f9"/>
+                  <line x1="0" y1="0" x2="40" y2="0" stroke="#e2e8f0" stroke-width="0.5"/>
+                  <line x1="0" y1="0" x2="0" y2="40" stroke="#e2e8f0" stroke-width="0.5"/>
+                </pattern>
+              </defs>
+              <rect width="800" height="600" fill="url(#floorPattern)"/>
+            </svg>
+          </div>
+          <p class="canvas-hint">
+            Switch presets to compare scenarios. Edge weights and waypoint positions are fixed.
+          </p>
+        </div>
+      </div>
+
+      <!-- Legend -->
+      <div class="card">
+        <div class="card-hd"><div class="card-title">Legend</div></div>
+        <div class="card-body">
+          <div class="legend-grid">
+            <div class="leg-item"><div class="leg-rect" style="background:url(#obsPattern) #fef3c7;border:1.5px solid #475569"></div>Obstacle</div>
+            <div class="leg-item"><div class="leg-line" style="background:#cbd5e1"></div>Roadmap edge</div>
+            <div class="leg-item"><div class="leg-line" style="background:#15803d;height:4px"></div>Shortest-path tree</div>
+            <div class="leg-item"><div class="leg-line" style="background:#a855f7;height:4px"></div>Final route</div>
+            <div class="leg-item"><div class="leg-dot" style="background:#00462A;border-color:#00462A"></div>Start</div>
+            <div class="leg-item"><div class="leg-dot" style="background:#a855f7;border-color:#a855f7"></div>Goal</div>
+            <div class="leg-item"><div class="leg-dot" style="background:#15803d;border-color:#15803d"></div>Finalized</div>
+            <div class="leg-item"><div class="leg-dot" style="background:#fbbf24;border-color:#d97706"></div>In heap (frontier)</div>
+            <div class="leg-item"><div class="leg-dot" style="background:#f59e0b;border-color:#b45309"></div>Currently extracted</div>
+            <div class="leg-item"><div class="leg-dot" style="background:white;border-color:#475569"></div>Unvisited</div>
+          </div>
+        </div>
+      </div>
+    </div><!-- end left viz-col -->
+
+    <!-- ════════ MIDDLE: Heap + Distance Table ════════ -->
+    <div class="mid-col">
+
+      <div class="card">
+        <div class="card-hd">
+          <div>
+            <div class="card-title">Min-Heap (Priority Queue)</div>
+            <div class="card-sub">Entries are <code style="font-family:'IBM Plex Mono',monospace">(distance, waypoint)</code>; ordered by distance.</div>
+          </div>
+          <span id="heap-size" class="status-badge idle">size 0</span>
+        </div>
+        <div class="card-body">
+          <div class="heap-box" id="heap-box">
+            <svg class="heap-tree-svg" id="heap-svg" viewBox="0 0 360 170" preserveAspectRatio="xMidYMid meet"></svg>
+            <div class="heap-list" id="heap-list"></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-hd">
+          <div>
+            <div class="card-title">Distance Table</div>
+            <div class="card-sub"><code style="font-family:'IBM Plex Mono',monospace">dist[v]</code> = best known distance from start.</div>
+          </div>
+        </div>
+        <div class="card-body" style="padding-top:.4rem">
+          <table class="dist-table" id="dist-table">
+            <thead>
+              <tr><th>Waypoint</th><th style="text-align:right">dist</th><th>From</th></tr>
+            </thead>
+            <tbody id="dist-tbody"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-hd">
+          <div class="card-title">Algorithm Trace</div>
+        </div>
+        <div class="card-body" style="padding-top:.4rem">
+          <div class="step-log" id="step-log">
+            <div class="step-line" style="color:#94a3b8;font-style:italic">Click ▶ Run All or ⏭ Next Step.</div>
+          </div>
+        </div>
+      </div>
+
+    </div><!-- end mid-col -->
+
+    <!-- ════════ RIGHT: Controls ════════ -->
+    <div class="right-col">
+
+      <div class="card">
+        <div class="card-hd">
+          <div class="card-title">Controls</div>
+          <span id="algo-status" class="status-badge idle">● Idle</span>
+        </div>
+        <div class="card-body">
+
+          <div class="sec-lbl">Scenario</div>
+          <div class="preset-row" id="preset-row">
+            <button class="preset-btn active" data-preset="simple">Single box</button>
+            <button class="preset-btn" data-preset="twoBoxes">Two boxes</button>
+            <button class="preset-btn" data-preset="corridor">Corridor</button>
+          </div>
+
+          <div class="sec-lbl">Animation Speed</div>
+          <div class="sl-group">
+            <div class="sl-label">
+              <span class="sl-name">Step delay</span>
+              <span class="sl-val" id="spd-disp">700 ms</span>
+            </div>
+            <input type="range" id="spd" min="100" max="2000" value="700" step="100">
+          </div>
+
+          <div class="btn-row">
+            <button class="btn btn-primary" id="btn-run">▶ Run All</button>
+            <button class="btn btn-secondary" id="btn-step">⏭ Next Step</button>
+          </div>
+          <div class="btn-row">
+            <button class="btn btn-secondary" id="btn-pause" disabled>⏸ Pause</button>
+            <button class="btn btn-danger" id="btn-reset">↺ Reset</button>
+          </div>
+
+          <div class="sec-lbl">Statistics</div>
+          <div class="info-row"><span class="info-label">Step</span><span class="info-val" id="i-step">—</span></div>
+          <div class="info-row"><span class="info-label">Waypoints finalized</span><span class="info-val" id="i-final">0 / 0</span></div>
+          <div class="info-row"><span class="info-label">Heap pushes</span><span class="info-val" id="i-pushes">0</span></div>
+          <div class="info-row"><span class="info-label">Heap pops</span><span class="info-val" id="i-pops">0</span></div>
+          <div class="info-row"><span class="info-label">Stale skips</span><span class="info-val" id="i-skips">0</span></div>
+          <div class="info-row"><span class="info-label">Edges relaxed</span><span class="info-val" id="i-relax">0</span></div>
+          <div class="info-row"><span class="info-label">Path cost</span><span class="info-val" id="i-cost">—</span></div>
+
+        </div>
+      </div>
+
+    </div><!-- end right-col -->
+
+  </div><!-- end main-row -->
+</div><!-- end page -->
+
+<script>
+'use strict';
+
+// ══════════════════════════════════════════════════════════════════════════════
+// SCENARIO PRESETS — fixed waypoints, one or two obstacles each
+// All scenarios live in an 800 x 600 viewBox.
+// ══════════════════════════════════════════════════════════════════════════════
+const SCENARIOS = {
+  // 1) ONE BOX in the middle. Robot must go above OR below the box.
+  //    Asymmetric so the two routes have different costs — distance updates happen.
+  simple: {
+    title: 'Single box obstacle',
+    obstacles: [
+      { x: 280, y: 220, w: 240, h: 200, label: 'BOX' }
+    ],
+    nodes: [
+      { id: 'S', label: 'S', x:  80, y: 320 },
+      { id: 'A', label: 'A', x: 250, y: 100 },   // upper detour
+      { id: 'B', label: 'B', x: 280, y: 530 },   // lower detour (closer → cheaper)
+      { id: 'C', label: 'C', x: 560, y: 100 },
+      { id: 'D', label: 'D', x: 540, y: 530 },
+      { id: 'G', label: 'G', x: 720, y: 320 }
+    ],
+    edges: [
+      ['S','A'], ['S','B'],
+      ['A','C'], ['B','D'],
+      ['C','G'], ['D','G'],
+      ['A','D'],   // diagonal across the box → filtered
+      ['B','C'],   // diagonal across the box → filtered
+      ['S','G']    // straight line right through the box → filtered
+    ],
+    start: 'S',
+    goal:  'G'
+  },
+
+  // 2) TWO obstacles. The route must go around both. Several feasible routes
+  //    differ in cost so multiple dist updates happen.
+  twoBoxes: {
+    title: 'Two box obstacles',
+    obstacles: [
+      { x: 240, y: 100, w: 180, h: 200, label: 'BOX 1' },
+      { x: 480, y: 320, w: 180, h: 200, label: 'BOX 2' }
+    ],
+    nodes: [
+      { id: 'S', label: 'S', x:  70, y: 540 },
+      { id: 'A', label: 'A', x:  70, y:  60 },   // top-left, well clear of box 1
+      { id: 'B', label: 'B', x: 450, y:  60 },   // top middle, above box 1
+      { id: 'C', label: 'C', x: 730, y:  60 },   // top-right, well clear
+      { id: 'D', label: 'D', x: 450, y: 580 },   // bottom middle, below box 2
+      { id: 'G', label: 'G', x: 730, y: 540 }
+    ],
+    edges: [
+      ['S','A'],   // up the left side (well clear of box 1)
+      ['S','D'],   // along the bottom (clear of box 2)
+      ['A','B'],   // top edge, above both boxes
+      ['B','C'],   // top edge
+      ['C','G'],   // down the right side (clear of box 2)
+      ['B','D'],   // vertical between the two boxes (passes through gap)
+      ['D','G'],   // bottom-right — crosses box 2 → filtered
+      ['A','G'],   // diagonal across both boxes → filtered
+      ['A','D']    // diagonal across box 1 → filtered
+    ],
+    start: 'S',
+    goal:  'G'
+  },
+
+  // 3) Narrow CORRIDOR vs going around. Two parallel walls leave a passage
+  //    in the middle. The bypass goes via corner waypoints so the routes
+  //    are collision-free.
+  corridor: {
+    title: 'Corridor with bypass',
+    obstacles: [
+      { x: 220, y: 140, w: 360, h: 130, label: 'WALL' },
+      { x: 220, y: 330, w: 360, h: 130, label: 'WALL' }
+    ],
+    nodes: [
+      { id: 'S',  label: 'S',  x:  70, y: 300 },
+      { id: 'A',  label: 'A',  x: 280, y: 300 },   // corridor entry
+      { id: 'B',  label: 'B',  x: 400, y: 300 },   // corridor middle
+      { id: 'C',  label: 'C',  x: 520, y: 300 },   // corridor exit
+      { id: 'U1', label: 'U1', x: 130, y:  60 },   // upper bypass: top-left
+      { id: 'U2', label: 'U2', x: 680, y:  60 },   // upper bypass: top-right
+      { id: 'D1', label: 'D1', x: 130, y: 540 },   // lower bypass: bottom-left
+      { id: 'D2', label: 'D2', x: 680, y: 540 },   // lower bypass: bottom-right
+      { id: 'G',  label: 'G',  x: 730, y: 300 }
+    ],
+    edges: [
+      ['S','A'],
+      ['A','B'], ['B','C'],
+      ['C','G'],
+      ['S','U1'], ['U1','U2'], ['U2','G'],   // upper bypass
+      ['S','D1'], ['D1','D2'], ['D2','G']    // lower bypass
+    ],
+    start: 'S',
+    goal:  'G'
+  }
+};
+
+// ══════════════════════════════════════════════════════════════════════════════
+// MODEL
+// ══════════════════════════════════════════════════════════════════════════════
+let scenario = null;
+let nodes = [];
+let edges = [];   // {u, v, w}
+let obstacles = [];
+let startId = null;
+let goalId  = null;
+
+function nodeById(id) { return nodes.find(n => n.id === id); }
+
+function findEdge(u, v) {
+  return edges.find(e => (e.u === u && e.v === v) || (e.u === v && e.v === u));
+}
+
+function neighbours(id) {
+  const out = [];
+  for (const e of edges) {
+    if (e.u === id) out.push({ v: e.v, w: e.w });
+    else if (e.v === id) out.push({ v: e.u, w: e.w });
+  }
+  return out;
+}
+
+// ══════════════════════════════════════════════════════════════════════════════
+// COLLISION CHECKING (segment vs axis-aligned rect)
+// ══════════════════════════════════════════════════════════════════════════════
+function rectContains(r, p) {
+  return p.x >= r.x && p.x <= r.x + r.w && p.y >= r.y && p.y <= r.y + r.h;
+}
+function segSegIntersect(a, b, c, d) {
+  const det = (b.x - a.x) * (d.y - c.y) - (b.y - a.y) * (d.x - c.x);
+  if (Math.abs(det) < 1e-9) return false;
+  const t = ((c.x - a.x) * (d.y - c.y) - (c.y - a.y) * (d.x - c.x)) / det;
+  const u = ((c.x - a.x) * (b.y - a.y) - (c.y - a.y) * (b.x - a.x)) / det;
+  return t > 0 && t < 1 && u > 0 && u < 1;
+}
+function segmentIntersectsRect(p1, p2, r) {
+  const xmin = r.x, ymin = r.y, xmax = r.x + r.w, ymax = r.y + r.h;
+  if (rectContains(r, p1) || rectContains(r, p2)) return true;
+  return segSegIntersect(p1, p2, {x:xmin,y:ymin}, {x:xmax,y:ymin}) ||
+         segSegIntersect(p1, p2, {x:xmax,y:ymin}, {x:xmax,y:ymax}) ||
+         segSegIntersect(p1, p2, {x:xmax,y:ymax}, {x:xmin,y:ymax}) ||
+         segSegIntersect(p1, p2, {x:xmin,y:ymax}, {x:xmin,y:ymin});
+}
+function segmentInCollision(p1, p2) {
+  for (const o of obstacles) if (segmentIntersectsRect(p1, p2, o)) return true;
+  return false;
+}
+
+// ══════════════════════════════════════════════════════════════════════════════
+// LOAD A SCENARIO — copy nodes & build edges with euclidean weights, drop colliding edges
+// ══════════════════════════════════════════════════════════════════════════════
+function loadScenario(name) {
+  const s = SCENARIOS[name];
+  scenario = s;
+  obstacles = s.obstacles.map(o => ({ ...o }));
+  nodes = s.nodes.map(n => ({ ...n }));
+  startId = s.start;
+  goalId  = s.goal;
+  edges = [];
+  for (const [u, v] of s.edges) {
+    const a = nodeById(u), b = nodeById(v);
+    if (!a || !b) continue;
+    if (segmentInCollision(a, b)) continue;   // skip colliding edges
+    const dx = a.x - b.x, dy = a.y - b.y;
+    const w = Math.max(1, Math.round(Math.sqrt(dx*dx + dy*dy) / 10));
+    edges.push({ u, v, w });
+  }
+}
+
+// ══════════════════════════════════════════════════════════════════════════════
+// MIN-HEAP
+// ══════════════════════════════════════════════════════════════════════════════
+class MinHeap {
+  constructor() { this.a = []; this._counter = 0; }
+  size() { return this.a.length; }
+  push(d, v) {
+    this.a.push({ d, v, seq: this._counter++ });
+    this._up(this.a.length - 1);
+  }
+  pop() {
+    if (this.a.length === 0) return null;
+    const top = this.a[0];
+    const last = this.a.pop();
+    if (this.a.length > 0) { this.a[0] = last; this._down(0); }
+    return top;
+  }
+  _less(i, j) {
+    const ai = this.a[i], aj = this.a[j];
+    return ai.d < aj.d || (ai.d === aj.d && ai.seq < aj.seq);
+  }
+  _up(i) {
+    while (i > 0) {
+      const p = (i - 1) >> 1;
+      if (this._less(i, p)) { [this.a[i], this.a[p]] = [this.a[p], this.a[i]]; i = p; }
+      else break;
+    }
+  }
+  _down(i) {
+    const n = this.a.length;
+    while (true) {
+      const l = 2*i+1, r = 2*i+2;
+      let m = i;
+      if (l < n && this._less(l, m)) m = l;
+      if (r < n && this._less(r, m)) m = r;
+      if (m !== i) { [this.a[i], this.a[m]] = [this.a[m], this.a[i]]; i = m; }
+      else break;
+    }
+  }
+  toArray() { return this.a.slice(); }
+}
+
+// ══════════════════════════════════════════════════════════════════════════════
+// DIJKSTRA (generator)
+// ══════════════════════════════════════════════════════════════════════════════
+function* dijkstra(srcId) {
+  const dist = {}, prev = {}, visited = new Set();
+  for (const n of nodes) { dist[n.id] = Infinity; prev[n.id] = null; }
+  dist[srcId] = 0;
+
+  const heap = new MinHeap();
+  heap.push(0, srcId);
+  let pushes = 1, pops = 0, skips = 0, relaxes = 0;
+
+  yield { phase:'init', dist:{...dist}, prev:{...prev}, visited:new Set(visited),
+          heap: heap.toArray(), pushes, pops, skips, relaxes,
+          msg:`Initialize: dist[${srcId}] = 0, push (0, ${srcId}).` };
+
+  while (heap.size() > 0) {
+    const top = heap.pop();
+    pops++;
+    yield { phase:'pop', dist:{...dist}, prev:{...prev}, visited:new Set(visited),
+            heap: heap.toArray(), current:top, pushes, pops, skips, relaxes,
+            msg:`Extract-min: (${top.d}, ${top.v}).` };
+
+    if (visited.has(top.v)) {
+      skips++;
+      yield { phase:'pop-stale', dist:{...dist}, prev:{...prev}, visited:new Set(visited),
+              heap: heap.toArray(), current:top, pushes, pops, skips, relaxes,
+              msg:`${top.v} already finalized — skip (lazy deletion).` };
+      continue;
+    }
+
+    visited.add(top.v);
+    yield { phase:'finalize', dist:{...dist}, prev:{...prev}, visited:new Set(visited),
+            heap: heap.toArray(), current:top, pushes, pops, skips, relaxes,
+            msg:`Finalize ${top.v}: dist[${top.v}] = ${top.d}.` };
+
+    for (const {v, w} of neighbours(top.v)) {
+      relaxes++;
+      const cand = dist[top.v] + w;
+      if (cand < dist[v]) {
+        const old = dist[v];
+        dist[v] = cand;
+        prev[v] = top.v;
+        heap.push(cand, v);
+        pushes++;
+        yield { phase:'relax-update', dist:{...dist}, prev:{...prev}, visited:new Set(visited),
+                heap: heap.toArray(), current:top, edge:{u:top.v, v}, pushes, pops, skips, relaxes,
+                updatedVertex: v,
+                msg:`Relax (${top.v}→${v}, w=${w}): ${dist[top.v]}+${w}=${cand} < ${old===Infinity?'∞':old}. Update.` };
+      } else {
+        yield { phase:'relax-skip', dist:{...dist}, prev:{...prev}, visited:new Set(visited),
+                heap: heap.toArray(), current:top, edge:{u:top.v, v}, pushes, pops, skips, relaxes,
+                msg:`Relax (${top.v}→${v}, w=${w}): ${cand} ≥ ${dist[v]===Infinity?'∞':dist[v]}. No update.` };
+      }
+    }
+  }
+
+  yield { phase:'done', dist:{...dist}, prev:{...prev}, visited:new Set(visited),
+          heap: [], pushes, pops, skips, relaxes,
+          msg:`Done. Goal cost: ${dist[goalId]===Infinity?'unreachable':dist[goalId]}.` };
+}
+
+// ══════════════════════════════════════════════════════════════════════════════
+// RUNNER STATE
+// ══════════════════════════════════════════════════════════════════════════════
+let runner = null;
+let lastState = null;
+let autoTimer = null;
+let isRunning = false;
+let stepCount = 0;
+
+let robotPos = { x: 0, y: 0, angle: 0 };
+let robotAnimRAF = null;
+let robotIsAnimating = false;
+
+function resetRunner() {
+  if (autoTimer) { clearTimeout(autoTimer); autoTimer = null; }
+  if (robotAnimRAF) { cancelAnimationFrame(robotAnimRAF); robotAnimRAF = null; }
+  robotIsAnimating = false;
+  runner = null;
+  lastState = null;
+  isRunning = false;
+  stepCount = 0;
+  setStatus('idle', '● Idle');
+  document.getElementById('btn-pause').disabled = true;
+  document.getElementById('btn-run').disabled = false;
+  document.getElementById('btn-step').disabled = false;
+  // robot starts at start node
+  const s = nodeById(startId);
+  if (s) robotPos = { x: s.x, y: s.y, angle: 0 };
+}
+
+function ensureRunner() {
+  if (!runner) {
+    runner = dijkstra(startId);
+    stepCount = 0;
+    clearStepLog();
+    setStatus('run', '● Searching');
+  }
+  return true;
+}
+
+function advanceOne() {
+  ensureRunner();
+  const r = runner.next();
+  if (r.done) { finishRun(); return false; }
+  stepCount++;
+  lastState = r.value;
+  applyState(lastState);
+  if (lastState.phase === 'done') { finishRun(); return false; }
+  return true;
+}
+
+function finishRun() {
+  isRunning = false;
+  if (autoTimer) { clearTimeout(autoTimer); autoTimer = null; }
+  document.getElementById('btn-pause').disabled = true;
+  document.getElementById('btn-run').disabled = false;
+  document.getElementById('btn-step').disabled = true;
+  if (lastState && lastState.dist[goalId] !== undefined && lastState.dist[goalId] !== Infinity) {
+    setStatus('ok', '● Path found');
+    animateRobotAlongPath();
+  } else {
+    setStatus('fail', '● No path');
+  }
+}
+
+function autoLoop() {
+  if (!isRunning) return;
+  if (!advanceOne()) return;
+  const delay = parseInt(document.getElementById('spd').value);
+  autoTimer = setTimeout(autoLoop, delay);
+}
+
+// ══════════════════════════════════════════════════════════════════════════════
+// MAP RENDERING
+// ══════════════════════════════════════════════════════════════════════════════
+const SVG_NS = 'http://www.w3.org/2000/svg';
+const mapSvg = document.getElementById('map-svg');
+
+function clearMapKeepDefs() {
+  const keep = new Set();
+  const defs = mapSvg.querySelector('defs');
+  if (defs) keep.add(defs);
+  for (const el of mapSvg.children) {
+    if (el.tagName === 'rect' && el.getAttribute('width') === '800') keep.add(el);
+  }
+  const toRemove = [];
+  for (const el of mapSvg.children) if (!keep.has(el)) toRemove.push(el);
+  for (const el of toRemove) mapSvg.removeChild(el);
+}
+
+function reconstructPath() {
+  if (!lastState) return null;
+  const dist = lastState.dist;
+  const prev = lastState.prev;
+  if (dist[goalId] === undefined || dist[goalId] === Infinity) return null;
+  if (!lastState.visited.has(goalId)) return null;
+  const path = [];
+  let cur = goalId;
+  let safety = nodes.length + 2;
+  while (cur !== null && cur !== undefined && safety-- > 0) {
+    path.unshift(cur);
+    if (cur === startId) break;
+    cur = prev[cur];
+  }
+  if (path[0] !== startId) return null;
+  return path;
+}
+
+function renderMap() {
+  clearMapKeepDefs();
+
+  // Obstacles
+  for (const o of obstacles) {
+    const r = document.createElementNS(SVG_NS, 'rect');
+    r.setAttribute('x', o.x); r.setAttribute('y', o.y);
+    r.setAttribute('width', o.w); r.setAttribute('height', o.h);
+    r.setAttribute('rx', 4);
+    r.setAttribute('class', 'obstacle');
+    mapSvg.appendChild(r);
+    if (o.label) {
+      const t = document.createElementNS(SVG_NS, 'text');
+      t.setAttribute('x', o.x + o.w / 2);
+      t.setAttribute('y', o.y + o.h / 2);
+      t.setAttribute('class', 'obstacle-label');
+      t.textContent = o.label;
+      mapSvg.appendChild(t);
+    }
+  }
+
+  const state = lastState;
+  const visited = state ? state.visited : new Set();
+  const dist = state ? state.dist : {};
+  const prev = state ? state.prev : {};
+  const current = state && state.current ? state.current.v : null;
+  const activeEdge = state && state.edge ? state.edge : null;
+  const heapVerts = new Set();
+  if (state) for (const e of state.heap) heapVerts.add(e.v);
+
+  // Tree edges
+  const treeEdges = new Set();
+  if (state) {
+    for (const v of visited) {
+      if (prev[v] !== null && prev[v] !== undefined) {
+        const e = findEdge(prev[v], v);
+        if (e) treeEdges.add(e);
+      }
+    }
+  }
+
+  // Path
+  const path = reconstructPath();
+  const pathEdgeSet = new Set();
+  if (path) {
+    for (let i = 0; i < path.length - 1; i++) {
+      const e = findEdge(path[i], path[i+1]);
+      if (e) pathEdgeSet.add(e);
+    }
+  }
+
+  // Edges
+  for (const e of edges) {
+    const a = nodeById(e.u), b = nodeById(e.v);
+    if (!a || !b) continue;
+    const line = document.createElementNS(SVG_NS, 'line');
+    line.setAttribute('x1', a.x); line.setAttribute('y1', a.y);
+    line.setAttribute('x2', b.x); line.setAttribute('y2', b.y);
+    let cls = 'gedge-line';
+    if (pathEdgeSet.has(e)) cls += ' path';
+    else if (treeEdges.has(e)) cls += ' in-tree';
+    if (activeEdge && ((activeEdge.u===e.u && activeEdge.v===e.v) || (activeEdge.u===e.v && activeEdge.v===e.u))) cls += ' relaxing';
+    line.setAttribute('class', cls);
+    mapSvg.appendChild(line);
+  }
+
+  // Edge weight labels
+  for (const e of edges) {
+    const a = nodeById(e.u), b = nodeById(e.v);
+    if (!a || !b) continue;
+    const mx = (a.x + b.x) / 2, my = (a.y + b.y) / 2;
+    const bg = document.createElementNS(SVG_NS, 'rect');
+    bg.setAttribute('x', mx - 14); bg.setAttribute('y', my - 11);
+    bg.setAttribute('width', 28);  bg.setAttribute('height', 22);
+    bg.setAttribute('rx', 4);
+    bg.setAttribute('class', 'gedge-weight-bg');
+    mapSvg.appendChild(bg);
+    const t = document.createElementNS(SVG_NS, 'text');
+    t.setAttribute('x', mx); t.setAttribute('y', my);
+    t.setAttribute('class', 'gedge-weight');
+    t.textContent = e.w;
+    mapSvg.appendChild(t);
+  }
+
+  // Goal pulse
+  const gn = nodeById(goalId);
+  if (gn && !visited.has(goalId) && current !== goalId) {
+    const pulse = document.createElementNS(SVG_NS, 'circle');
+    pulse.setAttribute('cx', gn.x); pulse.setAttribute('cy', gn.y);
+    pulse.setAttribute('r', 22);
+    pulse.setAttribute('class', 'goal-pulse');
+    mapSvg.appendChild(pulse);
+  }
+
+  // Nodes
+  for (const n of nodes) {
+    const isStart = n.id === startId;
+    const isGoal  = n.id === goalId;
+    const isFin   = visited.has(n.id);
+    const isCur   = current === n.id;
+    const isFront = heapVerts.has(n.id) && !isFin;
+
+    let cls = 'gnode-circle';
+    if (isCur)        cls += ' current';
+    else if (isFin)   cls += ' finalized';
+    else if (isFront) cls += ' frontier';
+    else if (isStart) cls += ' start';
+    else if (isGoal)  cls += ' goal';
+
+    const c = document.createElementNS(SVG_NS, 'circle');
+    c.setAttribute('cx', n.x); c.setAttribute('cy', n.y);
+    c.setAttribute('r', 22);
+    c.setAttribute('class', cls);
+    mapSvg.appendChild(c);
+
+    const t = document.createElementNS(SVG_NS, 'text');
+    t.setAttribute('x', n.x); t.setAttribute('y', n.y);
+    let labelCls = 'gnode-label';
+    if (isStart || isGoal || isFin || isCur || isFront) labelCls += ' on-dark';
+    t.setAttribute('class', labelCls);
+    t.textContent = n.label;
+    mapSvg.appendChild(t);
+
+    // Distance badge above (only when meaningful)
+    if (state && dist[n.id] !== undefined && dist[n.id] !== Infinity && (isFin || isFront || isCur)) {
+      const dt = document.createElementNS(SVG_NS, 'text');
+      dt.setAttribute('x', n.x);
+      dt.setAttribute('y', n.y - 32);
+      dt.setAttribute('class', 'gnode-dist');
+      dt.textContent = `d=${dist[n.id]}`;
+      mapSvg.appendChild(dt);
+    }
+  }
+
+  // Robot — stays parked at the start during search (the algorithm is "thinking").
+  //         When the search finishes and a path is found, the robot animates
+  //         along the path. This avoids covering currently-processed nodes.
+  let rx = robotPos.x, ry = robotPos.y, ra = robotPos.angle;
+  if (!robotIsAnimating) {
+    const sNode = nodeById(startId);
+    if (sNode) {
+      // Sit just to the left of the start marker, facing right
+      rx = sNode.x - 42;
+      ry = sNode.y;
+      ra = 0;
+    }
+  }
+  drawRobot(rx, ry, ra);
+}
+
+function drawRobot(cx, cy, angle) {
+  // Top-down view of a small mobile robot.
+  // The local coordinate frame is: +x = forward (heading), +y = right side.
+  const g = document.createElementNS(SVG_NS, 'g');
+  g.setAttribute('transform', `translate(${cx},${cy}) rotate(${angle * 180 / Math.PI})`);
+
+  // Soft shadow under the chassis
+  const shadow = document.createElementNS(SVG_NS, 'ellipse');
+  shadow.setAttribute('cx', 2);
+  shadow.setAttribute('cy', 4);
+  shadow.setAttribute('rx', 32);
+  shadow.setAttribute('ry', 12);
+  shadow.setAttribute('class', 'robot-shadow');
+  g.appendChild(shadow);
+
+  // Direction cone (a soft yellow wedge in front, like a headlight beam)
+  const cone = document.createElementNS(SVG_NS, 'path');
+  cone.setAttribute('d', 'M 26 0 L 56 -22 A 36 36 0 0 1 56 22 Z');
+  cone.setAttribute('class', 'robot-direction-cone');
+  g.appendChild(cone);
+
+  // Two wheels — drawn first so the chassis sits over them
+  // Left wheel (negative y in local frame)
+  const wheelL = document.createElementNS(SVG_NS, 'rect');
+  wheelL.setAttribute('x', -16); wheelL.setAttribute('y', -28);
+  wheelL.setAttribute('width', 22); wheelL.setAttribute('height', 10);
+  wheelL.setAttribute('rx', 2);
+  wheelL.setAttribute('class', 'robot-wheel');
+  g.appendChild(wheelL);
+  // Tread lines
+  for (let i = -13; i <= 3; i += 4) {
+    const tread = document.createElementNS(SVG_NS, 'line');
+    tread.setAttribute('x1', i); tread.setAttribute('y1', -27);
+    tread.setAttribute('x2', i); tread.setAttribute('y2', -19);
+    tread.setAttribute('class', 'robot-wheel-tread');
+    g.appendChild(tread);
+  }
+
+  // Right wheel (positive y)
+  const wheelR = document.createElementNS(SVG_NS, 'rect');
+  wheelR.setAttribute('x', -16); wheelR.setAttribute('y', 18);
+  wheelR.setAttribute('width', 22); wheelR.setAttribute('height', 10);
+  wheelR.setAttribute('rx', 2);
+  wheelR.setAttribute('class', 'robot-wheel');
+  g.appendChild(wheelR);
+  for (let i = -13; i <= 3; i += 4) {
+    const tread = document.createElementNS(SVG_NS, 'line');
+    tread.setAttribute('x1', i); tread.setAttribute('y1', 19);
+    tread.setAttribute('x2', i); tread.setAttribute('y2', 27);
+    tread.setAttribute('class', 'robot-wheel-tread');
+    g.appendChild(tread);
+  }
+
+  // Chassis — main body (rounded rectangle)
+  const chassis = document.createElementNS(SVG_NS, 'rect');
+  chassis.setAttribute('x', -22); chassis.setAttribute('y', -20);
+  chassis.setAttribute('width', 50); chassis.setAttribute('height', 40);
+  chassis.setAttribute('rx', 7);
+  chassis.setAttribute('class', 'robot-chassis');
+  g.appendChild(chassis);
+
+  // Subtle highlight strip on top of the chassis (suggests the dome curvature)
+  const highlight = document.createElementNS(SVG_NS, 'rect');
+  highlight.setAttribute('x', -18); highlight.setAttribute('y', -16);
+  highlight.setAttribute('width', 42); highlight.setAttribute('height', 8);
+  highlight.setAttribute('rx', 4);
+  highlight.setAttribute('class', 'robot-chassis-highlight');
+  g.appendChild(highlight);
+
+  // LiDAR / sensor turret on top — a small disc with a center marker
+  const sensor = document.createElementNS(SVG_NS, 'circle');
+  sensor.setAttribute('cx', -2); sensor.setAttribute('cy', 0);
+  sensor.setAttribute('r', 7);
+  sensor.setAttribute('class', 'robot-sensor');
+  g.appendChild(sensor);
+  const sensorDot = document.createElementNS(SVG_NS, 'circle');
+  sensorDot.setAttribute('cx', -2); sensorDot.setAttribute('cy', 0);
+  sensorDot.setAttribute('r', 1.8);
+  sensorDot.setAttribute('class', 'robot-sensor-dot');
+  g.appendChild(sensorDot);
+
+  // Forward arrow on the chassis face — clear heading indicator
+  const arrow = document.createElementNS(SVG_NS, 'path');
+  arrow.setAttribute('d', 'M 14 -8 L 22 0 L 14 8');
+  arrow.setAttribute('class', 'robot-direction-arrow');
+  g.appendChild(arrow);
+
+  // Status LEDs on the front corners
+  const led1 = document.createElementNS(SVG_NS, 'circle');
+  led1.setAttribute('cx', 22); led1.setAttribute('cy', -14);
+  led1.setAttribute('r', 2.4);
+  led1.setAttribute('class', robotIsAnimating ? 'robot-led' : 'robot-led scanning');
+  g.appendChild(led1);
+  const led2 = document.createElementNS(SVG_NS, 'circle');
+  led2.setAttribute('cx', 22); led2.setAttribute('cy', 14);
+  led2.setAttribute('r', 2.4);
+  led2.setAttribute('class', robotIsAnimating ? 'robot-led' : 'robot-led scanning');
+  g.appendChild(led2);
+
+  // Antenna sticking out the back
+  const ant = document.createElementNS(SVG_NS, 'line');
+  ant.setAttribute('x1', -20); ant.setAttribute('y1', 0);
+  ant.setAttribute('x2', -28); ant.setAttribute('y2', 0);
+  ant.setAttribute('class', 'robot-antenna');
+  g.appendChild(ant);
+  const antTip = document.createElementNS(SVG_NS, 'circle');
+  antTip.setAttribute('cx', -29); antTip.setAttribute('cy', 0);
+  antTip.setAttribute('r', 2);
+  antTip.setAttribute('class', 'robot-antenna-tip');
+  g.appendChild(antTip);
+
+  mapSvg.appendChild(g);
+}
+
+function animateRobotAlongPath() {
+  const path = reconstructPath();
+  if (!path || path.length < 2) return;
+  const pts = path.map(id => nodeById(id));
+  const segLens = [];
+  let total = 0;
+  for (let i = 0; i < pts.length - 1; i++) {
+    const dx = pts[i+1].x - pts[i].x, dy = pts[i+1].y - pts[i].y;
+    const L = Math.sqrt(dx*dx + dy*dy);
+    segLens.push(L);
+    total += L;
+  }
+  const speed = 220; // px/s
+  const duration = (total / speed) * 1000;
+  const t0 = performance.now();
+  robotIsAnimating = true;
+
+  function tick(now) {
+    const t = Math.min(1, (now - t0) / duration);
+    const target = total * t;
+    let acc = 0, idx = 0;
+    while (idx < segLens.length && acc + segLens[idx] < target) { acc += segLens[idx]; idx++; }
+    if (idx >= segLens.length) {
+      const last = pts[pts.length - 1];
+      robotPos = { x: last.x, y: last.y, angle: robotPos.angle };
+      renderMap();
+      robotIsAnimating = false;
+      robotAnimRAF = null;
+      return;
+    }
+    const segT = (target - acc) / segLens[idx];
+    const a = pts[idx], b = pts[idx + 1];
+    const x = a.x + (b.x - a.x) * segT;
+    const y = a.y + (b.y - a.y) * segT;
+    const angle = Math.atan2(b.y - a.y, b.x - a.x);
+    robotPos = { x, y, angle };
+    renderMap();
+    if (t < 1) robotAnimRAF = requestAnimationFrame(tick);
+    else { robotIsAnimating = false; robotAnimRAF = null; }
+  }
+  robotAnimRAF = requestAnimationFrame(tick);
+}
+
+// ══════════════════════════════════════════════════════════════════════════════
+// HEAP RENDERING
+// ══════════════════════════════════════════════════════════════════════════════
+const heapSvg = document.getElementById('heap-svg');
+
+function renderHeap() {
+  while (heapSvg.firstChild) heapSvg.removeChild(heapSvg.firstChild);
+  const list = document.getElementById('heap-list');
+  list.innerHTML = '';
+
+  const heap = lastState ? lastState.heap : [];
+  const visited = lastState ? lastState.visited : new Set();
+  document.getElementById('heap-size').textContent = `size ${heap.length}`;
+
+  if (heap.length === 0) {
+    const t = document.createElementNS(SVG_NS, 'text');
+    t.setAttribute('x', 180); t.setAttribute('y', 85);
+    t.setAttribute('text-anchor', 'middle'); t.setAttribute('dominant-baseline', 'central');
+    t.setAttribute('fill', '#94a3b8'); t.setAttribute('font-style', 'italic'); t.setAttribute('font-size', 13);
+    t.textContent = 'Heap is empty';
+    heapSvg.appendChild(t);
+    return;
+  }
+
+  const W2 = 360, H2 = 170;
+  const n = heap.length;
+  const maxLevel = Math.floor(Math.log2(n)) + 1;
+  const levelHeight = H2 / (maxLevel + 1);
+  function pos(i) {
+    const level = Math.floor(Math.log2(i + 1));
+    const indexInLevel = i - ((1 << level) - 1);
+    const slotsInLevel = 1 << level;
+    return {
+      x: W2 * (indexInLevel + 0.5) / slotsInLevel,
+      y: levelHeight * (level + 0.7)
+    };
+  }
+  for (let i = 1; i < n; i++) {
+    const p = (i - 1) >> 1;
+    const a = pos(p), b = pos(i);
+    const ln = document.createElementNS(SVG_NS, 'line');
+    ln.setAttribute('x1', a.x); ln.setAttribute('y1', a.y);
+    ln.setAttribute('x2', b.x); ln.setAttribute('y2', b.y);
+    ln.setAttribute('stroke', '#cbd5e1'); ln.setAttribute('stroke-width', 1.5);
+    heapSvg.appendChild(ln);
+  }
+  for (let i = 0; i < n; i++) {
+    const e = heap[i];
+    const { x, y } = pos(i);
+    const stale = visited.has(e.v);
+    const c = document.createElementNS(SVG_NS, 'circle');
+    c.setAttribute('cx', x); c.setAttribute('cy', y);
+    c.setAttribute('r', i === 0 ? 18 : 15);
+    if (stale)        { c.setAttribute('fill', '#f1f5f9'); c.setAttribute('stroke', '#cbd5e1'); }
+    else if (i === 0) { c.setAttribute('fill', '#fef3c7'); c.setAttribute('stroke', '#d97706'); }
+    else              { c.setAttribute('fill', '#eff6ff'); c.setAttribute('stroke', '#3b82f6'); }
+    c.setAttribute('stroke-width', 2);
+    heapSvg.appendChild(c);
+    const t = document.createElementNS(SVG_NS, 'text');
+    t.setAttribute('x', x); t.setAttribute('y', y);
+    t.setAttribute('text-anchor', 'middle'); t.setAttribute('dominant-baseline', 'central');
+    t.setAttribute('font-family', "'IBM Plex Mono', monospace");
+    t.setAttribute('font-size', i === 0 ? 11 : 10);
+    t.setAttribute('font-weight', 600);
+    t.setAttribute('fill', stale ? '#94a3b8' : (i === 0 ? '#92400e' : '#1e40af'));
+    t.textContent = `${e.d},${e.v}`;
+    heapSvg.appendChild(t);
+  }
+
+  for (let i = 0; i < heap.length; i++) {
+    const e = heap[i];
+    const stale = visited.has(e.v);
+    const span = document.createElement('span');
+    let cls = 'heap-entry';
+    if (i === 0) cls += ' root';
+    if (stale)   cls += ' stale';
+    span.className = cls;
+    span.textContent = `(${e.d}, ${e.v})`;
+    list.appendChild(span);
+  }
+}
+
+// ══════════════════════════════════════════════════════════════════════════════
+// DISTANCE TABLE
+// ══════════════════════════════════════════════════════════════════════════════
+function renderDistTable() {
+  const tbody = document.getElementById('dist-tbody');
+  tbody.innerHTML = '';
+  const dist    = lastState ? lastState.dist : {};
+  const prev    = lastState ? lastState.prev : {};
+  const visited = lastState ? lastState.visited : new Set();
+  const current = lastState && lastState.current ? lastState.current.v : null;
+
+  const ordered = [...nodes].sort((a, b) => a.label.localeCompare(b.label));
+  for (const n of ordered) {
+    const tr = document.createElement('tr');
+    if (visited.has(n.id)) tr.classList.add('finalized');
+    if (current === n.id)  tr.classList.add('current');
+    if (lastState && lastState.updatedVertex === n.id) tr.classList.add('updated');
+
+    const tdV = document.createElement('td');
+    tdV.className = 'v-cell';
+    tdV.textContent = n.label;
+
+    const tdD = document.createElement('td');
+    tdD.className = 'd-cell';
+    const d = dist[n.id];
+    tdD.textContent = (d === undefined || d === Infinity) ? '∞' : d;
+
+    const tdP = document.createElement('td');
+    tdP.className = 'p-cell';
+    const p = prev[n.id];
+    tdP.textContent = (p === null || p === undefined) ? (n.id === startId ? '—' : '') : p;
+
+    tr.appendChild(tdV); tr.appendChild(tdD); tr.appendChild(tdP);
+    tbody.appendChild(tr);
+  }
+}
+
+// ══════════════════════════════════════════════════════════════════════════════
+// LOG + STATS
+// ══════════════════════════════════════════════════════════════════════════════
+function clearStepLog() { document.getElementById('step-log').innerHTML = ''; }
+function appendStepLog(state) {
+  const log = document.getElementById('step-log');
+  const div = document.createElement('div');
+  div.className = 'step-line';
+  switch (state.phase) {
+    case 'init':         div.classList.add('highlight'); break;
+    case 'finalize':     div.classList.add('final'); break;
+    case 'pop-stale':    div.classList.add('skip'); break;
+    case 'relax-update': div.classList.add('update'); break;
+    case 'done':         div.classList.add('highlight'); break;
+  }
+  div.textContent = `[${stepCount.toString().padStart(2,' ')}] ${state.msg}`;
+  log.appendChild(div);
+  log.scrollTop = log.scrollHeight;
+}
+
+function renderStats() {
+  const s = lastState;
+  document.getElementById('i-step').textContent = s ? stepCount : '—';
+  document.getElementById('i-final').textContent = `${s ? s.visited.size : 0} / ${nodes.length}`;
+  document.getElementById('i-pushes').textContent = s ? s.pushes : 0;
+  document.getElementById('i-pops').textContent   = s ? s.pops   : 0;
+  document.getElementById('i-skips').textContent  = s ? s.skips  : 0;
+  document.getElementById('i-relax').textContent  = s ? s.relaxes : 0;
+  if (s && s.dist[goalId] !== undefined && s.dist[goalId] !== Infinity) {
+    const el = document.getElementById('i-cost');
+    el.textContent = s.dist[goalId];
+    el.className = 'info-val ok';
+  } else if (s && s.phase === 'done') {
+    const el = document.getElementById('i-cost');
+    el.textContent = '∞ (unreachable)';
+    el.className = 'info-val err';
+  } else {
+    const el = document.getElementById('i-cost');
+    el.textContent = '—';
+    el.className = 'info-val';
+  }
+}
+
+function applyState(state) {
+  lastState = state;
+  renderMap();
+  renderHeap();
+  renderDistTable();
+  renderStats();
+  appendStepLog(state);
+}
+function applyEmptyState() {
+  lastState = null;
+  document.getElementById('step-log').innerHTML =
+    '<div class="step-line" style="color:#94a3b8;font-style:italic">Click ▶ Run All or ⏭ Next Step.</div>';
+  renderMap();
+  renderHeap();
+  renderDistTable();
+  renderStats();
+}
+
+function setStatus(kind, text) {
+  const el = document.getElementById('algo-status');
+  el.className = 'status-badge ' + kind; el.textContent = text;
+  const ws = document.getElementById('ws-status');
+  if (kind === 'idle')      { ws.className = 'status-badge idle'; ws.textContent = '● Ready'; }
+  else if (kind === 'run')  { ws.className = 'status-badge run';  ws.textContent = '● Searching'; }
+  else if (kind === 'ok')   { ws.className = 'status-badge ok';   ws.textContent = '● Path found'; }
+  else if (kind === 'fail') { ws.className = 'status-badge fail'; ws.textContent = '● No path'; }
+}
+
+// ══════════════════════════════════════════════════════════════════════════════
+// EVENT WIRING
+// ══════════════════════════════════════════════════════════════════════════════
+document.querySelectorAll('.preset-btn').forEach(b => {
+  b.addEventListener('click', () => {
+    document.querySelectorAll('.preset-btn').forEach(x => x.classList.remove('active'));
+    b.classList.add('active');
+    loadScenario(b.dataset.preset);
+    resetRunner();
+    applyEmptyState();
+  });
+});
+
+document.getElementById('btn-run').addEventListener('click', () => {
+  ensureRunner();
+  isRunning = true;
+  document.getElementById('btn-pause').disabled = false;
+  document.getElementById('btn-run').disabled = true;
+  autoLoop();
+});
+
+document.getElementById('btn-step').addEventListener('click', () => {
+  if (isRunning) return;
+  advanceOne();
+});
+
+document.getElementById('btn-pause').addEventListener('click', () => {
+  isRunning = false;
+  if (autoTimer) { clearTimeout(autoTimer); autoTimer = null; }
+  document.getElementById('btn-pause').disabled = true;
+  document.getElementById('btn-run').disabled = false;
+  setStatus('idle', '● Paused');
+});
+
+document.getElementById('btn-reset').addEventListener('click', () => {
+  resetRunner();
+  applyEmptyState();
+});
+
+document.getElementById('spd').addEventListener('input', (e) => {
+  document.getElementById('spd-disp').textContent = `${e.target.value} ms`;
+});
+
+// ══════════════════════════════════════════════════════════════════════════════
+// INIT
+// ══════════════════════════════════════════════════════════════════════════════
+loadScenario('simple');
+resetRunner();
+applyEmptyState();
+</script>
+</body>
+</html>
