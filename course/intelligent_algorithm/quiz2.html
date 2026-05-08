@@ -1427,12 +1427,17 @@ function setupEditor(id) {
     smartIndent: true,
     lineWrapping: false,
     extraKeys: {
-      Tab: cm => cm.replaceSelection('    '),
+      Tab: cm => cm.somethingSelected() ? cm.indentSelection('add') : cm.replaceSelection('    '),
       'Ctrl-S': cm => saveFile(id),
       'Cmd-S': cm => saveFile(id),
     },
   });
   cm.on('change', () => persistCode(id, cm.getValue()));
+  cm.getWrapperElement().addEventListener('paste', e => {
+    e.preventDefault();
+    e.stopPropagation();
+    showToast('붙여넣기는 허용되지 않습니다.');
+  }, true);
   editors[id] = cm;
 
   try {
