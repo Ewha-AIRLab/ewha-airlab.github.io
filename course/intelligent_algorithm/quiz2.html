@@ -1,0 +1,1722 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Intelligent Algorithm — Quiz 2</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500;600;700&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/codemirror.min.css" />
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/theme/neo.min.css" />
+<style>
+  :root {
+    --green-900: #0f2e15;
+    --green-800: #1B5E20;
+    --green-700: #2E7D32;
+    --green-600: #43A047;
+    --green-100: #C8E6C9;
+    --green-50: #E8F5E9;
+    --bg: #FAFAF7;
+    --surface: #FFFFFF;
+    --ink: #1A1A1A;
+    --ink-soft: #4F4F4F;
+    --ink-mute: #8A8A8A;
+    --line: #E5E5E0;
+    --line-strong: #C8C8C2;
+    --red: #C0392B;
+    --red-bg: #FBEAE7;
+    --amber: #B7791F;
+    --amber-bg: #FBF3E1;
+    --code-bg: #F5F5F0;
+    --shadow-sm: 0 1px 2px rgba(15, 46, 21, 0.04);
+    --shadow-md: 0 4px 16px rgba(15, 46, 21, 0.06);
+  }
+
+  * { box-sizing: border-box; }
+
+  html, body {
+    margin: 0;
+    padding: 0;
+    background: var(--bg);
+    color: var(--ink);
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+    font-size: 15px;
+    line-height: 1.55;
+    -webkit-font-smoothing: antialiased;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .page {
+    flex: 1;
+    max-width: 1440px;
+    margin: 0 auto;
+    padding: 28px 28px 40px;
+    width: 100%;
+  }
+
+  .masthead {
+    border-bottom: 1px solid var(--line);
+    padding-bottom: 20px;
+    margin-bottom: 24px;
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: 24px;
+    flex-wrap: wrap;
+  }
+
+  .brand {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+  }
+
+  .brand-eyebrow {
+    font-size: 11px;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--green-700);
+    font-weight: 600;
+  }
+
+  .brand-title {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 36px;
+    font-weight: 600;
+    letter-spacing: -0.01em;
+    color: var(--green-900);
+    line-height: 1.05;
+    margin: 0;
+  }
+
+  .brand-sub {
+    font-size: 13px;
+    color: var(--ink-soft);
+    margin-top: 2px;
+  }
+
+  .status-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 14px;
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: 999px;
+    font-size: 12px;
+    color: var(--ink-soft);
+    font-feature-settings: "tnum";
+  }
+
+  .status-dot {
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background: var(--ink-mute);
+    transition: background 240ms ease;
+  }
+
+  .status-dot.ready  { background: var(--green-600); }
+  .status-dot.loading { background: var(--amber); animation: pulse 1.4s ease-in-out infinite; }
+  .status-dot.error  { background: var(--red); }
+
+  @keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.35; }
+  }
+
+  .tabs {
+    display: flex;
+    gap: 0;
+    border-bottom: 1px solid var(--line);
+    margin-bottom: 24px;
+    overflow-x: auto;
+  }
+
+  .tab {
+    background: none;
+    border: none;
+    padding: 14px 20px 16px;
+    font-family: inherit;
+    font-size: 14px;
+    color: var(--ink-soft);
+    cursor: pointer;
+    border-bottom: 2px solid transparent;
+    margin-bottom: -1px;
+    transition: color 160ms ease, border-color 160ms ease;
+    white-space: nowrap;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .tab:hover { color: var(--ink); }
+
+  .tab.active {
+    color: var(--green-800);
+    border-bottom-color: var(--green-800);
+    font-weight: 500;
+  }
+
+  .tab-num {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 18px;
+    font-weight: 600;
+    font-style: italic;
+  }
+
+  .tab-state {
+    width: 16px;
+    height: 16px;
+    border-radius: 50%;
+    border: 1px solid var(--line-strong);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 10px;
+    color: var(--ink-mute);
+    background: var(--surface);
+  }
+
+  .tab-state.pass {
+    background: var(--green-600);
+    border-color: var(--green-600);
+    color: white;
+  }
+
+  .tab-state.fail {
+    background: var(--red);
+    border-color: var(--red);
+    color: white;
+  }
+
+  .panel { display: none; }
+  .panel.active { display: flex; }
+
+  .panel {
+    align-items: start;
+  }
+
+  .left-col {
+    width: var(--left-pct, 42%);
+    flex-shrink: 0;
+    position: sticky;
+    top: 16px;
+    max-height: calc(100vh - 32px);
+    overflow-y: auto;
+    padding-right: 4px;
+  }
+
+  .resize-handle {
+    width: 20px;
+    flex-shrink: 0;
+    cursor: col-resize;
+    display: flex;
+    align-items: stretch;
+    justify-content: center;
+    position: sticky;
+    top: 16px;
+    height: calc(100vh - 32px);
+    user-select: none;
+  }
+
+  .resize-handle::after {
+    content: '';
+    width: 3px;
+    background: var(--line);
+    border-radius: 2px;
+    transition: background 150ms ease;
+  }
+
+  .resize-handle:hover::after,
+  .resize-handle.dragging::after {
+    background: var(--green-600);
+  }
+
+  .left-col::-webkit-scrollbar { width: 6px; }
+  .left-col::-webkit-scrollbar-track { background: transparent; }
+  .left-col::-webkit-scrollbar-thumb { background: var(--line-strong); border-radius: 3px; }
+
+  .problem-head {
+    margin-bottom: 18px;
+  }
+
+  .problem-title {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 26px;
+    font-weight: 600;
+    color: var(--green-900);
+    margin: 0 0 4px;
+    letter-spacing: -0.005em;
+    line-height: 1.15;
+  }
+
+  .problem-meta {
+    font-size: 12px;
+    color: var(--ink-mute);
+    letter-spacing: 0.04em;
+  }
+
+  .problem-meta a {
+    color: var(--ink-soft);
+    text-decoration: none;
+    border-bottom: 1px dotted var(--line-strong);
+  }
+
+  .problem-meta a:hover { color: var(--green-800); border-color: var(--green-800); }
+
+  .desc {
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: 10px;
+    padding: 18px 20px;
+    font-size: 14px;
+  }
+
+  .desc h3 {
+    font-family: 'Inter', sans-serif;
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.16em;
+    color: var(--green-700);
+    margin: 0 0 10px;
+    font-weight: 600;
+  }
+
+  .desc h3:not(:first-child) { margin-top: 18px; }
+
+  .desc p { margin: 0 0 8px; color: var(--ink); }
+  .desc p:last-child { margin-bottom: 0; }
+  .desc code {
+    background: var(--code-bg);
+    padding: 1px 5px;
+    border-radius: 4px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12.5px;
+  }
+
+  .desc ul { margin: 6px 0 10px; padding-left: 20px; }
+  .desc li { margin: 3px 0; }
+
+  .example-block {
+    background: var(--code-bg);
+    border-radius: 8px;
+    padding: 12px 14px;
+    margin-top: 6px;
+    margin-bottom: 10px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12px;
+    line-height: 1.6;
+    white-space: pre-wrap;
+    overflow-x: auto;
+    color: var(--ink);
+  }
+
+  .signature {
+    background: var(--green-50);
+    border-left: 3px solid var(--green-700);
+    padding: 10px 14px;
+    margin: 12px 0 4px;
+    border-radius: 0 6px 6px 0;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12px;
+  }
+
+  .signature-label {
+    display: block;
+    font-family: 'Inter', sans-serif;
+    font-size: 10px;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: var(--green-700);
+    margin-bottom: 4px;
+    font-weight: 600;
+  }
+
+  .right-col {
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+  }
+
+  .editor-shell {
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: 10px;
+    overflow: hidden;
+  }
+
+  .editor-bar {
+    background: var(--code-bg);
+    border-bottom: 1px solid var(--line);
+    padding: 9px 14px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+  }
+
+  .editor-bar-left {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12px;
+    color: var(--ink-soft);
+  }
+
+  .editor-dot {
+    display: inline-flex;
+    gap: 5px;
+  }
+
+  .editor-dot span {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: var(--line-strong);
+  }
+
+  .editor-bar-right {
+    display: flex;
+    gap: 6px;
+    align-items: center;
+  }
+
+  .btn-text {
+    background: none;
+    border: none;
+    color: var(--ink-mute);
+    font-family: inherit;
+    font-size: 12px;
+    cursor: pointer;
+    padding: 5px 10px;
+    border-radius: 5px;
+    transition: color 140ms ease, background 140ms ease;
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+  }
+
+  .btn-text:hover {
+    color: var(--ink);
+    background: var(--surface);
+  }
+
+  .btn-text svg { width: 12px; height: 12px; }
+
+  .btn-text.btn-save {
+    color: var(--green-700);
+  }
+
+  .btn-text.btn-save:hover {
+    color: var(--green-900);
+    background: var(--green-50);
+  }
+
+  .CodeMirror {
+    height: 420px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 13.5px;
+    line-height: 1.6;
+  }
+
+  .CodeMirror-gutters {
+    background: var(--code-bg);
+    border-right: 1px solid var(--line);
+  }
+
+  .CodeMirror-linenumber { color: var(--ink-mute); padding: 0 8px 0 6px; }
+
+  .run-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    flex-wrap: wrap;
+  }
+
+  .btn-primary {
+    background: var(--green-800);
+    color: white;
+    border: none;
+    padding: 11px 22px;
+    border-radius: 7px;
+    font-family: inherit;
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    transition: background 160ms ease, transform 80ms ease;
+    letter-spacing: 0.01em;
+  }
+
+  .btn-primary:hover { background: var(--green-900); }
+  .btn-primary:active { transform: translateY(1px); }
+  .btn-primary:disabled {
+    background: var(--line-strong);
+    cursor: not-allowed;
+  }
+
+  .btn-primary svg { width: 14px; height: 14px; }
+
+  .run-hint {
+    font-size: 12px;
+    color: var(--ink-mute);
+    font-feature-settings: "tnum";
+  }
+
+  .results {
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: 10px;
+    padding: 18px 22px;
+  }
+
+  .results-empty {
+    color: var(--ink-mute);
+    font-size: 13px;
+    font-style: italic;
+    text-align: center;
+    padding: 14px 0;
+    margin: 0;
+  }
+
+  .results-summary {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    border-bottom: 1px solid var(--line);
+    padding-bottom: 12px;
+    margin-bottom: 12px;
+    flex-wrap: wrap;
+    gap: 12px;
+  }
+
+  .results-headline {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 20px;
+    font-weight: 600;
+    color: var(--green-900);
+  }
+
+  .results-headline.fail { color: var(--red); }
+
+  .results-stats {
+    font-size: 12px;
+    color: var(--ink-mute);
+    font-family: 'JetBrains Mono', monospace;
+  }
+
+  .test-row {
+    display: grid;
+    grid-template-columns: 22px 1fr;
+    gap: 12px;
+    padding: 10px 0;
+    border-bottom: 1px dashed var(--line);
+    font-size: 13px;
+  }
+
+  .test-row:last-child { border-bottom: none; }
+
+  .test-icon {
+    width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 10px;
+    font-weight: 600;
+    margin-top: 2px;
+    flex-shrink: 0;
+  }
+
+  .test-icon.pass {
+    background: var(--green-600);
+    color: white;
+  }
+
+  .test-icon.fail {
+    background: var(--red);
+    color: white;
+  }
+
+  .test-icon.error {
+    background: var(--amber);
+    color: white;
+  }
+
+  .test-name {
+    font-weight: 500;
+    color: var(--ink);
+    margin-bottom: 4px;
+    font-size: 13px;
+  }
+
+  .test-detail {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11.5px;
+    color: var(--ink-soft);
+    line-height: 1.6;
+    white-space: pre-wrap;
+    word-break: break-word;
+  }
+
+  .test-detail .label {
+    color: var(--ink-mute);
+    display: inline-block;
+    width: 70px;
+  }
+
+  .test-detail .got-fail { color: var(--red); }
+  .test-detail .expected { color: var(--green-700); }
+
+  .traceback {
+    background: var(--red-bg);
+    border-left: 3px solid var(--red);
+    padding: 9px 11px;
+    margin-top: 6px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    color: var(--red);
+    border-radius: 0 4px 4px 0;
+    white-space: pre-wrap;
+    overflow-x: auto;
+  }
+
+  .example-label {
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--ink-soft);
+    margin: 10px 0 4px;
+  }
+
+  .tree-svg {
+    display: block;
+    width: 240px;
+    height: 150px;
+    margin: 10px auto 10px;
+  }
+
+  .stdout-block {
+    margin-bottom: 14px;
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    overflow: hidden;
+  }
+
+  .stdout-label {
+    background: var(--code-bg);
+    border-bottom: 1px solid var(--line);
+    padding: 5px 12px;
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--ink-mute);
+  }
+
+  .stdout-pre {
+    margin: 0;
+    padding: 10px 12px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12px;
+    line-height: 1.6;
+    white-space: pre-wrap;
+    word-break: break-word;
+    color: var(--ink);
+  }
+
+  .foot {
+    padding: 18px 10px;
+    margin-top: 0;
+    border-top: 1px solid var(--line);
+    font-size: 11px;
+    color: var(--ink-mute);
+    text-align: center;
+    letter-spacing: 0.05em;
+  }
+
+  .toast {
+    position: fixed;
+    bottom: 28px;
+    left: 50%;
+    transform: translate(-50%, 30px);
+    background: var(--green-900);
+    color: white;
+    padding: 10px 20px;
+    border-radius: 999px;
+    font-size: 13px;
+    box-shadow: var(--shadow-md);
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 200ms ease, transform 200ms ease;
+    z-index: 100;
+  }
+
+  .toast.show {
+    opacity: 1;
+    transform: translate(-50%, 0);
+  }
+
+  @media (max-width: 1100px) {
+    .panel.active {
+      flex-direction: column;
+    }
+    .left-col {
+      width: 100% !important;
+      position: static;
+      max-height: none;
+      overflow-y: visible;
+    }
+    .resize-handle { display: none; }
+  }
+
+  @media (max-width: 640px) {
+    .page { padding: 22px 18px 60px; }
+    .brand-title { font-size: 28px; }
+    .problem-title { font-size: 22px; }
+    .desc { padding: 16px 18px; }
+    .results { padding: 16px 18px; }
+  }
+</style>
+</head>
+<body>
+
+<div class="page">
+
+  <header class="masthead">
+    <div class="brand">
+      <span class="brand-eyebrow">Intelligent Algorithm · Ewha Womans University</span>
+      <h1 class="brand-title">Quiz 2 — BST · Heap · Red-Black Tree</h1>
+      <!-- <span class="brand-sub">BST · Heap · Red-Black Tree</span> -->
+    </div>
+    <div class="status-pill" id="status">
+      <span class="status-dot loading" id="status-dot"></span>
+      <span id="status-text">Python 환경 로딩 중…</span>
+    </div>
+  </header>
+
+  <nav class="tabs" role="tablist" id="tabs">
+    <button class="tab active" data-target="p1" role="tab">
+      <span class="tab-num">I.</span>
+      <span>Min Distance Between BST Nodes</span>
+      <span class="tab-state" id="state-p1"></span>
+    </button>
+    <button class="tab" data-target="p2" role="tab">
+      <span class="tab-num">II.</span>
+      <span>Min Time to Fill Cups</span>
+      <span class="tab-state" id="state-p2"></span>
+    </button>
+    <button class="tab" data-target="p3" role="tab">
+      <span class="tab-num">III.</span>
+      <span>RB-Tree Insert</span>
+      <span class="tab-state" id="state-p3"></span>
+    </button>
+  </nav>
+
+  <!-- ============ Problem 1 ============ -->
+  <section class="panel active" id="p1">
+    <div class="left-col">
+      <div class="problem-head">
+        <h2 class="problem-title">Minimum Distance Between BST Nodes</h2>
+        <p class="problem-meta">Problem 1 · Topic: Binary Search Tree · Source: LeetCode 783</p>
+      </div>
+
+      <div class="desc">
+        <h3>문제 설명</h3>
+        <p>
+          이진 탐색 트리(BST)의 루트가 주어졌을 때,
+          서로 다른 두 노드 값 차이의 <strong>최솟값</strong>을 반환하세요.
+        </p>
+        <!-- <p>
+          힌트: BST에서 inorder traversal은 정렬된 순서를 만들어냅니다.
+          따라서 정답은 inorder 결과의 인접한 두 값 차이의 최솟값입니다.
+        </p> -->
+
+        <!-- <div class="signature">
+          <span class="signature-label">함수 시그니처</span>
+          class Solution(object):
+              def minDiffInBST(self, root):
+                  ...
+              def inorder(self, root):
+                  ...
+        </div> -->
+
+        <h3>예시</h3>
+        <p class="example-label">Example 1</p>
+        <div class="example-block">Input:  root = [4, 2, 6, 1, 3]
+Output: 1</div>
+        <svg class="tree-svg" viewBox="0 0 240 150" xmlns="http://www.w3.org/2000/svg" aria-label="BST: root=4, left=2(left=1,right=3), right=6">
+          <line x1="120" y1="20" x2="72"  y2="70" stroke="#C8C8C2" stroke-width="1.5"/>
+          <line x1="120" y1="20" x2="182" y2="70" stroke="#C8C8C2" stroke-width="1.5"/>
+          <line x1="72"  y1="70" x2="38"  y2="120" stroke="#C8C8C2" stroke-width="1.5"/>
+          <line x1="72"  y1="70" x2="106" y2="120" stroke="#C8C8C2" stroke-width="1.5"/>
+          <circle cx="120" cy="20"  r="16" fill="#E8F5E9" stroke="#2E7D32" stroke-width="1.5"/>
+          <circle cx="72"  cy="70"  r="16" fill="#E8F5E9" stroke="#2E7D32" stroke-width="1.5"/>
+          <circle cx="182" cy="70"  r="16" fill="#E8F5E9" stroke="#2E7D32" stroke-width="1.5"/>
+          <circle cx="38"  cy="120" r="16" fill="#E8F5E9" stroke="#2E7D32" stroke-width="1.5"/>
+          <circle cx="106" cy="120" r="16" fill="#E8F5E9" stroke="#2E7D32" stroke-width="1.5"/>
+          <text x="120" y="25"  text-anchor="middle" font-family="JetBrains Mono,monospace" font-size="13" fill="#1B5E20" font-weight="600">4</text>
+          <text x="72"  y="75"  text-anchor="middle" font-family="JetBrains Mono,monospace" font-size="13" fill="#1B5E20" font-weight="600">2</text>
+          <text x="182" y="75"  text-anchor="middle" font-family="JetBrains Mono,monospace" font-size="13" fill="#1B5E20" font-weight="600">6</text>
+          <text x="38"  y="125" text-anchor="middle" font-family="JetBrains Mono,monospace" font-size="13" fill="#1B5E20" font-weight="600">1</text>
+          <text x="106" y="125" text-anchor="middle" font-family="JetBrains Mono,monospace" font-size="13" fill="#1B5E20" font-weight="600">3</text>
+        </svg>
+        <p class="example-label">Example 2</p>
+        <div class="example-block">Input:  root = [1, 0, 48, None, None, 12, 49]
+Output: 1</div>
+        <svg class="tree-svg" viewBox="0 0 240 150" xmlns="http://www.w3.org/2000/svg" aria-label="BST: root=1, left=0, right=48(left=12,right=49)">
+          <line x1="120" y1="20" x2="72"  y2="70" stroke="#C8C8C2" stroke-width="1.5"/>
+          <line x1="120" y1="20" x2="182" y2="70" stroke="#C8C8C2" stroke-width="1.5"/>
+          <line x1="182" y1="70" x2="148" y2="120" stroke="#C8C8C2" stroke-width="1.5"/>
+          <line x1="182" y1="70" x2="216" y2="120" stroke="#C8C8C2" stroke-width="1.5"/>
+          <circle cx="120" cy="20"  r="16" fill="#E8F5E9" stroke="#2E7D32" stroke-width="1.5"/>
+          <circle cx="72"  cy="70"  r="16" fill="#E8F5E9" stroke="#2E7D32" stroke-width="1.5"/>
+          <circle cx="182" cy="70"  r="16" fill="#E8F5E9" stroke="#2E7D32" stroke-width="1.5"/>
+          <circle cx="148" cy="120" r="16" fill="#E8F5E9" stroke="#2E7D32" stroke-width="1.5"/>
+          <circle cx="216" cy="120" r="16" fill="#E8F5E9" stroke="#2E7D32" stroke-width="1.5"/>
+          <text x="120" y="25"  text-anchor="middle" font-family="JetBrains Mono,monospace" font-size="13" fill="#1B5E20" font-weight="600">1</text>
+          <text x="72"  y="75"  text-anchor="middle" font-family="JetBrains Mono,monospace" font-size="13" fill="#1B5E20" font-weight="600">0</text>
+          <text x="182" y="75"  text-anchor="middle" font-family="JetBrains Mono,monospace" font-size="11" fill="#1B5E20" font-weight="600">48</text>
+          <text x="148" y="125" text-anchor="middle" font-family="JetBrains Mono,monospace" font-size="11" fill="#1B5E20" font-weight="600">12</text>
+          <text x="216" y="125" text-anchor="middle" font-family="JetBrains Mono,monospace" font-size="11" fill="#1B5E20" font-weight="600">49</text>
+        </svg>
+
+        <h3>제약 조건</h3>
+        <ul>
+          <li>트리의 노드 수는 <code>[2, 100]</code> 범위입니다.</li>
+          <li><code>0 &lt;= Node.val &lt;= 10<sup>5</sup></code></li>
+        </ul>
+
+        <h3>힌트</h3>
+        <p>
+          BST에서 <strong>inorder traversal</strong>은 노드 값을 정렬된 순서로 방문합니다.
+          <code>inorder()</code>를 먼저 구현해 정렬된 리스트를 만든 뒤,
+          인접한 두 값의 차이 중 최솟값을 반환하세요.
+        </p>
+
+        <h3>제공되는 클래스</h3>
+        <div class="example-block">class TreeNode(object):
+    def __init__(self, val=0, left=None, right=None):
+        self.val = val
+        self.left = left
+        self.right = right</div>
+      </div>
+    </div>
+
+    <div class="resize-handle" aria-hidden="true"></div>
+
+    <div class="right-col">
+      <div class="editor-shell">
+        <div class="editor-bar">
+          <div class="editor-bar-left">
+            <span class="editor-dot"><span></span><span></span><span></span></span>
+            <span>quiz2_1.py</span>
+          </div>
+          <div class="editor-bar-right">
+            <button class="btn-text btn-save" data-action="save" data-target="p1" title="Save quiz2_1.py">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"></path><polyline points="17 21 17 13 7 13 7 21"></polyline><polyline points="7 3 7 8 15 8"></polyline></svg>
+              Save
+            </button>
+            <button class="btn-text" data-action="reset" data-target="p1">초기화</button>
+          </div>
+        </div>
+        <textarea id="code-p1"></textarea>
+      </div>
+
+      <div class="run-row">
+        <button class="btn-primary" data-run="p1" disabled>
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polygon points="6 4 20 12 6 20 6 4"></polygon></svg>
+          실행 &amp; 결과
+        </button>
+        <span class="run-hint">함수만 작성하세요. 테스트는 자동 실행됩니다.</span>
+      </div>
+
+      <div class="results" id="results-p1">
+        <p class="results-empty">아직 실행된 결과가 없습니다.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ Problem 2 ============ -->
+  <section class="panel" id="p2">
+    <div class="left-col">
+      <div class="problem-head">
+        <h2 class="problem-title">Minimum Amount of Time to Fill Cups</h2>
+        <p class="problem-meta">Problem 2 · Topic: Heap (Priority Queue) · Source: LeetCode 2594</p>
+      </div>
+
+      <div class="desc">
+        <h3>문제 설명</h3>
+        <p>
+          정수 길이 3의 배열 <code>amount</code>가 주어집니다.
+          <code>amount[0]</code>은 cold water cup의 수, <code>amount[1]</code>은 warm, <code>amount[2]</code>는 hot입니다.
+        </p>
+        <p>매 초마다 다음 중 하나를 할 수 있습니다:</p>
+        <ul>
+          <li>서로 다른 두 종류의 cup을 각각 하나씩 채우기 (총 2개)</li>
+          <li>한 종류의 cup을 하나 채우기 (총 1개)</li>
+        </ul>
+        <p>모든 cup을 채우는 데 필요한 <strong>최소 시간(초)</strong>을 반환하세요.</p>
+
+        <!-- <div class="signature">
+          <span class="signature-label">함수 시그니처</span>
+          class Solution(object):
+              def fillCups(self, amount):
+                  ...
+        </div> -->
+
+        <h3>예시</h3>
+        <p class="example-label">Example 1</p>
+        <div class="example-block">Input:  amount = [1, 4, 2]
+Output: 4
+Explanation: One way to fill up the cups is:
+  Second 1: Fill up a cold cup and a warm cup.
+  Second 2: Fill up a warm cup and a hot cup.
+  Second 3: Fill up a warm cup and a hot cup.
+  Second 4: Fill up a warm cup.
+It can be proven that 4 is the minimum number of seconds needed.</div>
+        <p class="example-label">Example 2</p>
+        <div class="example-block">Input:  amount = [5, 4, 4]
+Output: 7
+Explanation: One way to fill up the cups is:
+  Second 1: Fill up a cold cup, and a hot cup.
+  Second 2: Fill up a cold cup, and a warm cup.
+  Second 3: Fill up a cold cup, and a warm cup.
+  Second 4: Fill up a warm cup, and a hot cup.
+  Second 5: Fill up a cold cup, and a hot cup.
+  Second 6: Fill up a cold cup, and a warm cup.
+  Second 7: Fill up a hot cup.</div>
+        <p class="example-label">Example 3</p>
+        <div class="example-block">Input:  amount = [5, 0, 0]
+Output: 5
+Explanation: Every second, we fill up a cold cup.</div>
+
+        <h3>제약 조건</h3>
+        <ul>
+          <li><code>amount.length == 3</code></li>
+          <li><code>0 &lt;= amount[i] &lt;= 100</code></li>
+        </ul>
+
+        <h3>힌트</h3>
+        <p>Python의 <code>heapq</code> 모듈 built-in 함수를 활용하세요.</p>
+        <ul>
+          <li><code>heapq.heapify(list)</code> </li>
+          <li><code>heapq.heappush(heap, item)</code> </li>
+          <li><code>heapq.heappop(heap)</code> </li>
+        </ul>
+        <!-- <p><code>heapq</code>는 min-heap이므로, max-heap처럼 쓰려면 값에 <code>-</code>를 붙여 저장하세요.</p> -->
+      </div>
+    </div>
+
+    <div class="resize-handle" aria-hidden="true"></div>
+
+    <div class="right-col">
+      <div class="editor-shell">
+        <div class="editor-bar">
+          <div class="editor-bar-left">
+            <span class="editor-dot"><span></span><span></span><span></span></span>
+            <span>quiz2_2.py</span>
+          </div>
+          <div class="editor-bar-right">
+            <button class="btn-text btn-save" data-action="save" data-target="p2" title="Save quiz2_2.py">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"></path><polyline points="17 21 17 13 7 13 7 21"></polyline><polyline points="7 3 7 8 15 8"></polyline></svg>
+              Save
+            </button>
+            <button class="btn-text" data-action="reset" data-target="p2">초기화</button>
+          </div>
+        </div>
+        <textarea id="code-p2"></textarea>
+      </div>
+
+      <div class="run-row">
+        <button class="btn-primary" data-run="p2" disabled>
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polygon points="6 4 20 12 6 20 6 4"></polygon></svg>
+          실행 &amp; 결과
+        </button>
+        <span class="run-hint">함수만 작성하세요. 테스트는 자동 실행됩니다.</span>
+      </div>
+
+      <div class="results" id="results-p2">
+        <p class="results-empty">아직 실행된 결과가 없습니다.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ Problem 3 ============ -->
+  <section class="panel" id="p3">
+    <div class="left-col">
+      <div class="problem-head">
+        <h2 class="problem-title">Red-Black Tree Insert</h2>
+        <p class="problem-meta">Problem 3 · Topic: Red-Black Tree · Source: 강의자료 슬라이드</p>
+      </div>
+
+      <div class="desc">
+        <h3>문제 설명</h3>
+        <p>
+          Red-Black Tree의 <code>insert(key)</code> 메서드를 구현하세요.
+          여러 개의 key를 순서대로 삽입한 뒤 <code>inorder()</code>를 호출하면 정렬된 리스트를 반환해야 합니다.
+        </p>
+        <p>
+          <code>_left_rotate</code>, <code>_right_rotate</code>, <code>_insert_fixup</code>은 <strong>이미 구현</strong>되어 있습니다.
+        </p>
+
+        <!-- <div class="signature">
+          <span class="signature-label">함수 시그니처</span>
+          class RedBlackTree:
+              def insert(self, key):
+                  ...
+        </div> -->
+
+        <!-- <h3>채점 방법</h3>
+        <p>
+          주어진 key 리스트를 차례대로 insert한 후 <code>tree.inorder()</code>가
+          정렬된 리스트를 반환하면 통과합니다.
+          내부적으로 RB 속성(루트 BLACK, RED-RED 금지, black-height 일치)도 검증됩니다.
+        </p> -->
+
+        <h3>예시</h3>
+        <p class="example-label">Example 1</p>
+        <div class="example-block">tree.insert(10)
+tree.insert(5)
+tree.insert(20)
+tree.insert(1)
+tree.insert(15)
+tree.inorder() -> [1, 5, 10, 15, 20]</div>
+        <p class="example-label">Example 2</p>
+        <div class="example-block">tree.insert(1)
+tree.insert(2)
+tree.insert(3)
+tree.insert(4)
+tree.insert(5)
+tree.inorder() -> [1, 2, 3, 4, 5]  # BST라면 unbalanced되지만 RB-Tree는 fixup으로 균형 유지</div>
+
+        <h3>제공되는 클래스 (이미 작성됨)</h3>
+        <div class="example-block">class RBNode:
+    def __init__(self, val=None, color="RED"):
+        self.val = val
+        self.color = color    # "RED" or "BLACK"
+        self.left = None
+        self.right = None
+        self.parent = None
+
+class RedBlackTree:
+    def __init__(self):
+        self.NIL = RBNode(None, "BLACK")
+        self.NIL.left = self.NIL
+        self.NIL.right = self.NIL
+        self.NIL.parent = self.NIL
+        self.root = self.NIL
+
+    # 제공 메서드 (직접 호출 가능):
+    # self._left_rotate(node)  
+    # self._right_rotate(node)  
+    # self._insert_fixup(node)</div>
+      </div>
+    </div>
+
+    <div class="resize-handle" aria-hidden="true"></div>
+
+    <div class="right-col">
+      <div class="editor-shell">
+        <div class="editor-bar">
+          <div class="editor-bar-left">
+            <span class="editor-dot"><span></span><span></span><span></span></span>
+            <span>quiz2_3.py</span>
+          </div>
+          <div class="editor-bar-right">
+            <button class="btn-text btn-save" data-action="save" data-target="p3" title="Save quiz2_3.py">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"></path><polyline points="17 21 17 13 7 13 7 21"></polyline><polyline points="7 3 7 8 15 8"></polyline></svg>
+              Save
+            </button>
+            <button class="btn-text" data-action="reset" data-target="p3">초기화</button>
+          </div>
+        </div>
+        <textarea id="code-p3"></textarea>
+      </div>
+
+      <div class="run-row">
+        <button class="btn-primary" data-run="p3" disabled>
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polygon points="6 4 20 12 6 20 6 4"></polygon></svg>
+          실행 &amp; 결과
+        </button>
+        <span class="run-hint"><code>insert</code>만 구현하세요. fixup/rotate는 제공됩니다.</span>
+      </div>
+
+      <div class="results" id="results-p3">
+        <p class="results-empty">아직 실행된 결과가 없습니다.</p>
+      </div>
+    </div>
+  </section>
+
+</div>
+
+<p class="foot">© Daeun Song · Department of Artificial Intelligence · Ewha Womans University</p>
+
+<div class="toast" id="toast"></div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/codemirror.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/mode/python/python.min.js"></script>
+<script src="https://cdn.jsdelivr.net/pyodide/v0.26.4/full/pyodide.js"></script>
+<script>
+const PROBLEMS = {
+  p1: {
+    filename: 'quiz2_1.py',
+    starter:
+`# Definition for a binary tree node.
+# class TreeNode(object):
+#     def __init__(self, val=0, left=None, right=None):
+#         self.val = val
+#         self.left = left
+#         self.right = right
+
+class Solution(object):
+    def minDiffInBST(self, root):
+        """
+        :type root: Optional[TreeNode]
+        :rtype: int
+        """
+        # 여기에 코드를 작성하세요.
+
+    def inorder(self, root):
+        """
+        :type root: Optional[TreeNode]
+        :rtype: List[int]
+        """
+        # 여기에 코드를 작성하세요.
+`,
+    harness: `
+class TreeNode(object):
+    def __init__(self, val=0, left=None, right=None):
+        self.val = val
+        self.left = left
+        self.right = right
+
+def __build_tree(level_order):
+    if not level_order:
+        return None
+    root = TreeNode(level_order[0])
+    queue = [root]
+    i = 1
+    while queue and i < len(level_order):
+        node = queue.pop(0)
+        if i < len(level_order) and level_order[i] is not None:
+            node.left = TreeNode(level_order[i])
+            queue.append(node.left)
+        i += 1
+        if i < len(level_order) and level_order[i] is not None:
+            node.right = TreeNode(level_order[i])
+            queue.append(node.right)
+        i += 1
+    return root
+
+__TESTS = [
+    ("기본 케이스 (root=[4,2,6,1,3])", [4, 2, 6, 1, 3], 1),
+    ("불균형 BST (root=[1,0,48,None,None,12,49])", [1, 0, 48, None, None, 12, 49], 1),
+    ("일반 BST (root=[5,3,8,1,4,None,9])", [5, 3, 8, 1, 4, None, 9], 1),
+    ("값이 큰 BST (root=[90,69,None,49,89,None,52])", [90, 69, None, 49, 89, None, 52], 1),
+    ("최솟값이 1이 아닌 경우 (root=[27,None,34,None,58,50,None,44])", [27, None, 34, None, 58, 50, None, 44], 6),
+    ("두 노드 트리 (root=[10,5])", [10, 5], 5),
+]
+
+import time as _time
+__results = []
+for name, tree_input, expected in __TESTS:
+    try:
+        root = __build_tree(tree_input)
+        sol = Solution()
+        _t0 = _time.perf_counter()
+        actual = sol.minDiffInBST(root)
+        _elapsed = round((_time.perf_counter() - _t0) * 1000, 2)
+        ok = actual == expected
+        __results.append({
+            "name": name,
+            "status": "pass" if ok else "fail",
+            "input": f"root={tree_input}",
+            "expected": str(expected),
+            "got": str(actual),
+            "elapsed_ms": _elapsed,
+        })
+    except Exception as __e:
+        import traceback as __tb
+        __results.append({
+            "name": name,
+            "status": "error",
+            "input": f"root={tree_input}",
+            "expected": str(expected),
+            "got": "",
+            "trace": __tb.format_exc(),
+        })
+
+import json as __json
+__json.dumps(__results)
+`
+  },
+
+  p2: {
+    filename: 'quiz2_2.py',
+    starter:
+`import heapq
+
+class Solution(object):
+    def fillCups(self, amount):
+        """
+        :type amount: List[int]
+        :rtype: int
+        """
+        # 여기에 코드를 작성하세요.
+`,
+    harness: `
+import heapq
+
+__TESTS = [
+    ("기본 예제 (amount=[1,4,2])", [1, 4, 2], 4),
+    ("균형잡힌 케이스 (amount=[5,4,4])", [5, 4, 4], 7),
+    ("한 종류만 (amount=[5,0,0])", [5, 0, 0], 5),
+    ("모두 0 (amount=[0,0,0])", [0, 0, 0], 0),
+    ("모두 1씩 (amount=[1,1,1])", [1, 1, 1], 2),
+    ("한 쪽이 매우 큼 (amount=[100,1,1])", [100, 1, 1], 100),
+    ("모두 같은 양 (amount=[7,7,7])", [7, 7, 7], 11),
+]
+
+import time as _time
+__results = []
+for name, amount_input, expected in __TESTS:
+    try:
+        sol = Solution()
+        _t0 = _time.perf_counter()
+        actual = sol.fillCups(list(amount_input))
+        _elapsed = round((_time.perf_counter() - _t0) * 1000, 2)
+        ok = actual == expected
+        __results.append({
+            "name": name,
+            "status": "pass" if ok else "fail",
+            "input": f"amount={amount_input}",
+            "expected": str(expected),
+            "got": str(actual),
+            "elapsed_ms": _elapsed,
+        })
+    except Exception as __e:
+        import traceback as __tb
+        __results.append({
+            "name": name,
+            "status": "error",
+            "input": f"amount={amount_input}",
+            "expected": str(expected),
+            "got": "",
+            "trace": __tb.format_exc(),
+        })
+
+import json as __json
+__json.dumps(__results)
+`
+  },
+
+  p3: {
+    filename: 'quiz2_3.py',
+    starter:
+`class RBNode:
+    def __init__(self, val=None, color="RED"):
+        self.val = val
+        self.color = color    # "RED" or "BLACK"
+        self.left = None
+        self.right = None
+        self.parent = None
+
+class RedBlackTree:
+    def __init__(self):
+        self.NIL = RBNode(None, "BLACK")
+        self.NIL.left = self.NIL
+        self.NIL.right = self.NIL
+        self.NIL.parent = self.NIL
+        self.root = self.NIL
+
+    def insert(self, key):
+        """
+        :type key: int
+        :rtype: None
+        """
+        # 여기에 코드를 작성하세요.
+`,
+    harness: `
+def __left_rotate(tree, x):
+    y = x.right
+    x.right = y.left
+    if y.left != tree.NIL:
+        y.left.parent = x
+    y.parent = x.parent
+    if x.parent == tree.NIL:
+        tree.root = y
+    elif x == x.parent.left:
+        x.parent.left = y
+    else:
+        x.parent.right = y
+    y.left = x
+    x.parent = y
+
+def __right_rotate(tree, y):
+    x = y.left
+    y.left = x.right
+    if x.right != tree.NIL:
+        x.right.parent = y
+    x.parent = y.parent
+    if y.parent == tree.NIL:
+        tree.root = x
+    elif y == y.parent.left:
+        y.parent.left = x
+    else:
+        y.parent.right = x
+    x.right = y
+    y.parent = x
+
+def __insert_fixup(tree, z):
+    while z.parent.color == "RED":
+        if z.parent == z.parent.parent.left:
+            y = z.parent.parent.right
+            if y.color == "RED":
+                z.parent.color = "BLACK"
+                y.color = "BLACK"
+                z.parent.parent.color = "RED"
+                z = z.parent.parent
+            else:
+                if z == z.parent.right:
+                    z = z.parent
+                    __left_rotate(tree, z)
+                z.parent.color = "BLACK"
+                z.parent.parent.color = "RED"
+                __right_rotate(tree, z.parent.parent)
+        else:
+            y = z.parent.parent.left
+            if y.color == "RED":
+                z.parent.color = "BLACK"
+                y.color = "BLACK"
+                z.parent.parent.color = "RED"
+                z = z.parent.parent
+            else:
+                if z == z.parent.left:
+                    z = z.parent
+                    __right_rotate(tree, z)
+                z.parent.color = "BLACK"
+                z.parent.parent.color = "RED"
+                __left_rotate(tree, z.parent.parent)
+    tree.root.color = "BLACK"
+
+def __inorder(tree):
+    result = []
+    def walk(node):
+        if node == tree.NIL:
+            return
+        walk(node.left)
+        result.append(node.val)
+        walk(node.right)
+    walk(tree.root)
+    return result
+
+# Inject the helpers into RedBlackTree class
+RedBlackTree._left_rotate = lambda self, x: __left_rotate(self, x)
+RedBlackTree._right_rotate = lambda self, y: __right_rotate(self, y)
+RedBlackTree._insert_fixup = lambda self, z: __insert_fixup(self, z)
+RedBlackTree.inorder = lambda self: __inorder(self)
+
+def __verify_rb(tree):
+    if tree.root == tree.NIL:
+        return True
+    if tree.root.color != "BLACK":
+        return False
+    def check(node):
+        if node == tree.NIL:
+            return 1
+        if node.color == "RED":
+            if node.left.color == "RED" or node.right.color == "RED":
+                return -1
+        lh = check(node.left)
+        if lh == -1: return -1
+        rh = check(node.right)
+        if rh == -1: return -1
+        if lh != rh: return -1
+        return lh + (1 if node.color == "BLACK" else 0)
+    return check(tree.root) != -1
+
+__TESTS = [
+    ("기본 삽입 ([10,5,20,1,15])", [10, 5, 20, 1, 15], [1, 5, 10, 15, 20]),
+    ("균형잡힌 입력 ([5,3,8,1,4,7,9])", [5, 3, 8, 1, 4, 7, 9], [1, 3, 4, 5, 7, 8, 9]),
+    ("오름차순 입력 ([1,2,3,4,5,6,7])", [1, 2, 3, 4, 5, 6, 7], [1, 2, 3, 4, 5, 6, 7]),
+    ("내림차순 입력 ([7,6,5,4,3,2,1])", [7, 6, 5, 4, 3, 2, 1], [1, 2, 3, 4, 5, 6, 7]),
+    ("단일 노드 ([42])", [42], [42]),
+    ("빈 트리 ([])", [], []),
+    ("일반 케이스 ([10,20,30,15,25,5,35])", [10, 20, 30, 15, 25, 5, 35], [5, 10, 15, 20, 25, 30, 35]),
+]
+
+import time as _time
+__results = []
+for name, keys, expected_inorder in __TESTS:
+    try:
+        tree = RedBlackTree()
+        _t0 = _time.perf_counter()
+        for k in keys:
+            tree.insert(k)
+        _elapsed = round((_time.perf_counter() - _t0) * 1000, 2)
+        actual = tree.inorder()
+        ok_inorder = actual == expected_inorder
+        ok_rb = __verify_rb(tree)
+        if ok_inorder and ok_rb:
+            __results.append({
+                "name": name,
+                "status": "pass",
+                "input": f"keys={keys}",
+                "expected": f"inorder={expected_inorder}, RB valid",
+                "got": f"inorder={actual}, RB valid",
+                "elapsed_ms": _elapsed,
+            })
+        elif not ok_inorder:
+            __results.append({
+                "name": name,
+                "status": "fail",
+                "input": f"keys={keys}",
+                "expected": f"inorder={expected_inorder}",
+                "got": f"inorder={actual}",
+                "elapsed_ms": _elapsed,
+            })
+        else:
+            __results.append({
+                "name": name,
+                "status": "fail",
+                "input": f"keys={keys}",
+                "expected": "RB 속성 만족",
+                "got": "RB 속성 위반 (root BLACK / RED-RED / black-height 중 하나 위반)",
+                "elapsed_ms": _elapsed,
+            })
+    except Exception as __e:
+        import traceback as __tb
+        __results.append({
+            "name": name,
+            "status": "error",
+            "input": f"keys={keys}",
+            "expected": f"inorder={expected_inorder}",
+            "got": "",
+            "trace": __tb.format_exc(),
+        })
+
+import json as __json
+__json.dumps(__results)
+`
+  },
+};
+
+const editors = {};
+
+function setupEditor(id) {
+  const ta = document.getElementById('code-' + id);
+  ta.value = PROBLEMS[id].starter;
+  const cm = CodeMirror.fromTextArea(ta, {
+    mode: 'python',
+    theme: 'neo',
+    lineNumbers: true,
+    indentUnit: 4,
+    tabSize: 4,
+    indentWithTabs: false,
+    smartIndent: true,
+    lineWrapping: false,
+    extraKeys: {
+      Tab: cm => cm.replaceSelection('    '),
+      'Ctrl-S': cm => saveFile(id),
+      'Cmd-S': cm => saveFile(id),
+    },
+  });
+  cm.on('change', () => persistCode(id, cm.getValue()));
+  editors[id] = cm;
+
+  try {
+    const saved = localStorage.getItem('quiz2_code_' + id);
+    if (saved && saved.trim().length > 0) {
+      cm.setValue(saved);
+    }
+  } catch (_) {}
+}
+
+function persistCode(id, code) {
+  try { localStorage.setItem('quiz2_code_' + id, code); } catch (_) {}
+}
+
+['p1', 'p2', 'p3'].forEach(setupEditor);
+
+document.querySelectorAll('.tab').forEach(btn => {
+  btn.addEventListener('click', () => {
+    const target = btn.dataset.target;
+    document.querySelectorAll('.tab').forEach(t => t.classList.toggle('active', t === btn));
+    document.querySelectorAll('.panel').forEach(p => p.classList.toggle('active', p.id === target));
+    requestAnimationFrame(() => requestAnimationFrame(() => editors[target] && editors[target].refresh()));
+  });
+});
+
+document.querySelectorAll('[data-action="reset"]').forEach(btn => {
+  btn.addEventListener('click', () => {
+    const id = btn.dataset.target;
+    if (confirm('이 문제의 코드를 초기 상태로 되돌립니다. 계속하시겠습니까?')) {
+      editors[id].setValue(PROBLEMS[id].starter);
+      persistCode(id, PROBLEMS[id].starter);
+      document.getElementById('results-' + id).innerHTML = '<p class="results-empty">아직 실행된 결과가 없습니다.</p>';
+      const st = document.getElementById('state-' + id);
+      st.className = 'tab-state';
+      st.textContent = '';
+      showToast('코드가 초기화되었습니다');
+    }
+  });
+});
+
+document.querySelectorAll('[data-action="save"]').forEach(btn => {
+  btn.addEventListener('click', () => {
+    const id = btn.dataset.target;
+    saveFile(id);
+  });
+});
+
+function saveFile(id) {
+  const code = editors[id].getValue();
+  const filename = PROBLEMS[id].filename;
+  const blob = new Blob([code], { type: 'text/x-python;charset=utf-8' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = filename;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  setTimeout(() => URL.revokeObjectURL(url), 200);
+  showToast(filename + ' 저장됨');
+}
+
+let toastTimer;
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => t.classList.remove('show'), 1800);
+}
+
+let pyodide = null;
+const statusDot = document.getElementById('status-dot');
+const statusText = document.getElementById('status-text');
+
+(async () => {
+  try {
+    pyodide = await loadPyodide({
+      indexURL: 'https://cdn.jsdelivr.net/pyodide/v0.26.4/full/',
+    });
+    statusDot.classList.remove('loading');
+    statusDot.classList.add('ready');
+    statusText.textContent = 'Python 준비 완료';
+    document.querySelectorAll('[data-run]').forEach(b => b.disabled = false);
+  } catch (e) {
+    console.error(e);
+    statusDot.classList.remove('loading');
+    statusDot.classList.add('error');
+    statusText.textContent = '로딩 실패 — 페이지를 새로고침해 주세요';
+  }
+})();
+
+let isRunning = false;
+
+document.querySelectorAll('[data-run]').forEach(btn => {
+  btn.addEventListener('click', async () => {
+    const id = btn.dataset.run;
+    if (!pyodide) {
+      showToast('Python 환경이 아직 준비되지 않았습니다');
+      return;
+    }
+    if (isRunning) {
+      showToast('이미 실행 중입니다. 잠시 기다려주세요.');
+      return;
+    }
+    await runTests(id, btn);
+  });
+});
+
+async function runTests(id, btn) {
+  isRunning = true;
+  const code = editors[id].getValue();
+  const harness = PROBLEMS[id].harness;
+  const resultsBox = document.getElementById('results-' + id);
+  const tabState = document.getElementById('state-' + id);
+
+  btn.disabled = true;
+  const origLabel = btn.innerHTML;
+  btn.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9" stroke-dasharray="40" stroke-dashoffset="20"><animateTransform attributeName="transform" type="rotate" from="0 12 12" to="360 12 12" dur="0.9s" repeatCount="indefinite"/></circle></svg> 실행 중…';
+
+  try {
+    let resultsJson, stdout = '';
+    const t0 = performance.now();
+    try {
+      await pyodide.runPythonAsync(`
+import sys, io as _io
+_orig_stdout = sys.stdout
+_buf = _io.StringIO()
+sys.stdout = _buf
+`);
+      await pyodide.runPythonAsync(code);
+      resultsJson = await pyodide.runPythonAsync(harness);
+      stdout = await pyodide.runPythonAsync(`
+sys.stdout = _orig_stdout
+_buf.getvalue()
+`);
+    } catch (err) {
+      let captured = '';
+      await pyodide.runPythonAsync(`
+import sys
+try:
+    sys.stdout = _orig_stdout
+    _captured = _buf.getvalue()
+except:
+    _captured = ''
+`).catch(() => {});
+      try { captured = pyodide.globals.get('_captured') || ''; } catch (_) {}
+      renderRunError(resultsBox, tabState, err.message || String(err), captured);
+      return;
+    }
+
+    const totalMs = performance.now() - t0;
+    if (totalMs > 5000) showToast(`실행 시간이 ${(totalMs / 1000).toFixed(1)}초로 느립니다. 알고리즘을 점검해보세요.`);
+
+    if (!resultsJson || typeof resultsJson !== 'string') throw new Error('채점 결과를 받지 못했습니다.');
+    const results = JSON.parse(resultsJson);
+    renderResults(resultsBox, tabState, results, stdout);
+
+  } finally {
+    isRunning = false;
+    btn.disabled = false;
+    btn.innerHTML = origLabel;
+  }
+}
+
+function renderRunError(box, tabState, msg, stdout = '') {
+  tabState.className = 'tab-state fail';
+  tabState.textContent = '!';
+  box.innerHTML = `
+    <div class="results-summary">
+      <div class="results-headline fail">코드 오류</div>
+      <div class="results-stats">실행 중 에러 발생</div>
+    </div>
+    ${stdout.trim() ? `<div class="stdout-block"><div class="stdout-label">Output</div><pre class="stdout-pre">${escapeHtml(stdout)}</pre></div>` : ''}
+    <div class="traceback">${escapeHtml(msg)}</div>
+  `;
+}
+
+function renderResults(box, tabState, results, stdout = '') {
+  const total = results.length;
+  const passed = results.filter(r => r.status === 'pass').length;
+  const allPass = passed === total;
+
+  tabState.className = 'tab-state ' + (allPass ? 'pass' : 'fail');
+  tabState.textContent = allPass ? '✓' : (passed + '/' + total);
+
+  const headline = allPass
+    ? '모든 테스트 통과!'
+    : `${total - passed}개 테스트 실패`;
+
+  let html = `
+    <div class="results-summary">
+      <div class="results-headline ${allPass ? '' : 'fail'}">${headline}</div>
+      <div class="results-stats">${passed} / ${total} passed</div>
+    </div>
+  `;
+
+  if (stdout.trim()) {
+    html += `
+      <div class="stdout-block">
+        <div class="stdout-label">Output</div>
+        <pre class="stdout-pre">${escapeHtml(stdout)}</pre>
+      </div>
+    `;
+  }
+
+  for (const r of results) {
+    const icon = r.status === 'pass'
+      ? '<span class="test-icon pass">✓</span>'
+      : (r.status === 'error'
+          ? '<span class="test-icon error">!</span>'
+          : '<span class="test-icon fail">✗</span>');
+
+    let detail = '';
+    if (r.status === 'pass') {
+      detail = `<span class="label">Input:</span>${escapeHtml(r.input)}\n<span class="label">Output:</span>${escapeHtml(r.got)}`;
+    } else if (r.status === 'fail') {
+      detail = `<span class="label">Input:</span>${escapeHtml(r.input)}\n<span class="label">Expected:</span><span class="expected">${escapeHtml(r.expected)}</span>\n<span class="label">Got:</span><span class="got-fail">${escapeHtml(r.got)}</span>`;
+    } else {
+      detail = `<span class="label">Input:</span>${escapeHtml(r.input)}\n<span class="label">Expected:</span><span class="expected">${escapeHtml(r.expected)}</span>`;
+    }
+
+    const timeLabel = r.elapsed_ms != null
+      ? `<span style="float:right;color:var(--ink-mute);font-size:10.5px;font-family:'JetBrains Mono',monospace">${r.elapsed_ms} ms</span>`
+      : '';
+
+    html += `
+      <div class="test-row">
+        ${icon}
+        <div>
+          <div class="test-name">${escapeHtml(r.name)}${timeLabel}</div>
+          <div class="test-detail">${detail}</div>
+          ${r.trace ? `<div class="traceback">${escapeHtml(r.trace)}</div>` : ''}
+        </div>
+      </div>
+    `;
+  }
+
+  box.innerHTML = html;
+}
+
+function escapeHtml(s) {
+  return String(s)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
+}
+
+// ---- Resizable panel divider ----
+{
+  let drag = null;
+
+  document.querySelectorAll('.resize-handle').forEach(handle => {
+    handle.addEventListener('mousedown', e => {
+      e.preventDefault();
+      const panel = handle.closest('.panel');
+      const currentPct = parseFloat(panel.style.getPropertyValue('--left-pct')) || 42;
+      drag = { panel, handle, startX: e.clientX, startPct: currentPct };
+      handle.classList.add('dragging');
+      document.body.style.cursor = 'col-resize';
+      document.body.style.userSelect = 'none';
+    });
+  });
+
+  document.addEventListener('mousemove', e => {
+    if (!drag) return;
+    const totalW = drag.panel.getBoundingClientRect().width;
+    if (totalW === 0) return;
+    const delta = e.clientX - drag.startX;
+    const newPct = Math.max(20, Math.min(72, drag.startPct + (delta / totalW * 100)));
+    drag.panel.style.setProperty('--left-pct', newPct + '%');
+  });
+
+  document.addEventListener('mouseup', () => {
+    if (!drag) return;
+    drag.handle.classList.remove('dragging');
+    document.body.style.cursor = '';
+    document.body.style.userSelect = '';
+    drag = null;
+  });
+}
+</script>
+
+</body>
+</html>
