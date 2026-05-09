@@ -124,7 +124,7 @@ const PUBLICATIONS = [
   },
   {
     year: 2025,
-    title: "SocialLLaVA: Enhancing Robot Navigation through Human-Language Reasoning in Social Spaces",
+    title: "Social-LLaVA: Enhancing Robot Navigation through Human-Language Reasoning in Social Spaces",
     authors: ["Amirreza Payandeh<sup>†</sup>", "**Daeun Song**", "Mohammad Nazeri", "Jing Liang", "Praneel Mukherjee", "Amir Hossain Raj", "Yangzhe Kong", "Dinesh Manocha", "Xuesu Xiao"],
     venue_short: "IROS",
     venue_full: "IEEE/RSJ International Conference on Intelligent Robots and Systems (IROS), 2025",
@@ -140,7 +140,7 @@ const PUBLICATIONS = [
   },
   {
     year: 2025,
-    title: "AutoSpatial:Visual-Language Reasoning for Social Robot Navigation through Efficient Spatial Reasoning Learning",
+    title: "AutoSpatial: Visual-Language Reasoning for Social Robot Navigation through Efficient Spatial Reasoning Learning",
     authors: ["Yangzhe Kong<sup>†</sup>", "Jing Liang", "**Daeun Song**", "Xuesu Xiao", "Dinesh Manocha"],
     venue_short: "IROS",
     venue_full: "IEEE/RSJ International Conference on Intelligent Robots and Systems (IROS), 2025",
@@ -166,7 +166,7 @@ const PUBLICATIONS = [
   },
   {
     year: 2025,
-    title: "GND: Global Navigation Dataset with Multi-Modal Perception and Multi-Category Traversability in Outdoor Campus Environments",
+    title: "GND: Global navigation dataset with multi-modal perception and multi-category traversability in outdoor campus environments",
     authors: ["Jing Liang*<sup>†</sup>", "Dibiyendu Das*", "**Daeun Song***", "Md Nahid Hasan Shuvo", "Mohammad Durrani", "Karthik Taranath", "Ivan Penskiy", "Dinesh Manocha", "Xuesu Xiao"],
     venue_short: "ICRA",
     venue_full: "IEEE International Conference on Robotics and Automation (ICRA), 2025",
@@ -198,7 +198,7 @@ const PUBLICATIONS = [
   },
   {
     year: 2024,
-    title: "DTG: Diverse Trajectory Generation for Social Navigation",
+    title: "DTG: Diffusion-based trajectory generation for mapless global navigation",
     authors: ["Jing Liang<sup>†</sup>", "Amirreza Payandeh", "**Daeun Song**", "Xuesu Xiao", "Dinesh Manocha"],
     venue_short: "IROS",
     venue_full: "IEEE/RSJ International Conference on Intelligent Robots and Systems (IROS), 2024",
@@ -213,7 +213,7 @@ const PUBLICATIONS = [
   },
   {
     year: 2024,
-    title: "AGL-NET: Aerial-Ground Localization Network",
+    title: "AGL-NET: Aerial-ground cross-modal global localization with varying scales",
     authors: ["Tianrui Guan*<sup>†</sup>", "Ruiqi Xian*", "Xijun Wang", "Xiyang Wu", "Mohamed Elnoor", "**Daeun Song**", "Dinesh Manocha"],
     venue_short: "IROS",
     venue_full: "IEEE/RSJ International Conference on Intelligent Robots and Systems (IROS), 2024",
@@ -227,7 +227,7 @@ const PUBLICATIONS = [
   },
   {
     year: 2024,
-    title: "TSP-Bot: Robotic Drawing via Traveling Salesman Problem",
+    title: "TSP-Bot: Robotic TSP Pen Art using High-DoF Manipulators",
     authors: ["**Daeun Song**", "Eunjung Lim", "Jiyoon Park", "Minjung Jung", "Young J. Kim<sup>†</sup>"],
     venues: [
       { short: "UR", full: "International Conference on Ubiquitous Robots (UR), 2024" },
@@ -260,7 +260,7 @@ const PUBLICATIONS = [
   {
     year: 2023,
     title: "Stroke-based Rendering and Planning for Robotic Performance of Artistic Drawing",
-    authors: ["**Daeun Song**", "Young J. Kim<sup>†</sup>"],
+    authors: ["Ivaylo Ilinkin, **Daeun Song**", "Young J. Kim<sup>†</sup>"],
     venue_short: "IROS",
     venue_full: "IEEE/RSJ International Conference on Intelligent Robots and Systems (IROS), 2023",
     type: "conference",
