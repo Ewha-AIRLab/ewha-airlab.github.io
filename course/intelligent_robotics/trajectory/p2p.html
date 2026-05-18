@@ -1,0 +1,914 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Joint vs. Cartesian Trajectory — AIR Lab @ Ewha</title>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@300;400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: 'IBM Plex Sans', sans-serif; background: #f8fafc; color: #0f172a; min-height: 100vh; overflow-x: hidden; }
+
+/* ── Nav ── */
+.topbar { background: white; border-bottom: 1px solid #e2e8f0; padding: .7rem 1.5rem; display: flex; align-items: center; gap: .5rem; font-size: .84rem; flex-wrap: wrap; }
+.topbar a { text-decoration: none; color: #00462A; font-weight: 500; }
+.topbar a:hover { text-decoration: underline; }
+.topbar .sep { color: #94a3b8; }
+.topbar .cur { color: #0f172a; font-weight: 600; }
+
+/* ── Page ── */
+.page { max-width: 1400px; margin: 0 auto; padding: 1.5rem; }
+.page-title { font-size: 1.75rem; font-weight: 700; margin-bottom: .4rem; }
+.page-desc { color: #64748b; font-size: .9rem; max-width: 760px; margin-bottom: 1.25rem; line-height: 1.6; }
+
+/* ── Responsive ── */
+@media (max-width: 1100px) { .panes-row3 { grid-template-columns: 1fr 1fr !important; } .bottom-row { grid-template-columns: 1fr !important; } }
+@media (max-width: 640px)  { .panes-row3 { grid-template-columns: 1fr !important; } }
+
+/* ── Cards ── */
+.card { background: white; border: 1px solid #e2e8f0; border-radius: 16px; box-shadow: 0 1px 3px rgba(0,0,0,.06); }
+.card-hd { padding: 1rem 1.35rem .6rem; display: flex; align-items: center; justify-content: space-between; gap: .75rem; }
+.card-title { font-size: .98rem; font-weight: 600; }
+.card-subtitle { font-size: .78rem; color: #94a3b8; font-style: italic; }
+.card-body { padding: .75rem 1.35rem 1.2rem; }
+.card-body-tight { padding: .75rem; }
+
+/* ── Axis chips / badges ── */
+.axis-legend { display: flex; gap: .5rem; }
+.axis-chip { font-size: .73rem; font-weight: 600; padding: .13rem .5rem; border-radius: 999px; color: white; }
+
+.scenario-badge { display: inline-flex; align-items: center; gap: .3rem; font-size: .75rem; font-weight: 600; padding: .15rem .55rem; border-radius: 999px; }
+.scenario-badge.normal  { background: #f0fdf4; color: #15803d; border: 1px solid #bbf7d0; }
+.scenario-badge.warn    { background: #fef2f2; color: #dc2626; border: 1px solid #fecaca; }
+
+/* ── Canvas ── */
+.viz-wrap { width: 100%; aspect-ratio: 1/1; position: relative; border-radius: 10px; overflow: hidden; border: 1px solid #e2e8f0; background: #f8fafc; }
+.viz-wrap svg { display: block; width: 100%; height: 100%; }
+.canvas-hint { font-size: .73rem; color: #94a3b8; margin-top: .4rem; }
+
+/* ── Velocity plot ── */
+.vel-wrap { width: 100%; height: 240px; border-radius: 10px; overflow: hidden; border: 1px solid #e2e8f0; background: #f8fafc; }
+.vel-wrap svg { display: block; width: 100%; height: 100%; }
+
+/* ── Buttons / toggles ── */
+.toggle-group { display: inline-flex; border: 1px solid #e2e8f0; border-radius: 10px; overflow: hidden; background: #f8fafc; }
+.toggle-group button {
+  border: none; background: transparent; padding: .5rem .9rem;
+  font-family: 'IBM Plex Sans', sans-serif; font-size: .83rem; font-weight: 500;
+  color: #64748b; cursor: pointer; transition: all .12s ease;
+}
+.toggle-group button:hover { color: #0f172a; }
+.toggle-group button.active { background: #0f172a; color: white; }
+
+.btn-icon {
+  width: 36px; height: 36px;
+  border: 1px solid #e2e8f0; background: white; border-radius: 8px;
+  cursor: pointer; display: inline-flex; align-items: center; justify-content: center;
+  color: #0f172a; transition: all .12s ease; flex-shrink: 0;
+}
+.btn-icon:hover { border-color: #00462A; color: #00462A; }
+.btn-icon:active { transform: translateY(1px); }
+
+/* ── Slider ── */
+.sl-group { margin-bottom: .9rem; }
+.sl-group:last-child { margin-bottom: 0; }
+.sl-label { display: flex; justify-content: space-between; font-size: .83rem; margin-bottom: .32rem; }
+.sl-label .sl-name { color: #475569; }
+.sl-label .sl-val  { font-family: 'IBM Plex Mono', monospace; color: #0f172a; font-weight: 500; }
+.sl-row { display: flex; align-items: center; gap: .5rem; }
+.sl-row input[type=range] { flex: 1; }
+input[type=range] {
+  -webkit-appearance: none; appearance: none;
+  height: 6px; background: #e2e8f0; border-radius: 3px;
+  outline: none; cursor: pointer;
+}
+input[type=range]::-webkit-slider-thumb {
+  -webkit-appearance: none; width: 17px; height: 17px; border-radius: 50%;
+  background: #0f172a; cursor: pointer; border: 2px solid white;
+  box-shadow: 0 1px 3px rgba(0,0,0,.25);
+}
+.sl-divider { border-top: 1px solid #f1f5f9; margin: .7rem 0; }
+
+/* ── Info rows ── */
+.info-row {
+  display: flex; justify-content: space-between; align-items: center;
+  gap: 1rem; border-bottom: 1px solid #f1f5f9;
+  padding: .45rem 0; font-size: .82rem;
+}
+.info-row:last-child { border-bottom: none; }
+.info-label { color: #64748b; font-weight: 500; }
+.info-val { font-family: 'IBM Plex Mono', monospace; text-align: right; }
+.info-val.warn { color: #dc2626; font-weight: 600; }
+.info-val.good { color: #15803d; font-weight: 500; }
+
+/* ── Legend ── */
+.legend-grid { display: grid; grid-template-columns: 1fr 1fr; gap: .35rem .75rem; }
+.leg-item { display: flex; align-items: center; gap: .45rem; font-size: .8rem; color: #475569; }
+.leg-dot  { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; }
+.leg-line { width: 18px; height: 3px; border-radius: 2px; flex-shrink: 0; }
+
+/* ── Hint box ── */
+.hint-box { background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: .55rem .75rem; font-size: .78rem; color: #64748b; line-height: 1.7; }
+
+@media (max-width: 640px) {
+  .topbar { padding: .6rem 1rem; font-size: .78rem; }
+  .page { padding: 1rem; }
+  .page-title { font-size: 1.25rem; }
+}
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <a href="/">AIR Lab @ Ewha</a>
+  <span class="sep">/</span>
+  Trajectory Generation
+  <span class="sep">/</span>
+  <span class="cur">Joint vs. Cartesian Trajectory</span>
+</div>
+
+<div class="page">
+  <h1 class="page-title">Joint Space vs. Cartesian Space Trajectory — 2R Planar Robot</h1>
+  <p class="page-desc">
+    Same start and goal configuration, two different ways to interpolate between them. Joint-space mode linearly interpolates the joint angles (θ₁, θ₂); Cartesian-space mode linearly interpolates the end-effector position (x, y) and recovers joint angles via IK at every sample. Watch what is straight in one space and curved in the other — and what happens when the Cartesian path grazes a kinematic singularity.
+  </p>
+
+
+  <!-- ── Bottom controls ── -->
+  <div class="bottom-row" style="display:grid; grid-template-columns: 1fr 1fr 1fr; gap: 1.25rem; align-items: start;">
+
+    <!-- Controls -->
+    <div class="card">
+      <div class="card-hd"><div class="card-title">Controls</div></div>
+      <div class="card-body">
+        <div class="sl-group">
+          <div class="sl-label">
+            <span class="sl-name">Scenario</span>
+          </div>
+          <div class="toggle-group" id="scenarioToggle" style="width:100%; display:flex;">
+            <button data-scenario="normal" class="active" style="flex:1">Normal</button>
+            <button data-scenario="singularity" style="flex:1">Near singularity</button>
+          </div>
+        </div>
+
+        <div class="sl-group">
+          <div class="sl-label">
+            <span class="sl-name">Mode</span>
+          </div>
+          <div class="toggle-group" id="modeToggle" style="width:100%; display:flex;">
+            <button data-mode="joint" class="active" style="flex:1">Joint space</button>
+            <button data-mode="cartesian" style="flex:1">Cartesian space</button>
+          </div>
+        </div>
+
+        <div class="sl-divider"></div>
+
+        <div class="sl-group">
+          <div class="sl-label">
+            <span class="sl-name">Path progress s</span>
+            <span class="sl-val" id="progressReadout">0.00</span>
+          </div>
+          <div class="sl-row">
+            <input type="range" id="progressSlider" min="0" max="1000" value="0">
+            <button class="btn-icon" id="playBtn" title="Play / Pause">
+              <svg id="playIcon" width="14" height="14" viewBox="0 0 14 14"><polygon points="3,2 12,7 3,12" fill="currentColor"/></svg>
+              <svg id="pauseIcon" width="14" height="14" viewBox="0 0 14 14" style="display:none"><rect x="3" y="2" width="3" height="10" fill="currentColor"/><rect x="8" y="2" width="3" height="10" fill="currentColor"/></svg>
+            </button>
+            <button class="btn-icon" id="resetBtn" title="Reset">
+              <svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M2 7 a5 5 0 1 0 1.5 -3.5"/><polyline points="2,2 2,4 4,4"/></svg>
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- State readout -->
+    <div class="card">
+      <div class="card-hd"><div class="card-title">Current State</div></div>
+      <div class="card-body">
+        <div class="info-row"><span class="info-label">Joint config q</span><span class="info-val" id="jointReadout">—</span></div>
+        <div class="info-row"><span class="info-label">EE position</span><span class="info-val" id="eeReadout">—</span></div>
+        <div class="info-row"><span class="info-label">|q̇|  (current)</span><span class="info-val" id="speedReadout">—</span></div>
+        <div class="info-row"><span class="info-label">|q̇|  (max over path)</span><span class="info-val" id="speedMaxReadout">—</span></div>
+        <div class="info-row"><span class="info-label">Path is straight in</span><span class="info-val good" id="modeReadout">joint space</span></div>
+      </div>
+    </div>
+
+    <!-- Legend + hint -->
+    <div style="display:flex; flex-direction: column; gap: 1.25rem;">
+      <div class="card">
+        <div class="card-hd"><div class="card-title">Legend</div></div>
+        <div class="card-body">
+          <div class="legend-grid">
+            <div class="leg-item"><div class="leg-line" style="background:#0f172a"></div>Robot link</div>
+            <div class="leg-item"><div class="leg-dot" style="background:#f59e0b"></div>End-effector</div>
+            <div class="leg-item"><div class="leg-line" style="background:#15803d"></div>Joint-mode path</div>
+            <div class="leg-item"><div class="leg-line" style="background:#ea580c"></div>Cartesian-mode path</div>
+            <div class="leg-item"><div class="leg-dot" style="background:#15803d"></div>Start q<sub>I</sub></div>
+            <div class="leg-item"><div class="leg-dot" style="background:#dc2626"></div>Goal q<sub>G</sub></div>
+          </div>
+        </div>
+      </div>
+      <!-- <div class="card">
+        <div class="card-hd"><div class="card-title">How to use</div></div>
+        <div class="card-body">
+          <div class="hint-box">
+            1. Toggle <strong>Mode</strong> to compare the two interpolation strategies.<br>
+            2. Switch <strong>Scenario</strong> to <em>Near singularity</em> and watch |q̇| spike.<br>
+            3. Press <strong>Play</strong> or drag the slider to scrub through the motion.
+          </div>
+        </div>
+      </div> -->
+    </div><BR>
+
+  </div>
+
+  <!-- ── Three canvas panes ── -->
+  <div class="panes-row3" style="display:grid; grid-template-columns: 1fr 1fr 1fr; gap: 1.25rem; margin-bottom: 1.25rem;">
+    <div class="card">
+      <div class="card-hd">
+        <div>
+          <div class="card-title">Robot — W ⊂ ℝ²</div>
+          <div class="card-subtitle">2R planar manipulator</div>
+        </div>
+        <span id="scenario-badge" class="scenario-badge normal">● Normal</span>
+      </div>
+      <div class="card-body-tight">
+        <div class="viz-wrap"><svg id="robotSvg" viewBox="0 0 400 400" preserveAspectRatio="xMidYMid meet"></svg></div>
+        <p class="canvas-hint">End-effector trace shows the actual workspace path of the active mode.</p>
+      </div>
+    </div>
+    
+
+    <div class="card">
+      <div class="card-hd">
+        <div>
+          <div class="card-title">Cartesian Space</div>
+          <div class="card-subtitle">end-effector position (x, y)</div>
+        </div>
+        <div class="axis-legend">
+          <span class="axis-chip" style="background:#ef4444">x</span>
+          <span class="axis-chip" style="background:#22c55e">y</span>
+        </div>
+      </div>
+      <div class="card-body-tight">
+        <div class="viz-wrap"><svg id="cartesianSvg" viewBox="0 0 400 400" preserveAspectRatio="xMidYMid meet"></svg></div>
+        <p class="canvas-hint">Solid line: straight in this space. Dashed: the other mode's path.</p>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-hd">
+        <div>
+          <div class="card-title">Configuration Space — C ⊂ ℝ²</div>
+          <div class="card-subtitle">joint angles (θ₁, θ₂)</div>
+        </div>
+        <div class="axis-legend">
+          <span class="axis-chip" style="background:#7c3aed">θ₁</span>
+          <span class="axis-chip" style="background:#0ea5e9">θ₂</span>
+        </div>
+      </div>
+      <div class="card-body-tight">
+        <div class="viz-wrap"><svg id="jointSvg" viewBox="0 0 400 400" preserveAspectRatio="xMidYMid meet"></svg></div>
+        <p class="canvas-hint">Solid line: straight in this space. Dashed: the other mode's path.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── Velocity comparison plot ── -->
+  <div class="card" style="margin-bottom: 1.25rem;">
+    <div class="card-hd">
+      <div>
+        <div class="card-title">Joint Speed Along the Path</div>
+        <div class="card-subtitle">|q̇(s)| as a function of normalized path progress · same total time for both modes</div>
+      </div>
+    </div>
+    <div class="card-body-tight">
+      <div class="vel-wrap"><svg id="velocitySvg" viewBox="0 0 1200 240" preserveAspectRatio="xMidYMid meet"></svg></div>
+    </div>
+  </div>
+</div>
+
+<script>
+'use strict';
+
+//═══════════════════════════════════════════════════════════════════
+// COLOR TOKENS (match C-Space Visualizer palette)
+//═══════════════════════════════════════════════════════════════════
+const COL = {
+  inkSoft: '#64748b',
+  ink: '#0f172a',
+  line: '#e2e8f0',
+  grid: '#e5e7eb',
+  tick: '#cbd5e1',
+  bg: '#f8fafc',
+  jointPath: '#15803d',
+  cartPath: '#ea580c',
+  start: '#15803d',
+  goal: '#dc2626',
+  ee: '#f59e0b',
+  link: '#0f172a',
+  warnRed: '#dc2626'
+};
+
+//═══════════════════════════════════════════════════════════════════
+// Robot parameters
+//═══════════════════════════════════════════════════════════════════
+const L1 = 1.0, L2 = 0.8;
+const REACH_MAX = L1 + L2;
+
+function fk(t1, t2) {
+  return {
+    x: L1 * Math.cos(t1) + L2 * Math.cos(t1 + t2),
+    y: L1 * Math.sin(t1) + L2 * Math.sin(t1 + t2),
+    ex: L1 * Math.cos(t1),
+    ey: L1 * Math.sin(t1)
+  };
+}
+
+function ik(x, y, elbowSign) {
+  const r2 = x*x + y*y;
+  let cos2 = (r2 - L1*L1 - L2*L2) / (2 * L1 * L2);
+  cos2 = Math.max(-1, Math.min(1, cos2));
+  const t2 = elbowSign * Math.acos(cos2);
+  const k1 = L1 + L2 * Math.cos(t2);
+  const k2 = L2 * Math.sin(t2);
+  const t1 = Math.atan2(y, x) - Math.atan2(k2, k1);
+  return { t1, t2 };
+}
+
+//═══════════════════════════════════════════════════════════════════
+// Scenarios
+//═══════════════════════════════════════════════════════════════════
+const SCENARIOS = {
+  normal: {
+    label: "Normal",
+    qStart: { t1: -0.30, t2:  1.40 },
+    qGoal:  { t1:  2.20, t2: -0.80 },
+    elbow: -1
+  },
+  singularity: {
+    label: "Near singularity",
+    qStart: null, qGoal: null,
+    eeStart: { x: 0.0,  y: 0.6 },
+    eeGoal:  { x: 1.55, y: 0.9 },
+    elbow: -1
+  }
+};
+for (const key of Object.keys(SCENARIOS)) {
+  const sc = SCENARIOS[key];
+  if (sc.eeStart && sc.eeGoal) {
+    sc.qStart = ik(sc.eeStart.x, sc.eeStart.y, sc.elbow);
+    sc.qGoal  = ik(sc.eeGoal.x,  sc.eeGoal.y,  sc.elbow);
+  }
+}
+
+let currentScenario = "normal";
+function getScenario() { return SCENARIOS[currentScenario]; }
+function Q_START() { return getScenario().qStart; }
+function Q_GOAL()  { return getScenario().qGoal; }
+function ELBOW()   { return getScenario().elbow; }
+
+function jointSpaceTrajectory(s) {
+  const qs = Q_START(), qg = Q_GOAL();
+  return {
+    t1: (1 - s) * qs.t1 + s * qg.t1,
+    t2: (1 - s) * qs.t2 + s * qg.t2
+  };
+}
+function cartesianSpaceTrajectory(s) {
+  const qs = Q_START(), qg = Q_GOAL();
+  const eeS = fk(qs.t1, qs.t2);
+  const eeG = fk(qg.t1, qg.t2);
+  return ik((1 - s)*eeS.x + s*eeG.x, (1 - s)*eeS.y + s*eeG.y, ELBOW());
+}
+
+//═══════════════════════════════════════════════════════════════════
+// Pre-compute paths + speeds
+//═══════════════════════════════════════════════════════════════════
+const N_SAMPLES = 400;
+let jointPath = [], cartesianPath = [];
+let jointSpeed = [], cartesianSpeed = [];
+let EE_START = null, EE_GOAL = null;
+
+function computePaths() {
+  jointPath = []; cartesianPath = [];
+  jointSpeed = []; cartesianSpeed = [];
+  const qs = Q_START(), qg = Q_GOAL();
+  EE_START = fk(qs.t1, qs.t2);
+  EE_GOAL  = fk(qg.t1, qg.t2);
+
+  for (let i = 0; i <= N_SAMPLES; i++) {
+    const sv = i / N_SAMPLES;
+    const qJ = jointSpaceTrajectory(sv);
+    const qC = cartesianSpaceTrajectory(sv);
+    jointPath.push({ s: sv, q: qJ, ee: fk(qJ.t1, qJ.t2) });
+    cartesianPath.push({ s: sv, q: qC, ee: fk(qC.t1, qC.t2) });
+  }
+
+  for (let i = 0; i <= N_SAMPLES; i++) {
+    const im = Math.max(0, i - 1), ip = Math.min(N_SAMPLES, i + 1);
+    const ds = (ip - im) / N_SAMPLES;
+    const dj1 = (jointPath[ip].q.t1 - jointPath[im].q.t1) / ds;
+    const dj2 = (jointPath[ip].q.t2 - jointPath[im].q.t2) / ds;
+    jointSpeed.push(Math.sqrt(dj1*dj1 + dj2*dj2));
+    const dc1 = (cartesianPath[ip].q.t1 - cartesianPath[im].q.t1) / ds;
+    const dc2 = (cartesianPath[ip].q.t2 - cartesianPath[im].q.t2) / ds;
+    cartesianSpeed.push(Math.sqrt(dc1*dc1 + dc2*dc2));
+  }
+}
+computePaths();
+
+//═══════════════════════════════════════════════════════════════════
+// SVG helpers
+//═══════════════════════════════════════════════════════════════════
+const SVG_NS = "http://www.w3.org/2000/svg";
+function el(tag, attrs) {
+  const e = document.createElementNS(SVG_NS, tag);
+  for (const k in attrs) e.setAttribute(k, attrs[k]);
+  return e;
+}
+function clearSvg(id) {
+  const svg = document.getElementById(id);
+  while (svg.firstChild) svg.removeChild(svg.firstChild);
+  return svg;
+}
+
+function robotToSvg(x, y) {
+  return [200 + x * 75, 200 - y * 75];
+}
+function jointToSvg(t1, t2) {
+  const t1min = -0.6, t1max = 2.7, t2min = -2, t2max = 2;
+  const margin = 50, w = 300, h = 300;
+  return [
+    margin + ((t1 - t1min) / (t1max - t1min)) * w,
+    margin + h - ((t2 - t2min) / (t2max - t2min)) * h
+  ];
+}
+
+//═══════════════════════════════════════════════════════════════════
+// State
+//═══════════════════════════════════════════════════════════════════
+let mode = "joint";
+let s = 0;
+let playing = false;
+let lastTime = null;
+const PLAY_DURATION_MS = 4000;
+
+//═══════════════════════════════════════════════════════════════════
+// Robot pane
+//═══════════════════════════════════════════════════════════════════
+function drawRobot() {
+  const svg = clearSvg("robotSvg");
+
+  const grid = el("g", { stroke: COL.grid, "stroke-width": 1, fill: "none" });
+  for (let i = -2; i <= 2; i += 0.5) {
+    const [x1, y1] = robotToSvg(i, -2), [x2, y2] = robotToSvg(i, 2);
+    grid.appendChild(el("line", { x1, y1, x2, y2 }));
+    const [hx1, hy1] = robotToSvg(-2, i), [hx2, hy2] = robotToSvg(2, i);
+    grid.appendChild(el("line", { x1: hx1, y1: hy1, x2: hx2, y2: hy2 }));
+  }
+  svg.appendChild(grid);
+
+  const [ox, oy] = robotToSvg(0, 0);
+  svg.appendChild(el("line", { x1: 0, y1: oy, x2: 400, y2: oy, stroke: COL.tick, "stroke-width": 1.5 }));
+  svg.appendChild(el("line", { x1: ox, y1: 0, x2: ox, y2: 400, stroke: COL.tick, "stroke-width": 1.5 }));
+  const xL = el("text", { x: 388, y: oy - 6, "font-family": "IBM Plex Mono, monospace", "font-size": 12, fill: COL.inkSoft });
+  xL.textContent = "x"; svg.appendChild(xL);
+  const yL = el("text", { x: ox + 6, y: 14, "font-family": "IBM Plex Mono, monospace", "font-size": 12, fill: COL.inkSoft });
+  yL.textContent = "y"; svg.appendChild(yL);
+
+  const showAlert = currentScenario === "singularity";
+  svg.appendChild(el("circle", {
+    cx: ox, cy: oy, r: REACH_MAX * 75,
+    fill: "none",
+    stroke: showAlert ? COL.warnRed : "#86efac",
+    "stroke-width": showAlert ? 1.5 : 1,
+    "stroke-dasharray": "5 5",
+    opacity: showAlert ? 0.6 : 0.7
+  }));
+  if (showAlert) {
+    const lbl = el("text", {
+      x: ox, y: oy - REACH_MAX * 75 - 6,
+      "font-family": "IBM Plex Mono, monospace", "font-size": 10,
+      fill: COL.warnRed, "text-anchor": "middle", "font-weight": 600
+    });
+    lbl.textContent = "reach boundary · t₂ = 0";
+    svg.appendChild(lbl);
+  }
+
+  // EE trace
+  const path = mode === "joint" ? jointPath : cartesianPath;
+  const tracePts = [];
+  for (const p of path) {
+    if (p.s > s + 1e-6) break;
+    const [px, py] = robotToSvg(p.ee.x, p.ee.y);
+    tracePts.push(`${px.toFixed(2)},${py.toFixed(2)}`);
+  }
+  if (tracePts.length > 1) {
+    svg.appendChild(el("polyline", {
+      points: tracePts.join(" "), fill: "none",
+      stroke: mode === "joint" ? COL.jointPath : COL.cartPath,
+      "stroke-width": 2.2, "stroke-linecap": "round", "stroke-linejoin": "round",
+      opacity: 0.55
+    }));
+  }
+
+  // Start/goal ghost markers
+  const [gsx, gsy] = robotToSvg(EE_START.x, EE_START.y);
+  const [ggx, ggy] = robotToSvg(EE_GOAL.x, EE_GOAL.y);
+  svg.appendChild(el("circle", { cx: gsx, cy: gsy, r: 9, fill: "none", stroke: COL.start, "stroke-width": 1.5, "stroke-dasharray": "2 2", opacity: 0.7 }));
+  svg.appendChild(el("circle", { cx: gsx, cy: gsy, r: 4, fill: COL.start, opacity: 0.45 }));
+  svg.appendChild(el("circle", { cx: ggx, cy: ggy, r: 9, fill: "none", stroke: COL.goal, "stroke-width": 1.5, "stroke-dasharray": "2 2", opacity: 0.7 }));
+  svg.appendChild(el("circle", { cx: ggx, cy: ggy, r: 4, fill: COL.goal, opacity: 0.45 }));
+
+  // Current pose
+  const q = mode === "joint" ? jointSpaceTrajectory(s) : cartesianSpaceTrajectory(s);
+  const pose = fk(q.t1, q.t2);
+  const [bx, by] = robotToSvg(0, 0);
+  const [ex, ey] = robotToSvg(pose.ex, pose.ey);
+  const [tx, ty] = robotToSvg(pose.x, pose.y);
+
+  svg.appendChild(el("line", { x1: bx, y1: by, x2: ex, y2: ey, stroke: COL.link, "stroke-width": 5, "stroke-linecap": "round" }));
+  svg.appendChild(el("line", { x1: ex, y1: ey, x2: tx, y2: ty, stroke: COL.link, "stroke-width": 5, "stroke-linecap": "round" }));
+
+  svg.appendChild(el("circle", { cx: bx, cy: by, r: 7, fill: "white", stroke: COL.ink, "stroke-width": 2 }));
+  svg.appendChild(el("circle", { cx: ex, cy: ey, r: 5, fill: "white", stroke: COL.ink, "stroke-width": 2 }));
+  svg.appendChild(el("circle", { cx: tx, cy: ty, r: 6, fill: COL.ee, stroke: COL.warnRed, "stroke-width": 1.5 }));
+
+  const baseLbl = el("text", { x: bx + 10, y: by + 16, "font-family": "IBM Plex Mono, monospace", "font-size": 10, fill: COL.inkSoft });
+  baseLbl.textContent = "base"; svg.appendChild(baseLbl);
+}
+
+//═══════════════════════════════════════════════════════════════════
+// Cartesian pane
+//═══════════════════════════════════════════════════════════════════
+function drawCartesian() {
+  const svg = clearSvg("cartesianSvg");
+
+  const grid = el("g", { stroke: COL.grid, "stroke-width": 1, fill: "none" });
+  for (let i = -2; i <= 2; i += 0.5) {
+    const [x1, y1] = robotToSvg(i, -2), [x2, y2] = robotToSvg(i, 2);
+    grid.appendChild(el("line", { x1, y1, x2, y2 }));
+    const [hx1, hy1] = robotToSvg(-2, i), [hx2, hy2] = robotToSvg(2, i);
+    grid.appendChild(el("line", { x1: hx1, y1: hy1, x2: hx2, y2: hy2 }));
+  }
+  svg.appendChild(grid);
+
+  const [ox, oy] = robotToSvg(0, 0);
+  svg.appendChild(el("line", { x1: ox, y1: 0, x2: ox, y2: 400, stroke: COL.tick, "stroke-width": 1.5 }));
+  svg.appendChild(el("line", { x1: 0, y1: oy, x2: 400, y2: oy, stroke: COL.tick, "stroke-width": 1.5 }));
+
+  const isJointMode = mode === "joint";
+
+  // Cartesian path (straight in this space)
+  const [csx, csy] = robotToSvg(EE_START.x, EE_START.y);
+  const [cgx, cgy] = robotToSvg(EE_GOAL.x, EE_GOAL.y);
+  svg.appendChild(el("line", {
+    x1: csx, y1: csy, x2: cgx, y2: cgy,
+    stroke: COL.cartPath,
+    "stroke-width": isJointMode ? 1.5 : 2.5,
+    opacity: isJointMode ? 0.4 : 1,
+    "stroke-dasharray": isJointMode ? "5 4" : "none"
+  }));
+
+  // Joint path (curved here)
+  const jPts = [];
+  for (const p of jointPath) {
+    const [px, py] = robotToSvg(p.ee.x, p.ee.y);
+    jPts.push(`${px.toFixed(2)},${py.toFixed(2)}`);
+  }
+  svg.appendChild(el("polyline", {
+    points: jPts.join(" "), fill: "none",
+    stroke: COL.jointPath,
+    "stroke-width": isJointMode ? 2.5 : 1.5,
+    opacity: isJointMode ? 1 : 0.4,
+    "stroke-dasharray": isJointMode ? "none" : "5 4"
+  }));
+
+  // Tick marks
+  const activePath = isJointMode ? jointPath : cartesianPath;
+  for (let i = 0; i <= 10; i++) {
+    const idx = Math.round((i / 10) * N_SAMPLES);
+    const p = activePath[idx];
+    const [px, py] = robotToSvg(p.ee.x, p.ee.y);
+    svg.appendChild(el("circle", {
+      cx: px, cy: py, r: 2.5,
+      fill: i === 0 ? COL.start : (i === 10 ? COL.goal : (isJointMode ? COL.jointPath : COL.cartPath)),
+      stroke: "white", "stroke-width": 1.5
+    }));
+  }
+
+  // Start/goal
+  svg.appendChild(el("circle", { cx: csx, cy: csy, r: 7, fill: COL.start, stroke: "white", "stroke-width": 2 }));
+  svg.appendChild(el("circle", { cx: cgx, cy: cgy, r: 7, fill: COL.goal, stroke: "white", "stroke-width": 2 }));
+  const sL = el("text", { x: csx + 12, y: csy + 4, "font-family": "IBM Plex Mono, monospace", "font-size": 11, fill: COL.start, "font-weight": 600 });
+  sL.textContent = "start"; svg.appendChild(sL);
+  const gL = el("text", { x: cgx + 12, y: cgy + 4, "font-family": "IBM Plex Mono, monospace", "font-size": 11, fill: COL.goal, "font-weight": 600 });
+  gL.textContent = "goal"; svg.appendChild(gL);
+
+  // Current EE
+  const q = isJointMode ? jointSpaceTrajectory(s) : cartesianSpaceTrajectory(s);
+  const ee = fk(q.t1, q.t2);
+  const [cx, cy] = robotToSvg(ee.x, ee.y);
+  svg.appendChild(el("circle", { cx, cy, r: 6, fill: COL.ee, stroke: COL.warnRed, "stroke-width": 2 }));
+}
+
+//═══════════════════════════════════════════════════════════════════
+// Joint space pane
+//═══════════════════════════════════════════════════════════════════
+function drawJoint() {
+  const svg = clearSvg("jointSvg");
+
+  const grid = el("g", { stroke: COL.grid, "stroke-width": 1, fill: "none" });
+  for (let t1 = -0.5; t1 <= 2.5; t1 += 0.5) {
+    const [x1, y1] = jointToSvg(t1, -2), [x2, y2] = jointToSvg(t1, 2);
+    grid.appendChild(el("line", { x1, y1, x2, y2 }));
+  }
+  for (let t2 = -2; t2 <= 2; t2 += 0.5) {
+    const [x1, y1] = jointToSvg(-0.5, t2), [x2, y2] = jointToSvg(2.5, t2);
+    grid.appendChild(el("line", { x1, y1, x2, y2 }));
+  }
+  svg.appendChild(grid);
+
+  const [bx, by] = jointToSvg(-0.6, -2), [trx, try_] = jointToSvg(2.7, 2);
+  svg.appendChild(el("line", { x1: bx, y1: by, x2: trx, y2: by, stroke: COL.tick, "stroke-width": 1.5 }));
+  svg.appendChild(el("line", { x1: bx, y1: by, x2: bx, y2: try_, stroke: COL.tick, "stroke-width": 1.5 }));
+
+  for (let t1 = 0; t1 <= 2.5; t1 += 0.5) {
+    const [tx] = jointToSvg(t1, -2);
+    svg.appendChild(el("line", { x1: tx, y1: by, x2: tx, y2: by + 4, stroke: COL.tick }));
+    const l = el("text", { x: tx, y: by + 16, "font-family": "IBM Plex Mono, monospace", "font-size": 10, fill: COL.inkSoft, "text-anchor": "middle" });
+    l.textContent = t1.toFixed(1); svg.appendChild(l);
+  }
+  for (let t2 = -2; t2 <= 2; t2 += 1) {
+    const [, ty] = jointToSvg(-0.6, t2);
+    svg.appendChild(el("line", { x1: bx - 4, y1: ty, x2: bx, y2: ty, stroke: COL.tick }));
+    const l = el("text", { x: bx - 7, y: ty + 3, "font-family": "IBM Plex Mono, monospace", "font-size": 10, fill: COL.inkSoft, "text-anchor": "end" });
+    l.textContent = t2.toFixed(1); svg.appendChild(l);
+  }
+
+  const xAxLbl = el("text", { x: trx - 5, y: by + 28, "font-family": "IBM Plex Sans, sans-serif", "font-size": 12, fill: COL.inkSoft, "text-anchor": "end", "font-style": "italic" });
+  xAxLbl.textContent = "θ₁"; svg.appendChild(xAxLbl);
+  const yAxLbl = el("text", { x: bx - 18, y: try_ + 10, "font-family": "IBM Plex Sans, sans-serif", "font-size": 12, fill: COL.inkSoft, "font-style": "italic" });
+  yAxLbl.textContent = "θ₂"; svg.appendChild(yAxLbl);
+
+  const isJointMode = mode === "joint";
+  const qsCfg = Q_START(), qgCfg = Q_GOAL();
+
+  // Joint path (straight here)
+  svg.appendChild(el("line", {
+    x1: jointToSvg(qsCfg.t1, qsCfg.t2)[0], y1: jointToSvg(qsCfg.t1, qsCfg.t2)[1],
+    x2: jointToSvg(qgCfg.t1, qgCfg.t2)[0], y2: jointToSvg(qgCfg.t1, qgCfg.t2)[1],
+    stroke: COL.jointPath,
+    "stroke-width": isJointMode ? 2.5 : 1.5,
+    opacity: isJointMode ? 1 : 0.4,
+    "stroke-dasharray": isJointMode ? "none" : "5 4"
+  }));
+
+  // Cartesian path (curved here)
+  const cPts = [];
+  for (const p of cartesianPath) {
+    const [px, py] = jointToSvg(p.q.t1, p.q.t2);
+    cPts.push(`${px.toFixed(2)},${py.toFixed(2)}`);
+  }
+  svg.appendChild(el("polyline", {
+    points: cPts.join(" "), fill: "none",
+    stroke: COL.cartPath,
+    "stroke-width": isJointMode ? 1.5 : 2.5,
+    opacity: isJointMode ? 0.4 : 1,
+    "stroke-dasharray": isJointMode ? "5 4" : "none"
+  }));
+
+  const activePath = isJointMode ? jointPath : cartesianPath;
+  for (let i = 0; i <= 10; i++) {
+    const idx = Math.round((i / 10) * N_SAMPLES);
+    const p = activePath[idx];
+    const [px, py] = jointToSvg(p.q.t1, p.q.t2);
+    svg.appendChild(el("circle", {
+      cx: px, cy: py, r: 2.5,
+      fill: i === 0 ? COL.start : (i === 10 ? COL.goal : (isJointMode ? COL.jointPath : COL.cartPath)),
+      stroke: "white", "stroke-width": 1.5
+    }));
+  }
+
+  const [sx_, sy_] = jointToSvg(qsCfg.t1, qsCfg.t2);
+  const [gx_, gy_] = jointToSvg(qgCfg.t1, qgCfg.t2);
+  svg.appendChild(el("circle", { cx: sx_, cy: sy_, r: 7, fill: COL.start, stroke: "white", "stroke-width": 2 }));
+  svg.appendChild(el("circle", { cx: gx_, cy: gy_, r: 7, fill: COL.goal, stroke: "white", "stroke-width": 2 }));
+  const sL = el("text", { x: sx_ + 11, y: sy_ + 4, "font-family": "IBM Plex Mono, monospace", "font-size": 11, fill: COL.start, "font-weight": 600 });
+  sL.textContent = "qᵢ"; svg.appendChild(sL);
+  const gL = el("text", { x: gx_ + 11, y: gy_ + 4, "font-family": "IBM Plex Mono, monospace", "font-size": 11, fill: COL.goal, "font-weight": 600 });
+  gL.textContent = "qg"; svg.appendChild(gL);
+
+  const q = isJointMode ? jointSpaceTrajectory(s) : cartesianSpaceTrajectory(s);
+  const [cx, cy] = jointToSvg(q.t1, q.t2);
+  svg.appendChild(el("circle", { cx, cy, r: 6, fill: COL.ee, stroke: COL.warnRed, "stroke-width": 2 }));
+}
+
+//═══════════════════════════════════════════════════════════════════
+// Velocity plot
+//═══════════════════════════════════════════════════════════════════
+function drawVelocity() {
+  const svg = clearSvg("velocitySvg");
+  const W = 1200, H = 240;
+  const ml = 65, mr = 30, mt = 22, mb = 42;
+  const plotW = W - ml - mr, plotH = H - mt - mb;
+
+  const maxJ = Math.max(...jointSpeed), maxC = Math.max(...cartesianSpeed);
+  let yMax = Math.max(maxJ, maxC) * 1.1;
+  yMax = Math.max(yMax, 3);
+
+  const xFor = sv => ml + sv * plotW;
+  const yFor = v  => mt + plotH - (v / yMax) * plotH;
+
+  const grid = el("g", { stroke: COL.grid, "stroke-width": 1, fill: "none" });
+  for (let i = 0; i <= 4; i++) {
+    const x = xFor(i / 4);
+    grid.appendChild(el("line", { x1: x, y1: mt, x2: x, y2: mt + plotH }));
+  }
+  const yTickStep = yMax > 15 ? 5 : (yMax > 6 ? 2 : 1);
+  for (let v = 0; v <= yMax; v += yTickStep) {
+    const y = yFor(v);
+    grid.appendChild(el("line", { x1: ml, y1: y, x2: ml + plotW, y2: y }));
+  }
+  svg.appendChild(grid);
+
+  svg.appendChild(el("line", { x1: ml, y1: mt + plotH, x2: ml + plotW, y2: mt + plotH, stroke: COL.tick, "stroke-width": 1.5 }));
+  svg.appendChild(el("line", { x1: ml, y1: mt, x2: ml, y2: mt + plotH, stroke: COL.tick, "stroke-width": 1.5 }));
+
+  for (let i = 0; i <= 4; i++) {
+    const sv = i / 4, x = xFor(sv);
+    svg.appendChild(el("line", { x1: x, y1: mt + plotH, x2: x, y2: mt + plotH + 4, stroke: COL.tick }));
+    const t = el("text", { x: x, y: mt + plotH + 17, "font-family": "IBM Plex Mono, monospace", "font-size": 10, fill: COL.inkSoft, "text-anchor": "middle" });
+    t.textContent = sv.toFixed(2); svg.appendChild(t);
+  }
+  const xLbl = el("text", { x: ml + plotW / 2, y: mt + plotH + 35, "font-family": "IBM Plex Sans, sans-serif", "font-size": 11, fill: COL.inkSoft, "text-anchor": "middle", "font-style": "italic" });
+  xLbl.textContent = "s (path progress, equals t when T = 1)"; svg.appendChild(xLbl);
+
+  for (let v = 0; v <= yMax; v += yTickStep) {
+    const y = yFor(v);
+    svg.appendChild(el("line", { x1: ml - 4, y1: y, x2: ml, y2: y, stroke: COL.tick }));
+    const t = el("text", { x: ml - 8, y: y + 3, "font-family": "IBM Plex Mono, monospace", "font-size": 10, fill: COL.inkSoft, "text-anchor": "end" });
+    t.textContent = v.toFixed(0); svg.appendChild(t);
+  }
+  const yLbl = el("text", {
+    x: ml - 48, y: mt + plotH / 2,
+    "font-family": "IBM Plex Sans, sans-serif", "font-size": 11, fill: COL.inkSoft,
+    "text-anchor": "middle", "font-style": "italic",
+    transform: `rotate(-90, ${ml - 48}, ${mt + plotH / 2})`
+  });
+  yLbl.textContent = "|q̇|  (rad/s)"; svg.appendChild(yLbl);
+
+  function makePolyline(arr, color, width, opacity, dash) {
+    const pts = [];
+    for (let i = 0; i <= N_SAMPLES; i++) {
+      pts.push(`${xFor(i / N_SAMPLES).toFixed(2)},${yFor(arr[i]).toFixed(2)}`);
+    }
+    return el("polyline", {
+      fill: "none", stroke: color, "stroke-width": width,
+      opacity, "stroke-dasharray": dash || "none",
+      points: pts.join(" ")
+    });
+  }
+
+  const isJointMode = mode === "joint";
+  svg.appendChild(makePolyline(jointSpeed, COL.jointPath,
+    isJointMode ? 2.5 : 1.5, isJointMode ? 1 : 0.4, isJointMode ? null : "5 4"));
+  svg.appendChild(makePolyline(cartesianSpeed, COL.cartPath,
+    isJointMode ? 1.5 : 2.5, isJointMode ? 0.4 : 1, isJointMode ? "5 4" : null));
+
+  const xCur = xFor(s);
+  svg.appendChild(el("line", {
+    x1: xCur, y1: mt, x2: xCur, y2: mt + plotH,
+    stroke: COL.ink, "stroke-width": 1, opacity: 0.3, "stroke-dasharray": "3 3"
+  }));
+  const idx = Math.min(N_SAMPLES, Math.round(s * N_SAMPLES));
+  svg.appendChild(el("circle", {
+    cx: xCur, cy: yFor(jointSpeed[idx]),
+    r: isJointMode ? 5 : 3, fill: COL.jointPath, stroke: "white", "stroke-width": 1.5
+  }));
+  svg.appendChild(el("circle", {
+    cx: xCur, cy: yFor(cartesianSpeed[idx]),
+    r: isJointMode ? 3 : 5, fill: COL.cartPath, stroke: "white", "stroke-width": 1.5
+  }));
+
+  const lgX = ml + 14, lgY = mt + 12;
+  svg.appendChild(el("line", { x1: lgX, y1: lgY, x2: lgX + 22, y2: lgY, stroke: COL.jointPath, "stroke-width": 2.5 }));
+  const t1 = el("text", { x: lgX + 28, y: lgY + 3, "font-family": "IBM Plex Sans, sans-serif", "font-size": 11, fill: COL.ink });
+  t1.textContent = "Joint-space mode"; svg.appendChild(t1);
+  svg.appendChild(el("line", { x1: lgX + 160, y1: lgY, x2: lgX + 182, y2: lgY, stroke: COL.cartPath, "stroke-width": 2.5 }));
+  const t2 = el("text", { x: lgX + 188, y: lgY + 3, "font-family": "IBM Plex Sans, sans-serif", "font-size": 11, fill: COL.ink });
+  t2.textContent = "Cartesian-space mode"; svg.appendChild(t2);
+
+  const sc = getScenario();
+  const note = el("text", {
+    x: ml + plotW - 8, y: mt + 12,
+    "font-family": "IBM Plex Mono, monospace", "font-size": 10,
+    fill: COL.inkSoft, "text-anchor": "end", "font-style": "italic"
+  });
+  note.textContent = sc.label.toLowerCase() + " scenario"; svg.appendChild(note);
+}
+
+//═══════════════════════════════════════════════════════════════════
+// Info bar
+//═══════════════════════════════════════════════════════════════════
+function updateInfo() {
+  const q = mode === "joint" ? jointSpaceTrajectory(s) : cartesianSpaceTrajectory(s);
+  const ee = fk(q.t1, q.t2);
+  document.getElementById("jointReadout").textContent = `(${q.t1.toFixed(2)}, ${q.t2.toFixed(2)}) rad`;
+  document.getElementById("eeReadout").textContent = `(${ee.x.toFixed(2)}, ${ee.y.toFixed(2)})`;
+
+  const speedArr = mode === "joint" ? jointSpeed : cartesianSpeed;
+  const idx = Math.min(N_SAMPLES, Math.round(s * N_SAMPLES));
+  const cur = speedArr[idx], mx = Math.max(...speedArr);
+
+  const speedEl = document.getElementById("speedReadout");
+  speedEl.textContent = `${cur.toFixed(2)} rad/s`;
+  speedEl.className = "info-val" + (cur > 5 ? " warn" : "");
+
+  const maxEl = document.getElementById("speedMaxReadout");
+  maxEl.textContent = `${mx.toFixed(2)} rad/s`;
+  maxEl.className = "info-val" + (mx > 10 ? " warn" : "");
+
+  document.getElementById("modeReadout").textContent = mode === "joint" ? "joint space" : "Cartesian space";
+  document.getElementById("progressReadout").textContent = s.toFixed(2);
+
+  const badge = document.getElementById("scenario-badge");
+  if (currentScenario === "singularity") {
+    badge.textContent = "● Near singularity";
+    badge.className = "scenario-badge warn";
+  } else {
+    badge.textContent = "● Normal";
+    badge.className = "scenario-badge normal";
+  }
+}
+
+function render() {
+  drawRobot(); drawCartesian(); drawJoint(); drawVelocity(); updateInfo();
+}
+
+//═══════════════════════════════════════════════════════════════════
+// Controls
+//═══════════════════════════════════════════════════════════════════
+const scenarioToggle = document.getElementById("scenarioToggle");
+scenarioToggle.addEventListener("click", e => {
+  const btn = e.target.closest("button"); if (!btn) return;
+  const ns = btn.dataset.scenario; if (!ns || ns === currentScenario) return;
+  currentScenario = ns;
+  for (const b of scenarioToggle.querySelectorAll("button")) {
+    b.classList.toggle("active", b.dataset.scenario === currentScenario);
+  }
+  s = 0; playing = false;
+  document.getElementById("progressSlider").value = 0;
+  updatePlayIcon(); computePaths(); render();
+});
+
+const modeToggle = document.getElementById("modeToggle");
+modeToggle.addEventListener("click", e => {
+  const btn = e.target.closest("button"); if (!btn) return;
+  const nm = btn.dataset.mode; if (!nm || nm === mode) return;
+  mode = nm;
+  for (const b of modeToggle.querySelectorAll("button")) {
+    b.classList.toggle("active", b.dataset.mode === mode);
+  }
+  render();
+});
+
+const slider = document.getElementById("progressSlider");
+slider.addEventListener("input", e => {
+  s = parseInt(e.target.value, 10) / 1000;
+  playing = false; updatePlayIcon(); render();
+});
+
+const playBtn = document.getElementById("playBtn");
+const playIcon = document.getElementById("playIcon");
+const pauseIcon = document.getElementById("pauseIcon");
+function updatePlayIcon() {
+  playIcon.style.display = playing ? "none" : "block";
+  pauseIcon.style.display = playing ? "block" : "none";
+}
+playBtn.addEventListener("click", () => {
+  if (s >= 1 - 1e-6) s = 0;
+  playing = !playing; lastTime = null; updatePlayIcon();
+  if (playing) requestAnimationFrame(tick);
+});
+document.getElementById("resetBtn").addEventListener("click", () => {
+  s = 0; playing = false; slider.value = 0; updatePlayIcon(); render();
+});
+
+function tick(now) {
+  if (!playing) return;
+  if (lastTime === null) lastTime = now;
+  const dt = now - lastTime; lastTime = now;
+  s += dt / PLAY_DURATION_MS;
+  if (s >= 1) { s = 1; playing = false; updatePlayIcon(); }
+  slider.value = Math.round(s * 1000);
+  render();
+  if (playing) requestAnimationFrame(tick);
+}
+
+render();
+</script>
+</body>
+</html>
