@@ -4,7 +4,7 @@
 // Shared helpers
 // ─────────────────────────────────────────────
 
-const PHOTO_SVG = `<svg viewBox="0 0 200 250" xmlns="http://www.w3.org/2000/svg"><rect width="200" height="250" fill="#f4f8f5"/><circle cx="100" cy="125" r="72" fill="#ddeae3"/><defs><clipPath id="av"><circle cx="100" cy="125" r="72"/></clipPath></defs><g clip-path="url(#av)"><circle cx="100" cy="108" r="30" fill="#b4cec2"/><ellipse cx="100" cy="192" rx="52" ry="40" fill="#b4cec2"/></g></svg>`;
+const PHOTO_SVG = `<svg viewBox="0 0 200 250" xmlns="http://www.w3.org/2000/svg"><rect width="200" height="250" fill="#f0f5f2"/><circle cx="100" cy="125" r="72" fill="#e4eeea"/><defs><clipPath id="av"><circle cx="100" cy="125" r="72"/></clipPath></defs><g clip-path="url(#av)"><circle cx="100" cy="108" r="30" fill="#c8dbd3"/><ellipse cx="100" cy="192" rx="52" ry="40" fill="#c8dbd3"/></g></svg>`;
 
 const EMAIL_SVG  = `<svg viewBox="0 0 24 24"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="M2 7l10 7 10-7"/></svg>`;
 const GLOBE_SVG  = `<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 3c-2.5 3-4 5.5-4 9s1.5 6 4 9M12 3c2.5 3 4 5.5 4 9s-1.5 6-4 9M3 12h18"/></svg>`;
@@ -121,7 +121,18 @@ function renderHome() {
       </div>
     </div>
 
-    <div class="home-sec">
+    <div class="home-sec" style="padding-bottom:1.5rem;">
+      <div class="wrap">
+        <div style="border-radius:6px;padding:1.5rem 2rem;display:grid;grid-template-columns:1fr auto;align-items:center;gap:1rem;background:rgba(0,70,42,0.05);">
+          <div>
+            <div style="font-size:.92rem;color:var(--ink2);"><strong>JOIN US!</strong>&nbsp;&nbsp;&nbsp; We are actively looking for <B>self-motivated</b> <b>graduate students (M.S./Ph.D.)</b> who are eager to push the boundaries of robotics and AI. If you are interested in joining us, please reach out to Prof. Song.</div>
+          </div>
+          <a href="mailto:${MEMBERS_DATA.pi.email}" class="btn btn-g" style="white-space:nowrap;">Contact</a>
+        </div>
+      </div>
+    </div>
+
+    <div class="home-sec" style="border-top:none;padding-top:1.5rem;">
       <div class="wrap">
         <div class="sec-eye">Latest Updates</div>
         <h2 class="sec-h2">Recent <em>News</em></h2>
@@ -282,7 +293,7 @@ function renderMembers() {
         return `<div class="mem-card">
           <div class="photo-slot mem-photo-slot">${photo}</div>
           <div class="mem-info">
-            <div class="mem-name">${m.name}</div>
+            <div class="mem-name">${m.link ? `<a href="${m.link}" target="_blank" rel="noopener">${m.name}</a>` : m.name}</div>
             ${m.role  ? `<div class="mem-role">${m.role}</div>` : ''}
             ${(emailLnk || webLnk || githubLnk) ? `<div class="mem-links">${emailLnk}${webLnk}${githubLnk}</div>` : ''}
             ${m.focus ? `<div class="mem-focus">${m.focus}</div>` : ''}
@@ -323,14 +334,14 @@ function renderMembers() {
           <div class="pi-links">${piLinks}</div>
         </div>
       </div>
-      ${groupsHtml}
-      <div style="border:1px solid var(--green);border-radius:6px;padding:1.5rem 2rem;display:grid;grid-template-columns:1fr auto;align-items:center;gap:1rem;">
+        <div style="border-radius:6px;padding:1.5rem 2rem;display:grid;grid-template-columns:1fr auto;align-items:center;gap:1rem;background:rgba(0,70,42,0.05);">
         <div>
-          <div style="font-weight:600;margin-bottom:.3rem;">Join Us!</div>
-          <div style="font-size:.88rem;color:var(--ink2);">We are actively looking for self-motivated <b>undergraduate interns</b> and <b>graduate students (M.S./Ph.D.)</b> with a passion for robotics and AI! If you are interested in joining us, please reach out to Prof. Song.</div>
+          <div style="font-size:.92rem;color:var(--ink2);"><strong>JOIN US!</strong>&nbsp;&nbsp;&nbsp; We are actively looking for <B>self-motivated</b> <b>graduate students (M.S./Ph.D.)</b> who are eager to push the boundaries of robotics and AI. If you are interested in joining us, please reach out to Prof. Song.</div>
         </div>
         <a href="mailto:${pi.email}" class="btn btn-g" style="white-space:nowrap;">Contact</a>
-      </div>
+      </div> <BR><BR>
+      ${groupsHtml}
+
     </div></div>`;
 }
 

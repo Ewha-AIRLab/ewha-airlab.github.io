@@ -81,6 +81,26 @@ const MEMBERS_DATA = {
         },
       ]
     },
+    {
+      title: "Robot",
+      type: "robot",
+      members: [
+        {
+          name:    "Unitree GO2",
+          role:    "Quadruped Robot",
+          focus:   "",
+          link:    "https://www.unitree.com/go2",
+          photo:   "assets/members/robots/Unitree_GO2.png"
+        },
+        // {
+        //   name:    "AgileX Scout Mini Pro",
+        //   role:    "Mobile Robot",
+        //   focus:   "",
+        //   link:    "https://global.agilex.ai/products/scout-mini-r-d-kit",
+        //   photo:   "assets/members/robots/Scout_mini_pro.png"
+        // },
+      ]
+    },
     // {
     //   title: "Alumni",
     //   type: "alumni",
