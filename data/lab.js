@@ -18,7 +18,7 @@ const LAB_INFO = {
 
   // Mailing address shown in the footer (one line per entry)
   address: [
-    "Jinseonmi, Room 213",
+    "ECC, B130-1",
     "52 Ewhayeodae-gil, Seodaemun-gu",
     "Seoul 03760, Republic of Korea",
   ],
@@ -38,8 +38,10 @@ const LAB_INFO = {
     // { emoji: "🦾", label: "Robot Manipulation" },
   ],
 
-  // Hero slideshow images — add more paths to show multiple slides with dots
+  // Hero slideshow images — add more entries to show multiple slides with dots
+  // Each entry: { src: "path", caption: "short text" }  (caption optional)
   gallery: [
-    "assets/gallery/ewha.gif",
+    { src: "assets/gallery/ewha.gif",     caption: "Ewha Womans University, Seoul, KR" },
+    { src: "assets/gallery/icra2026.jpg", caption: "Representing Ewha @ IEEE ICRA 2026!" },
   ],
 };

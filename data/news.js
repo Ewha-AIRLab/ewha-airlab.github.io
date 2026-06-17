@@ -6,10 +6,32 @@
 
 const NEWS_DATA = [
 
+
+  // MAction-SocialNav: Multi-Action Socially Compliant Navigation via Reasoning-enhanced Prompt Tuning
+
+
+    {
+    date:  "2026.06",
+    cat:   "publication",
+    title: "<a href=\"#\">HuMAIN</a> accepted to <b>IEEE IROS 2026</b>"
+    },
+
+    {
+    date:  "2026.06",
+    cat:   "news",
+    title: "Prof. Song is organizing two workshops on <u>Navigation</u> and <u>Social Navigation</u> at <b>IEEE IROS 2026</b>.<br>Submit your research and contribute to the future of robot navigation! "
+    },
+
+    {
+    date:  "2026.06",
+    cat:   "publication",
+    title: "<a href=\"https://arxiv.org/abs/2512.21722\" target=\"_blank\">MAction-SocialNav</a> accepted to RA-L, to be presented at <b>IEEE ICRA 2027</b>"
+  },
+
   {
     date:  "2026.04",
     cat:   "talk",
-    title: "Daeun gave a talk at <a href=\"https://www.asiagraphics.org/asiagraphics-workshop-on-intelligent-graphics-at-korea\" target=\"_blank\">Asiagraphics Workshop on Intelligent Graphics</a> (Topic: Social Nav)"
+    title: "Prof. Song gave a talk at <a href=\"https://www.asiagraphics.org/asiagraphics-workshop-on-intelligent-graphics-at-korea\" target=\"_blank\">Asiagraphics Workshop on Intelligent Graphics</a> (Topic: Social Nav)"
   },
 
   {

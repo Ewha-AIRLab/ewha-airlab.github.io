@@ -115,7 +115,7 @@ function renderHome() {
           <div class="hero-kws fi fi3">${(LAB_INFO.keywords||[]).map(k=>`<span class="hero-kw">${k.emoji} ${k.label}</span>`).join('')}</div>
         </div>
         <div class="hero-slideshow fi fi3" id="heroSlideshow">
-          ${(LAB_INFO.gallery||[]).map((src,i)=>`<div class="hero-slide${i===0?' active':''}"><div class="hero-slide-img"><img src="${src}"></div></div>`).join('')}
+          ${(LAB_INFO.gallery||[]).map((g,i)=>{const src=typeof g==='string'?g:g.src;const cap=(typeof g==='object'&&g.caption)?g.caption:'';return `<div class="hero-slide${i===0?' active':''}"><div class="hero-slide-img"><img src="${src}"></div>${cap?`<div class="hero-cap">${cap}</div>`:''}</div>`;}).join('')}
           <div class="hero-dots" id="heroDots"></div>
         </div>
       </div>
@@ -178,7 +178,7 @@ function initHeroSlideshow() {
     slides[current].classList.add('active');
     dotsEl.children[current].classList.add('active');
   }
-  if (slides.length > 1) setInterval(() => goTo(current + 1), 3500);
+  if (slides.length > 1) setInterval(() => goTo(current + 1), 4500);
 }
 
 function initCarousel() {
@@ -598,9 +598,6 @@ function renderFooter() {
       <div>
         <div class="ft-brand">${LAB_INFO.full_name}</div>
         <div class="ft-uni">${LAB_INFO.department}<br>${LAB_INFO.university}</div>
-      </div>
-      <div>
-        <div class="ft-uni">${(Array.isArray(LAB_INFO.address) ? LAB_INFO.address.join('<br>') : LAB_INFO.address)}<br>${LAB_INFO.phone}</div>
       </div>
     </div>
     <div class="ft-bottom"><span>&copy; ${LAB_INFO.copyright_year} AIR Lab, Ewha Womans University</span></div>`;
