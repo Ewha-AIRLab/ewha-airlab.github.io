@@ -42,6 +42,6 @@ const LAB_INFO = {
   // Each entry: { src: "path", caption: "short text" }  (caption optional)
   gallery: [
     { src: "assets/gallery/ewha.gif",     caption: "Ewha Womans University, Seoul, KR" },
-    { src: "assets/gallery/icra2026.jpg", caption: "Representing Ewha @ IEEE ICRA 2026!" },
+    { src: "assets/gallery/ICRA2026.jpg", caption: "Representing Ewha @ IEEE ICRA 2026!" },
   ],
 };
