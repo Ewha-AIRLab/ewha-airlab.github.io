@@ -10,19 +10,35 @@
 // keywords:  short tags shown in the carousel (2–4 recommended)
 
 const PUBLICATIONS = [
-  // {
-  //   year: 2026,
-  //   title: "Narrate2Nav: Real-Time Visual Navigation with Implicit Language Reasoning in Human-Centric Environments",
-  //   authors: ["Amirreza Payandeh<sup>†</sup>", "Anuj Pokhrel", "**Daeun Song**", "Marcos Zampieri", "Xuesu Xiao"],
-  //   venue_short: "ICRA",
-  //   venue_full: "IEEE International Conference on Robotics and Automation (ICRA), 2026",
-  //   type: "conference",
-  //   featured: false,
-  //   thumbnail: "assets/publications/teaser/humain_teaser.gif",
-  //   links: [
-  //     { label: "Paper", url: "https://arxiv.org/abs/2506.14233" }
-  //   ]
-  // },
+  {
+    year: 2026,
+    title: "HUMAIN: Human-Aware Implicit Social Robot Navigation",
+    authors: ["**Daeun Song**<sup>†</sup>", "Nhat Le", "Jeffrey Chen", "Mohammad Nazeri", "Amirreza Payandeh", "Rohan Chandra", "Reuth Mirsky", "Ross Mead", "Ling Xiao", "Xuesu Xiao"],
+    venue_short: "IROS",
+    venue_full: "IEEE/RSJ International Conference on Intelligent Robots and Systems (IROS), 2026",
+    type: "conference",
+    featured: false,
+    thumbnail: "assets/publications/teaser/humain_teaser.gif",
+    links: [
+      // { label: "Webpage", url: "https://people.cs.gmu.edu/~xiao/Research/SNEI/" },
+      // { label: "Paper", url: "https://arxiv.org/abs/2501.09024" },
+      // { label: "Video", url: "https://youtu.be/dcHOuPguz_s?si=oOWqgxcnM3F_-f1T" },
+      // { label: "Dataset", url: "https://huggingface.co/datasets/amir-pyh/SNEI" }
+    ]
+  },
+  {
+    year: 2026,
+    title: "MAction-SocialNav: Multi-Action Socially Compliant Navigation via Reasoning-enhanced Prompt Tuning",
+    authors: ["Zishuo Wang", "Xinyu Zhang", "Zhuonan Liu", "Tomohito Kawabata", "**Daeun Song**", "Xuesu Xiao", "Ling Xiao<sup>†</sup>"],
+    venue_short: "RA-L",
+    venue_full: "IEEE Robotics and Automation Letters (RA-L), 2026",
+    type: "journal",
+    featured: false,
+    thumbnail: "assets/publications/teaser/maction-socialnav_teaser.png",
+    links: [
+      { label: "Paper", url: "https://arxiv.org/abs/2512.21722" }
+    ]
+  },
   {
     year: 2026,
     title: "Narrate2Nav: Real-Time Visual Navigation with Implicit Language Reasoning in Human-Centric Environments",

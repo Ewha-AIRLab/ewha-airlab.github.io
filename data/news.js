@@ -19,7 +19,7 @@ const NEWS_DATA = [
     {
     date:  "2026.06",
     cat:   "news",
-    title: "Prof. Song is organizing two workshops on <u>Navigation</u> and <u>Social Navigation</u> at <b>IEEE IROS 2026</b>.<br>Submit your research and contribute to the future of robot navigation! "
+    title: "Prof. Song is organizing two workshops on <a href=\"https://bridging-navigation.github.io/website/\"  target=\"_blank\">Navigation</a> and <a href=\"https://socialnav2026.pages.dev/\" target=\"_blank\">Social Navigation</a> at <b>IEEE IROS 2026</b>.<br>Submit your research and contribute to the future of robot navigation! "
     },
 
     {
