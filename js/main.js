@@ -125,7 +125,7 @@ function renderHome() {
       <div class="wrap">
         <div style="border-radius:6px;padding:1.5rem 2rem;display:grid;grid-template-columns:1fr auto;align-items:center;gap:1rem;background:rgba(0,70,42,0.05);">
           <div>
-            <div style="font-size:.92rem;color:var(--ink2);"><strong>JOIN US!</strong>&nbsp;&nbsp;&nbsp; We are actively looking for <B>self-motivated</b> <b>graduate students (M.S./Ph.D.)</b> who are eager to push the boundaries of robotics and AI. If you are interested in joining us, please reach out to Prof. Song.</div>
+            <div style="font-size:.92rem;color:var(--ink2);"><strong>JOIN US!</strong>&nbsp;&nbsp;&nbsp; We are actively looking for <B>self-motivated</b> <b>under grad interns and graduate students (M.S./Ph.D.)</b> who are eager to push the boundaries of robotics and AI. If you are interested in joining us, please reach out to Prof. Song.</div>
           </div>
           <a href="mailto:${MEMBERS_DATA.pi.email}" class="btn btn-g" style="white-space:nowrap;">Contact</a>
         </div>
@@ -336,7 +336,7 @@ function renderMembers() {
       </div>
         <div style="border-radius:6px;padding:1.5rem 2rem;display:grid;grid-template-columns:1fr auto;align-items:center;gap:1rem;background:rgba(0,70,42,0.05);">
         <div>
-          <div style="font-size:.92rem;color:var(--ink2);"><strong>JOIN US!</strong>&nbsp;&nbsp;&nbsp; We are actively looking for <B>self-motivated</b> <b>graduate students (M.S./Ph.D.)</b> who are eager to push the boundaries of robotics and AI. If you are interested in joining us, please reach out to Prof. Song.</div>
+          <div style="font-size:.92rem;color:var(--ink2);"><strong>JOIN US!</strong>&nbsp;&nbsp;&nbsp; We are actively looking for <B>self-motivated</b> <b>undergrad interns and graduate students (M.S./Ph.D.)</b> who are eager to push the boundaries of robotics and AI. If you are interested in joining us, please reach out to Prof. Song.</div>
         </div>
         <a href="mailto:${pi.email}" class="btn btn-g" style="white-space:nowrap;">Contact</a>
       </div> <BR><BR>
