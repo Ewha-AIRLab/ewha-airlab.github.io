@@ -1,0 +1,346 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  <title>HumAIN: Human-Aware Implicit Social Robot Navigation</title>
+  <meta name="description" content="HumAIN fuses implicit whole-body social cues into robot navigation via teacher–student knowledge distillation, improving social compliance by 29.8% while running from RGB alone.">
+  <meta property="og:title" content="HumAIN: Human-Aware Implicit Social Robot Navigation"/>
+  <meta property="og:description" content="Fusing implicit whole-body social cues into robot navigation via knowledge distillation."/>
+  <meta property="og:image" content="static/images/teaser.png"/>
+  <meta property="og:type" content="website"/>
+  <meta name="twitter:card" content="summary_large_image">
+
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🚶</text></svg>">
+
+  <!-- Fonts (matches the rest of the AIR Lab site) -->
+  <link href="https://fonts.googleapis.com/css2?family=EB+Garamond:ital,wght@0,400;0,500;0,600;1,400&family=IBM+Plex+Sans:wght@300;400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+
+  <!-- Bulma (nerfies base) + icons -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bulma@0.9.4/css/bulma.min.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/jpswalsh/academicons@1/css/academicons.min.css">
+
+  <style>
+    :root {
+      --green: #00462A;
+      --gm:    #005c37;
+      --gp:    #edf4f0;
+      --ink:   #1c1c1a;
+      --ink2:  #4a4a46;
+      --ink3:  #7a7a76;
+    }
+    html, body { background: #fff; }
+    body, button, input, select, textarea { font-family: 'IBM Plex Sans', sans-serif; }
+    .title, .subtitle { font-family: 'EB Garamond', serif; color: var(--ink); }
+    .content, p, li { color: var(--ink2); }
+    .content a, p a { color: var(--green); text-decoration: underline; }
+    .content a:hover, p a:hover { color: var(--gm); }
+
+    .hero.is-light { background: var(--gp); }
+    .publication-title { font-weight: 500; }
+    .author-block { display: inline-block; }
+    .author-block a { color: var(--green); text-decoration: underline; text-underline-offset: 2px; }
+    .author-block a:hover { color: var(--gm); }
+    .is-affiliation .author-block { font-size: 1rem; color: var(--ink3); display:block; }
+
+    /* nerfies-style link buttons */
+    .publication-links .button {
+      background: var(--ink); color: #fff; border: none; border-radius: 999px;
+      font-weight: 500;
+    }
+    .publication-links .button:hover { background: var(--green); }
+    .publication-links .button .icon { color: #fff; }
+
+    .section-heading {
+      font-family: 'EB Garamond', serif; font-size: 2rem; font-weight: 500;
+      text-align: center; color: var(--ink); margin-bottom: 1.5rem;
+    }
+    .eyebrow {
+      font-family: 'IBM Plex Mono', monospace; font-size: .72rem;
+      text-transform: uppercase; letter-spacing: .14em; color: var(--green);
+      font-weight: 600; text-align: center; margin-bottom: .4rem;
+    }
+
+    .teaser img, .teaser video { border-radius: 10px; width: 100%; display: block; }
+    .teaser .caption { color: var(--ink3); font-size: .9rem; margin-top: .8rem; }
+
+    .results-table { width: 100%; border-collapse: collapse; font-size: .95rem; }
+    .results-table th, .results-table td { padding: .6rem .9rem; text-align: center; border-bottom: 1px solid #e0e0dd; }
+    .results-table thead th { color: var(--green); font-weight: 600; border-bottom: 2px solid var(--green); }
+    .results-table td:first-child, .results-table th:first-child { text-align: left; }
+    .results-table tr.ours { background: var(--gp); font-weight: 600; }
+    .results-table caption { caption-side: bottom; color: var(--ink3); font-size: .82rem; margin-top: .7rem; text-align: left; }
+
+    .stat-row { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem; margin: 1.5rem 0 0; }
+    .stat { text-align: center; }
+    .stat .num { font-family: 'EB Garamond', serif; font-size: 2.4rem; color: var(--green); line-height: 1; }
+    .stat .lbl { color: var(--ink3); font-size: .82rem; margin-top: .3rem; }
+
+    .fig { text-align: center; }
+    .fig img { border-radius: 10px; width: 100%; }
+    .fig figcaption { color: var(--ink3); font-size: .85rem; margin-top: .6rem; }
+
+    pre code { font-family: 'IBM Plex Mono', monospace; font-size: .82rem; }
+    .bibtex-box { background: #f6f7f5; border: none; border-radius: 12px; overflow-x: auto; }
+    .bibtex-box pre { background: transparent; color: var(--ink2); }
+
+    /* page fills the viewport so the footer sticks to the very bottom */
+    body { display: flex; flex-direction: column; min-height: 100vh; }
+    .footer { background: #fff; border-top: 1px solid #e8e8e6; margin-top: auto; padding: 2.5rem 1.5rem; }
+    .footer p { color: var(--ink3) !important; }
+    .footer a { color: var(--green); }
+
+    .back-link {
+      position: fixed; top: 1rem; left: 1.25rem; z-index: 100;
+      color: var(--green); font-size: .85rem; font-weight: 500; text-decoration: none;
+      background: rgba(255,255,255,.75); -webkit-backdrop-filter: blur(6px); backdrop-filter: blur(6px);
+      padding: .4rem .8rem; border-radius: 999px; border: 1px solid rgba(0,70,42,.15);
+      box-shadow: 0 1px 4px rgba(0,0,0,.06);
+    }
+    .back-link:hover { background: #fff; border-color: rgba(0,70,42,.35); }
+
+    .img-fallback { border:2px dashed #ccc; border-radius:10px; padding:3rem 1rem; text-align:center; color:var(--ink3); }
+  </style>
+</head>
+<body>
+
+<!-- ══════════════ HERO ══════════════ -->
+<section class="hero">
+  <div class="hero-body">
+    <div class="container is-max-desktop has-text-centered">
+      <!-- <a href="../../" class="back-link" target="_blank" rel="noopener">← AIR Lab @ Ewha</a> -->
+      <BR><BR>
+      <h1 class="title is-2 publication-title"><span style="background:linear-gradient(transparent 55%, #ffda33 55%); padding:0 .05em;">HumAIN</span>: Human-Aware Implicit Social Robot Navigation</h1>
+      <!-- <h2 class="subtitle is-5" style="color:var(--ink3);">
+        Human-Aware Implicit Social Robot Navigation
+      </h2> -->
+
+      <!-- Authors -->
+      <div class="is-size-6 publication-authors" style="margin-top:1rem;">
+        <span class="author-block"><a href="https://daeunsong.github.io" target="_blank" rel="noopener">Daeun Song</a><sup>1, 2</sup>,</span>
+        <span class="author-block">Nhat Le<sup>2</sup>,</span>
+        <span class="author-block"><a href="https://jeffchen888.github.io/" target="_blank" rel="noopener">Jeffrey Chen</a><sup>3</sup>,</span>
+        <span class="author-block"><a href="https://mhnazeri.github.io/" target="_blank" rel="noopener">Mohammad Nazeri</a><sup>2</sup>,</span>
+        <span class="author-block">Amirreza Payandeh<sup>2</sup>,</span><BR>
+        <span class="author-block"><a href="https://cral-uva.github.io/people/rohan_chandra/index.html" target="_blank" rel="noopener">Rohan Chandra</a><sup>3</sup>,</span>
+        <span class="author-block"><a href="https://sites.google.com/site/dekelreuth/" target="_blank" rel="noopener">Reuth Mirsky</a><sup>4</sup>,</span>
+        <span class="author-block">Ross Mead<sup>5</sup>,</span>
+        <span class="author-block"><a href="https://dr-lingxiao.github.io/" target="_blank" rel="noopener">Ling Xiao</a><sup>6</sup>,</span>
+        <span class="author-block"><a href="https://people.cs.gmu.edu/~xiao/index.html" target="_blank" rel="noopener">Xuesu Xiao</a><sup>2</sup></span>
+      </div>
+
+      <!-- Affiliations -->
+      <div class="is-affiliation" style="margin-top:.8rem;">
+        <span class="author-block"><sup>1</sup>Ewha Womans University&nbsp;&nbsp; <sup>2</sup>George Mason University&nbsp;&nbsp; <sup>3</sup>University of Virginia</span>
+        <span class="author-block"><sup>4</sup>Tufts University&nbsp;&nbsp; <sup>5</sup>Semio&nbsp;&nbsp; <sup>6</sup>Hokkaido University</span>
+      </div>
+
+      <!-- Venue -->
+      <div style="margin-top:.7rem; color:var(--ink3); font-family:'IBM Plex Mono',monospace; font-size:0.9rem;">
+        <!-- EDIT ME: update once decisions are out (currently a submission) -->
+        <B style="color:var(--ink); background:linear-gradient(transparent 25%, #ffda33 25%); padding:0 .12em; border-radius:3px;">Accepted to IEEE/RSJ IROS 2026</B>
+      </div>
+
+      <!-- Link buttons -->
+      <div class="publication-links buttons is-centered" style="margin-top:1.5rem;">
+        <a class="button is-rounded" href="static/pdfs/HumAIN_IROS26.pdf" target="_blank" rel="noopener">
+          <span class="icon"><i class="fas fa-file-pdf"></i></span><span>Paper</span>
+        </a>
+        <a class="button is-rounded" href="https://arxiv.org/abs/2607.07357" target="_blank" rel="noopener">
+          <span class="icon"><i class="ai ai-arxiv"></i></span><span>arXiv</span>
+        </a>
+        <a class="button is-rounded" href="https://youtu.be/wRRUzoi-9p0" target="_blank" rel="noopener">
+          <span class="icon"><i class="fab fa-youtube"></i></span><span>Video</span>
+        </a>
+        <a class="button is-rounded" href="#">
+          <span class="icon"><i class="fab fa-github"></i></span><span>Code</span>
+        </a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════ TEASER ══════════════ -->
+<section class="section teaser" style="padding-bottom:0;">
+  <div class="container is-max-desktop">
+    <div style="position:relative; width:100%; padding-top:56.25%; border-radius:10px; overflow:hidden;">
+      <iframe src="https://www.youtube.com/embed/wRRUzoi-9p0"
+              style="position:absolute; top:0; left:0; width:100%; height:100%; border:0;"
+              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+              allowfullscreen></iframe>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════ ABSTRACT ══════════════ -->
+<section class="section" style="padding: top 5px;;">
+  <div class="container is-max-desktop">
+    <h2 class="section-heading">Abstract</h2>
+    <div class="content has-text-justified">
+      <p>
+        Effective social robot navigation requires sensitivity to human behavior, often revealed through
+        subtle skeletal cues like gait and orientation. We present <b>Human-Aware Implicit Social Robot
+        Navigation (HumAIN)</b>, a novel framework that fuses implicit social cues directly into the planning
+        loop via knowledge distillation. We first employ a transformer-based <b>teacher</b> model that fuses
+        rich multi-modal inputs — including historic images, skeletal keypoints, robot state, and a robot's
+        target goal — to learn robust, human-aware representations for the robot's future trajectory planning.
+        To enable real-time deployment, we then distill this knowledge into a lightweight <b>student</b> model.
+        By optimizing for both trajectory reconstruction and latent feature alignment with the teacher, the
+        student learns to infer complex social dynamics from minimal inputs. Bridging the prediction–planning
+        gap with an efficient distilled architecture, our method enables robots to reason about human behavior
+        in a manner that is adaptive, robust, and socially compliant. We validate HumAIN through extensive
+        experiments, where it improves navigation compliance by an average of 29.8% across all metrics
+        compared to state-of-the-art baselines. These results highlight the benefit of using implicit,
+        whole-body cues to achieve human-like navigation awareness on resource-constrained platforms.
+      </p>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════ HIGHLIGHTS ══════════════ -->
+<!-- <section class="section" style="padding-top:0;">
+  <div class="container is-max-desktop">
+    <div class="stat-row">
+      <div class="stat"><div class="num">29.8%</div><div class="lbl">avg. gain in social compliance over all baselines &amp; metrics</div></div>
+      <div class="stat"><div class="num">RGB-only</div><div class="lbl">student runs from raw images + goal — no skeletal tracking at deployment</div></div>
+      <div class="stat"><div class="num">GTX 1050</div><div class="lbl">real-time onboard a Clearpath Jackal with a ZED2 camera</div></div>
+    </div>
+  </div>
+</section> -->
+
+<!-- ══════════════ METHOD ══════════════ -->
+<section class="section" style="background:var(--gp);">
+  <div class="container is-max-desktop">
+    <h2 class="section-heading">A Teacher–Student Framework</h2>
+
+    <figure class="fig" style="margin-bottom:2rem;">
+      <img src="static/images/architecture.png" alt="HumAIN architecture" style="border-radius:22px; max-width:78%;"
+           onerror="this.style.display='none';this.nextElementSibling.style.display='block'">
+      <div class="img-fallback" style="display:none;">
+        Add Fig. 2 (architecture) at <code>research/humain/static/images/architecture.png</code>
+      </div>
+      <!-- <figcaption>
+        <b>Two-stage framework.</b> The Oracle Teacher uses privileged multi-modal inputs — dense keypoints and
+        trajectory history — to learn social representations and predict trajectories. The Student is distilled
+        to navigate from raw images and a goal by matching the frozen Teacher's latent features.
+      </figcaption> -->
+    </figure>
+
+    <div class="content has-text-justified">
+      <p>
+        <b>Stage 1 — Teacher (privileged).</b> A high-capacity transformer fuses egocentric RGB, robot
+        kinematic history, a goal token, and privileged human states (3D skeletal keypoints, relative position,
+        and facing direction for up to 10 people). A <b>body-part-aware human encoder</b> partitions keypoints
+        into head, torso, arms, and legs, and a hierarchical robot-centric fusion pipeline reasons over
+        social interaction → vision grounding → goal. A 4-layer trajectory head produces both the predicted
+        path and a latent manifold that encapsulates high-fidelity social semantics.
+      </p>
+      <p>
+        <b>Stage 2 — Student (deployment).</b> The lightweight student sees <b>only raw images and
+        the goal</b>. It compresses the scene into a single CLS token and is trained with a dual objective: a
+        trajectory imitation loss against ground truth plus a <b>feature-alignment loss</b> that pulls its belief
+        state toward the frozen teacher's privileged representation. This forces the student to implicitly infer
+        the missing whole-body social cues — so it stays socially compliant without any pose tracking at test time.
+      </p>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════ RESULTS ══════════════ -->
+<section class="section">
+  <div class="container is-max-desktop">
+    <h2 class="section-heading">Results</h2>
+
+    <figure class="fig" style="margin-bottom:2.5rem;">
+      <img src="static/images/qualitative.png" alt="Qualitative results"
+           onerror="this.style.display='none';this.nextElementSibling.style.display='block'">
+      <div class="img-fallback" style="display:none;">
+        Add Fig. 4 (qualitative trajectories) at <code>research/humain/static/images/qualitative.png</code>
+      </div>
+    </figure>
+
+    <!-- <p class="content has-text-justified">
+      We train on <a href="https://www.cs.utexas.edu/~xiao/SCAND/SCAND.html" target="_blank" rel="noopener"><b>SCAND</b></a> (a social navigation dataset of teleoperated demonstrations) and evaluate on both
+      its held-out test set and an independent out-of-distribution set collected with an AgileX Scout Mini. We
+      report Average Displacement Error (ADE), Final Displacement Error (FDE), and Average Orientation Error (AOE),
+      treating divergence from expert trajectories as a proxy for social compliance.
+    </p> -->
+
+    <div style="overflow-x:auto; margin-top:1.5rem;">
+      <table class="results-table">
+        <thead>
+          <tr><th>Method</th><th>ADE (m) ↓</th><th>FDE (m) ↓</th><th>AOE (rad) ↓</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>ViNT</td><td>0.756</td><td>1.304</td><td>0.203</td></tr>
+          <tr><td>NoMaD</td><td>0.853</td><td>1.561</td><td>0.251</td></tr>
+          <tr><td>GNM</td><td>0.755</td><td>1.254</td><td>0.219</td></tr>
+          <tr><td>HST + MPC</td><td>0.891</td><td>1.886</td><td>0.313</td></tr>
+          <tr class="ours"><td>HumAIN (Ours)</td><td>0.578</td><td>1.064</td><td>0.159</td></tr>
+        </tbody>
+        <!-- <caption>
+          HumAIN outperforms all baselines on every metric. Against the strongest baseline per metric, it reduces
+          ADE by 23.2%, FDE by 14.2%, and AOE by 21.7%.
+        </caption> -->
+      </table>
+    </div>
+    <BR>
+    <p class="content has-text-justified">
+      We train on <a href="https://www.cs.utexas.edu/~xiao/SCAND/SCAND.html" target="_blank" rel="noopener"><b>SCAND</b></a> and evaluate on both
+      its held-out test set and an independent out-of-distribution set collected with an AgileX Scout Mini. We
+      report Average Displacement Error (ADE), Final Displacement Error (FDE), and Average Orientation Error (AOE),
+      treating divergence from expert trajectories as a proxy for social compliance.
+    </p>
+
+  </div>
+</section>
+
+<!-- ══════════════ VIDEO (optional) ══════════════ -->
+<!-- EDIT ME: add a YouTube id, then uncomment.
+<section class="section" style="background:var(--gp);">
+  <div class="container is-max-desktop">
+    <h2 class="section-heading">Video</h2>
+    <div style="position:relative; padding-top:56.25%; border-radius:10px; overflow:hidden;">
+      <iframe src="https://www.youtube.com/embed/VIDEO_ID"
+              style="position:absolute; top:0; left:0; width:100%; height:100%; border:0;"
+              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+              allowfullscreen></iframe>
+    </div>
+  </div>
+</section>
+-->
+
+<!-- ══════════════ BIBTEX ══════════════ -->
+<section class="section" style="background:var(--gp);">
+  <div class="container is-max-desktop">
+    <h2 class="section-heading">BibTeX</h2>
+    <div class="bibtex-box" style="padding:1.25rem 1.5rem;">
+<pre><code>@inproceedings{song2026humain,
+  title     = {HumAIN: Human-Aware Implicit Social Robot Navigation},
+  author    = {Song, Daeun and Le, Nhat and Chen, Jeffrey and Nazeri, Mohammad
+               and Payandeh, Amirreza and Chandra, Rohan and Mirsky, Reuth
+               and Mead, Ross and Xiao, Ling and Xiao, Xuesu},
+  booktitle = {IEEE/RSJ International Conference on Intelligent Robots and Systems (IROS)},
+  year      = {2026}
+}</code></pre>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════ FOOTER ══════════════ -->
+<footer class="footer">
+  <div class="container is-max-desktop has-text-centered">
+    <p style="color:var(--ink3); font-size:.85rem;">
+      Website template adapted from
+      <a href="https://github.com/nerfies/nerfies.github.io" target="_blank" rel="noopener">Nerfies</a>.
+    </p>
+    <!-- <p style="color:var(--ink3); font-size:.85rem; margin-top:.5rem;">
+      © 2026 <a href="../../" target="_blank" rel="noopener">AIR Lab @ Ewha Womans University</a>
+    </p> -->
+  </div>
+</footer>
+
+</body>
+</html>

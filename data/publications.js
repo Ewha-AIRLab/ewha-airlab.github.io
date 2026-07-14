@@ -10,6 +10,10 @@
 // keywords:  short tags shown in the carousel (2–4 recommended)
 
 const PUBLICATIONS = [
+
+  // ACME: A Multi-Cultural Multi-Embodiment Social Navigation Dataset
+  // https://raoshashank.github.io/acme-socnav-dataset/
+
   {
     year: 2026,
     title: "HUMAIN: Human-Aware Implicit Social Robot Navigation",
@@ -20,9 +24,9 @@ const PUBLICATIONS = [
     featured: false,
     thumbnail: "assets/publications/teaser/humain_teaser.gif",
     links: [
-      // { label: "Webpage", url: "https://people.cs.gmu.edu/~xiao/Research/SNEI/" },
-      // { label: "Paper", url: "https://arxiv.org/abs/2501.09024" },
-      // { label: "Video", url: "https://youtu.be/dcHOuPguz_s?si=oOWqgxcnM3F_-f1T" },
+      { label: "Webpage", url: "https://robotics.ewha.ac.kr/research/HumAIN/" },
+      { label: "Paper", url: "https://arxiv.org/abs/2607.07357" },
+      { label: "Video", url: "https://youtu.be/wRRUzoi-9p0" },
       // { label: "Dataset", url: "https://huggingface.co/datasets/amir-pyh/SNEI" }
     ]
   },
@@ -67,6 +71,23 @@ const PUBLICATIONS = [
   },
   {
     year: 2026,
+    title: "Autonomous Ground Navigation in Highly Constrained Spaces: Lessons Learned from The Forth BARN Challenge at ICRA 2025",
+    authors: ["Xuesu Xiao<sup>†</sup>", "Zifan Xu", "Saad Abdul Ghani", "Aniket Datar", "**Daeun Song**", "et al."],
+      // "Peter Stone", "Amna Mazen", "Kamyab Yazdipaz", "Innocent Mateyaunga", "Mariam Faied", "Mohan Krishnan", "Yuanjie Lu", "Tong Xu", "Nick Mohammad", "Woosung Kim", "Jon Reasoner", "Rohan Chandra", "and Nicola Bezzo"],
+    venue_short: "RA-M",
+    venue_full: "IEEE Robotics & Automation Magazine (RA-M), 2026",
+    type: "journal",
+    featured: false,
+    thumbnail: "assets/publications/teaser/barn_teaser.jpg",
+    links: [
+      { label: "Website",   url: "https://people.cs.gmu.edu/~xiao/Research/BARN_Challenge/BARN_Challenge25.html" },
+      { label: "Paper",   url: "https://people.cs.gmu.edu/~xiao/papers/barn25_report.pdf" },
+      { label: "Dataset",   url: "https://people.cs.gmu.edu/~xiao/Research/BARN/BARN.html" }
+    ]
+  },
+  // https://ieeexplore.ieee.org/document/11456143
+  {
+    year: 2026,
     title: "E-SocialNav: Efficient Socially Compliant Navigation with Language Models",
     authors: ["Ling Xiao<sup>†</sup>", "**Daeun Song**", "Xuesu Xiao", "T. Yamasaki"],
     venue_short: "ICASSP",
@@ -91,21 +112,6 @@ const PUBLICATIONS = [
       { label: "Best Poster Award", award: true, url: "assets/award/SocialAct_BestPosterAward.pdf"},
       // { label: "Website",   url: "https://people.cs.gmu.edu/~xiao/Research/BARN_Challenge/BARN_Challenge25.html" },
       // { label: "Paper",   url: "https://people.cs.gmu.edu/~xiao/papers/barn25_report.pdf" },
-    ]
-  },
-  {
-    year: 2025,
-    title: "Autonomous Ground Navigation in Highly Constrained Spaces: Lessons Learned from The Forth BARN Challenge at ICRA 2025",
-    authors: ["Xuesu Xiao<sup>†</sup>", "Zifan Xu", "Saad Abdul Ghani", "Aniket Datar", "**Daeun Song**", "Peter Stone", "Amna Mazen", "Kamyab Yazdipaz", "Innocent Mateyaunga", "Mariam Faied", "Mohan Krishnan", "Yuanjie Lu", "Tong Xu", "Nick Mohammad", "Woosung Kim", "Jon Reasoner", "Rohan Chandra", "and Nicola Bezzo"],
-    venue_short: "RAM",
-    venue_full: "IEEE Robotics & Automation Magazine (RAM), accepted",
-    type: "journal",
-    featured: false,
-    thumbnail: "assets/publications/teaser/barn_teaser.jpg",
-    links: [
-      { label: "Website",   url: "https://people.cs.gmu.edu/~xiao/Research/BARN_Challenge/BARN_Challenge25.html" },
-      { label: "Paper",   url: "https://people.cs.gmu.edu/~xiao/papers/barn25_report.pdf" },
-      { label: "Dataset",   url: "https://people.cs.gmu.edu/~xiao/Research/BARN/BARN.html" }
     ]
   },
   {

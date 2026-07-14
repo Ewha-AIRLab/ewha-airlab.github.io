@@ -11,9 +11,21 @@ const NEWS_DATA = [
 
 
     {
+    date:  "2026.07",
+    cat:   "talk",
+    title: "Prof. Song gave a talk at the <a href=\"https://ksiim.org/c/202601/agenda/program2\" target=\"_blank\">Korean Society of Imaging Informatics in Medicine (KSIIM)</a> conference (Topic: Physical AI, Social Nav)"
+    },
+
+    // {
+    // date:  "2026.04",
+    // cat:   "talk",
+    // title: "Prof. Song gave a talk at <a href=\"https://www.asiagraphics.org/asiagraphics-workshop-on-intelligent-graphics-at-korea\" target=\"_blank\">Korea</a> (Topic: Social Nav)"
+    // },
+
+    {
     date:  "2026.06",
     cat:   "publication",
-    title: "<a href=\"#\">HuMAIN</a> accepted to <b>IEEE IROS 2026</b>"
+    title: "<a href=\"./research/HumAIN\" target=\"_blank\">HumAIN</a> accepted to <b>IEEE IROS 2026</b>"
     },
 
     {
@@ -25,7 +37,7 @@ const NEWS_DATA = [
     {
     date:  "2026.06",
     cat:   "publication",
-    title: "<a href=\"https://arxiv.org/abs/2512.21722\" target=\"_blank\">MAction-SocialNav</a> accepted to RA-L, to be presented at <b>IEEE ICRA 2027</b>"
+    title: "<a href=\"https://arxiv.org/abs/2512.21722\" target=\"_blank\">MAction-SocialNav</a> accepted to <B>IEEE RA-L</B>, to be presented at <b>IEEE ICRA 2027</b>"
   },
 
   {
