@@ -22,87 +22,7 @@
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/jpswalsh/academicons@1/css/academicons.min.css">
 
-  <style>
-    :root {
-      --green: #00462A;
-      --gm:    #005c37;
-      --gp:    #edf4f0;
-      --ink:   #1c1c1a;
-      --ink2:  #4a4a46;
-      --ink3:  #7a7a76;
-    }
-    html, body { background: #fff; }
-    body, button, input, select, textarea { font-family: 'IBM Plex Sans', sans-serif; }
-    .title, .subtitle { font-family: 'EB Garamond', serif; color: var(--ink); }
-    .content, p, li { color: var(--ink2); }
-    .content a, p a { color: var(--green); text-decoration: underline; }
-    .content a:hover, p a:hover { color: var(--gm); }
-
-    .hero.is-light { background: var(--gp); }
-    .publication-title { font-weight: 500; }
-    .author-block { display: inline-block; }
-    .author-block a { color: var(--green); text-decoration: underline; text-underline-offset: 2px; }
-    .author-block a:hover { color: var(--gm); }
-    .is-affiliation .author-block { font-size: 1rem; color: var(--ink3); display:block; }
-
-    /* nerfies-style link buttons */
-    .publication-links .button {
-      background: var(--ink); color: #fff; border: none; border-radius: 999px;
-      font-weight: 500;
-    }
-    .publication-links .button:hover { background: var(--green); }
-    .publication-links .button .icon { color: #fff; }
-
-    .section-heading {
-      font-family: 'EB Garamond', serif; font-size: 2rem; font-weight: 500;
-      text-align: center; color: var(--ink); margin-bottom: 1.5rem;
-    }
-    .eyebrow {
-      font-family: 'IBM Plex Mono', monospace; font-size: .72rem;
-      text-transform: uppercase; letter-spacing: .14em; color: var(--green);
-      font-weight: 600; text-align: center; margin-bottom: .4rem;
-    }
-
-    .teaser img, .teaser video { border-radius: 10px; width: 100%; display: block; }
-    .teaser .caption { color: var(--ink3); font-size: .9rem; margin-top: .8rem; }
-
-    .results-table { width: 100%; border-collapse: collapse; font-size: .95rem; }
-    .results-table th, .results-table td { padding: .6rem .9rem; text-align: center; border-bottom: 1px solid #e0e0dd; }
-    .results-table thead th { color: var(--green); font-weight: 600; border-bottom: 2px solid var(--green); }
-    .results-table td:first-child, .results-table th:first-child { text-align: left; }
-    .results-table tr.ours { background: var(--gp); font-weight: 600; }
-    .results-table caption { caption-side: bottom; color: var(--ink3); font-size: .82rem; margin-top: .7rem; text-align: left; }
-
-    .stat-row { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem; margin: 1.5rem 0 0; }
-    .stat { text-align: center; }
-    .stat .num { font-family: 'EB Garamond', serif; font-size: 2.4rem; color: var(--green); line-height: 1; }
-    .stat .lbl { color: var(--ink3); font-size: .82rem; margin-top: .3rem; }
-
-    .fig { text-align: center; }
-    .fig img { border-radius: 10px; width: 100%; }
-    .fig figcaption { color: var(--ink3); font-size: .85rem; margin-top: .6rem; }
-
-    pre code { font-family: 'IBM Plex Mono', monospace; font-size: .82rem; }
-    .bibtex-box { background: #f6f7f5; border: none; border-radius: 12px; overflow-x: auto; }
-    .bibtex-box pre { background: transparent; color: var(--ink2); }
-
-    /* page fills the viewport so the footer sticks to the very bottom */
-    body { display: flex; flex-direction: column; min-height: 100vh; }
-    .footer { background: #fff; border-top: 1px solid #e8e8e6; margin-top: auto; padding: 2.5rem 1.5rem; }
-    .footer p { color: var(--ink3) !important; }
-    .footer a { color: var(--green); }
-
-    .back-link {
-      position: fixed; top: 1rem; left: 1.25rem; z-index: 100;
-      color: var(--green); font-size: .85rem; font-weight: 500; text-decoration: none;
-      background: rgba(255,255,255,.75); -webkit-backdrop-filter: blur(6px); backdrop-filter: blur(6px);
-      padding: .4rem .8rem; border-radius: 999px; border: 1px solid rgba(0,70,42,.15);
-      box-shadow: 0 1px 4px rgba(0,0,0,.06);
-    }
-    .back-link:hover { background: #fff; border-color: rgba(0,70,42,.35); }
-
-    .img-fallback { border:2px dashed #ccc; border-radius:10px; padding:3rem 1rem; text-align:center; color:var(--ink3); }
-  </style>
+  <link rel="stylesheet" href="static/css/style.css">
 </head>
 <body>
 
@@ -118,7 +38,7 @@
       </h2> -->
 
       <!-- Authors -->
-      <div class="is-size-6 publication-authors" style="margin-top:1rem;">
+      <div class="publication-authors" style="margin-top:1rem;">
         <span class="author-block"><a href="https://daeunsong.github.io" target="_blank" rel="noopener">Daeun Song</a><sup>1, 2</sup>,</span>
         <span class="author-block">Nhat Le<sup>2</sup>,</span>
         <span class="author-block"><a href="https://jeffchen888.github.io/" target="_blank" rel="noopener">Jeffrey Chen</a><sup>3</sup>,</span>
@@ -138,7 +58,7 @@
       </div>
 
       <!-- Venue -->
-      <div style="margin-top:.7rem; color:var(--ink3); font-family:'IBM Plex Mono',monospace; font-size:0.9rem;">
+      <div style="margin-top:.7rem; color:var(--ink3); font-family:'IBM Plex Mono',monospace; font-size:1.05rem;">
         <!-- EDIT ME: update once decisions are out (currently a submission) -->
         <B style="color:var(--ink); background:linear-gradient(transparent 25%, #ffda33 25%); padding:0 .12em; border-radius:3px;">Accepted to IEEE/RSJ IROS 2026</B>
       </div>
