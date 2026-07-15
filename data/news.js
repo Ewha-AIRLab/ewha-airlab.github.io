@@ -8,7 +8,11 @@ const NEWS_DATA = [
 
 
   // MAction-SocialNav: Multi-Action Socially Compliant Navigation via Reasoning-enhanced Prompt Tuning
-
+  {
+      date:  "2026.07",
+      cat:   "news",
+      title: "Prof. Song serves as an Editor for the <B>Autonomous Robots</B> Topical Collection on <a href=\"https://link.springer.com/collections/aajjjdgbcj\" target=\"_blank\">Human-centered Physical AI Robotics</a>. <br>We welcome submissions by <b>December 31, 2026</b>!"
+  },
 
     {
     date:  "2026.07",
@@ -31,7 +35,7 @@ const NEWS_DATA = [
     {
     date:  "2026.06",
     cat:   "news",
-    title: "Prof. Song is organizing two workshops on <a href=\"https://bridging-navigation.github.io/website/\"  target=\"_blank\">Navigation</a> and <a href=\"https://socialnav2026.pages.dev/\" target=\"_blank\">Social Navigation</a> at <b>IEEE IROS 2026</b>.<br>Submit your research and contribute to the future of robot navigation! "
+    title: "Prof. Song is organizing two workshops on <a href=\"https://bridging-navigation.github.io/website/\"  target=\"_blank\">Navigation</a> and <a href=\"https://socialnav2026.pages.dev/\" target=\"_blank\">Social Navigation</a> at <b>IEEE IROS 2026</b>. Submission is now open! "
     },
 
     {
