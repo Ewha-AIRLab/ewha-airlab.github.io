@@ -11,7 +11,7 @@ const NEWS_DATA = [
   {
       date:  "2026.07",
       cat:   "news",
-      title: "Prof. Song serves as an Editor for the <B>Autonomous Robots</B> Topical Collection on <a href=\"https://link.springer.com/collections/aajjjdgbcj\" target=\"_blank\">Human-centered Physical AI Robotics</a>. <br>We welcome submissions by <b>December 31, 2026</b>!"
+      title: "Prof. Song serves as a Guest Editor for the <B>Autonomous Robots</B> Topical Collection on <a href=\"https://link.springer.com/collections/aajjjdgbcj\" target=\"_blank\">Human-centered Physical AI Robotics</a>. <br>We welcome submissions by <b>December 31, 2026</b>!"
   },
 
     {
