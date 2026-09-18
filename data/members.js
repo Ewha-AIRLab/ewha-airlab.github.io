@@ -50,6 +50,7 @@ const MEMBERS_DATA = {
           focus:   "",
           email:   "hp432300@ewha.ac.kr",
           website: "",
+          github: "https://github.com/Ahhyeon430",
           photo:   "assets/members/ahyeon.jpg"
         },
         {
@@ -77,7 +78,7 @@ const MEMBERS_DATA = {
           email:   "dldwls06@ewha.ac.kr",
           website: "",
           github: "",
-          photo:   ""
+          photo:   "assets/members/yujin.jpg"
         },
       ]
     },
