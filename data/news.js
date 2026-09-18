@@ -7,11 +7,17 @@
 const NEWS_DATA = [
 
 
+    {
+      date:  "2026.09",
+      cat:   "news",
+      title: "Prof. Song will serve as as an Associate Editor for <a href=\"https://2027.ieee-icra.org\" target=\"_blank\">IEEE ICRA 2027</a>."
+  },
+
   // MAction-SocialNav: Multi-Action Socially Compliant Navigation via Reasoning-enhanced Prompt Tuning
   {
       date:  "2026.07",
       cat:   "news",
-      title: "Prof. Song serves as a Guest Editor for the <B>Autonomous Robots</B> Topical Collection on <a href=\"https://link.springer.com/collections/aajjjdgbcj\" target=\"_blank\">Human-centered Physical AI Robotics</a>. <br>We welcome submissions by <b>December 31, 2026</b>!"
+      title: "Prof. Song will serve as a Guest Editor for the <B>Autonomous Robots</B> Topical Collection on <a href=\"https://link.springer.com/collections/aajjjdgbcj\" target=\"_blank\">Human-centered Physical AI Robotics</a>. <br>We welcome submissions by <b>December 31, 2026</b>!"
   },
 
     {
@@ -59,7 +65,7 @@ const NEWS_DATA = [
   {
     date:  "2026.03",
     cat:   "news",
-    title: "Daeun has joined the Department of AI at Ewha Womans University"
+    title: "Daeun joined the Department of AI at Ewha Womans University"
   },
 
   {
@@ -213,13 +219,13 @@ const NEWS_DATA = [
   {
     date:  "2022.12",
     cat:   "news",
-    title: "Daeun has successfully completed Ph.D. thesis defense"
+    title: "Daeun successfully completed Ph.D. thesis defense"
   },
 
   {
     date:  "2021.07",
     cat:   "award",
-    title: "<a href=\"http://graphics.ewha.ac.kr/TSPArt\" target=\"_blank\">TSPArt</a> has won the Best Undergrad Paper Award at <b>KCGS 2021</b>",
+    title: "<a href=\"http://graphics.ewha.ac.kr/TSPArt\" target=\"_blank\">TSPArt</a> won the Best Undergrad Paper Award at <b>KCGS 2021</b>",
     awardLabel: "Best Undergrad Paper Award",
     awardUrl:   "assets/award/TSPArt_BestUndergradPaper_KCGS.jpg"
   },
@@ -245,7 +251,7 @@ const NEWS_DATA = [
   {
     date:  "2019.06",
     cat:   "news",
-    title: "Daeun has Joined <a href=\"https://gepettoweb.laas.fr/\" target=\"_blank\">Gepetto</a> team at LAAS-CNRS in Toulouse, France for a 4-month summer internship"
+    title: "Daeun joined <a href=\"https://gepettoweb.laas.fr/\" target=\"_blank\">Gepetto</a> team at LAAS-CNRS in Toulouse, France for a 4-month summer internship"
   },
 
   {
@@ -265,7 +271,7 @@ const NEWS_DATA = [
   {
     date:  "2018.02",
     cat:   "award",
-    title: "<a href=\"http://graphics.ewha.ac.kr/SSK\" target=\"_blank\">SSK</a> has won the Best Paper Award at <b>KRoC 2018</b>",
+    title: "<a href=\"http://graphics.ewha.ac.kr/SSK\" target=\"_blank\">SSK</a> won the Best Paper Award at <b>KRoC 2018</b>",
     awardLabel: "Best Paper Award",
     awardUrl:   "assets/award/SSK_BestPaperAward_KRoC.pdf"
   },
