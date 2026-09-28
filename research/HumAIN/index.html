@@ -175,6 +175,55 @@
   <div class="container is-max-desktop">
     <h2 class="section-heading">Results</h2>
 
+    <h3 class="video-row-title">Scenario 1: Frontal Approach</h3>
+    <div class="video-row">
+      <figure class="video-cell ours">
+        <div class="video-note">Clearly avoids a person</div>
+        <video src="static/videos/front_ours.mp4" autoplay muted loop playsinline></video>
+        <figcaption>HumAIN (Ours)</figcaption>
+      </figure>
+      <figure class="video-cell bad">
+        <div class="video-note">Bumps into a human</div>
+        <video src="static/videos/front_vint.mp4" autoplay muted loop playsinline></video>
+        <figcaption>ViNT</figcaption>
+      </figure>
+      <figure class="video-cell">
+        <div class="video-note">Nearly going straight</div>
+        <video src="static/videos/front_nomad.mp4" autoplay muted loop playsinline></video>
+        <figcaption>NoMaD</figcaption>
+      </figure>
+      <figure class="video-cell">
+        <div class="video-note">Nearly going straight</div>
+        <video src="static/videos/front_gnm.mp4" autoplay muted loop playsinline></video>
+        <figcaption>GNM</figcaption>
+      </figure>
+    </div>
+
+    <h3 class="video-row-title">Scenario 2: Intersection</h3>
+    <div class="video-row">
+      <figure class="video-cell ours">
+        <div class="video-note">Clearly avoids a person</div>
+        <video src="static/videos/intersection_ours.mp4" autoplay muted loop playsinline></video>
+        <figcaption>HumAIN (Ours)</figcaption>
+      </figure>
+      <figure class="video-cell">
+        <div class="video-note">Nearly going straight</div>
+        <video src="static/videos/intersection_vint.mp4" autoplay muted loop playsinline></video>
+        <figcaption>ViNT</figcaption>
+      </figure>
+      <figure class="video-cell bad">
+        <div class="video-note">Almost bumps into a human</div>
+        <video src="static/videos/intersection_nomad.mp4" autoplay muted loop playsinline></video>
+        <figcaption>NoMaD</figcaption>
+      </figure>
+      <figure class="video-cell">
+        <div class="video-note">Nearly going straight</div>
+        <video src="static/videos/intersection_gnm.mp4" autoplay muted loop playsinline></video>
+        <figcaption>GNM</figcaption>
+      </figure>
+    </div>
+
+    <h3 class="video-row-title">Offline Evaluation</h3>
     <figure class="fig" style="margin-bottom:2.5rem;">
       <img src="static/images/qualitative.png" alt="Qualitative results"
            onerror="this.style.display='none';this.nextElementSibling.style.display='block'">

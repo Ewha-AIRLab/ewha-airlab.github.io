@@ -76,6 +76,20 @@ body, button, input, select, textarea { font-family: 'IBM Plex Sans', sans-serif
 .fig img { border-radius: 10px; width: 100%; }
 .fig figcaption { color: var(--ink3); font-size: .95rem; margin-top: .6rem; }
 
+/* row of four comparison videos (Results) */
+.video-row-title { font-size: 1.25rem; font-weight: 600; color: var(--ink); text-align: center; margin-bottom: .9rem; }
+.video-row { display: grid; grid-template-columns: repeat(4, 1fr); gap: .75rem; margin-bottom: 2rem; }
+.video-cell { margin: 0; text-align: center; }
+.video-cell video { display: block; width: 100%; aspect-ratio: 16 / 9; object-fit: cover; border: 3px solid #8a8a86; border-radius: 8px; background: #000; }
+.video-cell figcaption { color: var(--ink3); font-size: .9rem; margin-top: .4rem; }
+.video-cell.ours video { border-color: #22a55b; }
+.video-cell.bad video { border-color: #c62828; }
+.video-cell.ours figcaption { color: #1e9150; font-weight: 600; }
+.video-note { background: #8a8a86; color: #fff; font-size: .85rem; font-weight: 600; line-height: 1.3; padding: .35rem .5rem; border-radius: 8px; margin-bottom: .4rem; }
+.video-cell.ours .video-note { background: #22a55b; }
+.video-cell.bad .video-note { background: #c62828; }
+@media (max-width: 768px) { .video-row { grid-template-columns: repeat(2, 1fr); } }
+
 pre code { font-family: 'IBM Plex Mono', monospace; font-size: .92rem; }
 .bibtex-box { background: #f6f7f5; border: none; border-radius: 12px; overflow-x: auto; }
 .bibtex-box pre { background: transparent; color: var(--ink2); }
