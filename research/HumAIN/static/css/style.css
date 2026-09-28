@@ -33,6 +33,20 @@ body, button, input, select, textarea { font-family: 'IBM Plex Sans', sans-serif
 .publication-links .button:hover { background: var(--green); }
 .publication-links .button .icon { color: #fff; }
 
+/* Code button: show a "Coming soon!" speech bubble below on hover */
+.code-btn { cursor: default; position: relative; overflow: visible; }
+.code-tip {
+  position: absolute; top: calc(100% + 10px); left: 50%; transform: translateX(-50%) translateY(-4px);
+  background: var(--ink); color: #fff; font-size: .8rem; font-weight: 500; white-space: nowrap;
+  padding: .35rem .75rem; border-radius: 8px; pointer-events: none; z-index: 10;
+  opacity: 0; visibility: hidden; transition: opacity .15s, transform .15s, visibility .15s;
+}
+.code-tip::before {
+  content: ""; position: absolute; bottom: 100%; left: 50%; transform: translateX(-50%);
+  border: 6px solid transparent; border-bottom-color: var(--ink);
+}
+.code-btn:hover .code-tip { opacity: 1; visibility: visible; transform: translateX(-50%) translateY(0); }
+
 .section-heading {
   font-family: 'IBM Plex Sans', sans-serif; font-size: 2.3rem; font-weight: 600;
   letter-spacing: -.01em; text-align: center; color: var(--ink); margin-bottom: 1.75rem;
@@ -65,6 +79,10 @@ body, button, input, select, textarea { font-family: 'IBM Plex Sans', sans-serif
 pre code { font-family: 'IBM Plex Mono', monospace; font-size: .92rem; }
 .bibtex-box { background: #f6f7f5; border: none; border-radius: 12px; overflow-x: auto; }
 .bibtex-box pre { background: transparent; color: var(--ink2); }
+
+/* light grey rule between consecutive sections (teaser flows straight into the abstract) */
+.section + .section { border-top: 1px solid #e8e8e6; }
+.teaser + .section { border-top: none; }
 
 /* page fills the viewport so the footer sticks to the very bottom */
 body { display: flex; flex-direction: column; min-height: 100vh; }
