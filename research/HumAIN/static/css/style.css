@@ -5,10 +5,11 @@
   --ink:   #1c1c1a;
   --ink2:  #4a4a46;
   --ink3:  #7a7a76;
+  --sans:  "Helvetica Neue", Helvetica, Arial, sans-serif;
 }
 html, body { background: #fff; }
-body, button, input, select, textarea { font-family: 'IBM Plex Sans', sans-serif; }
-.title, .subtitle { font-family: 'IBM Plex Sans', sans-serif; color: var(--ink); letter-spacing: -.01em; }
+body, button, input, select, textarea { font-family: var(--sans); }
+.title, .subtitle { font-family: var(--sans); color: var(--ink); letter-spacing: -.01em; }
 .content, p, li { color: var(--ink2); font-size: 1.05rem; line-height: 1.7; }
 .content a, p a { color: var(--ink); text-decoration: underline; text-decoration-color: var(--accent); text-decoration-thickness: 2px; text-underline-offset: 2px; }
 .content a:hover, p a:hover { color: var(--ink); background: var(--accent-soft); text-decoration-color: var(--accent-dark); }
@@ -17,7 +18,7 @@ body, button, input, select, textarea { font-family: 'IBM Plex Sans', sans-serif
 .title.publication-title { font-weight: 600; font-size: 2rem; }
 /* keep the title on one line on wider screens */
 @media (min-width: 769px) {
-  .title.publication-title { white-space: nowrap; font-size: clamp(1.7rem, 3.4vw, 2.4rem); }
+  .title.publication-title { white-space: nowrap; font-size: clamp(1.6rem, 3.1vw, 2.2rem); }
 }
 .publication-authors { font-size: 1rem; }
 .author-block { display: inline-block; }
@@ -49,7 +50,7 @@ body, button, input, select, textarea { font-family: 'IBM Plex Sans', sans-serif
 .code-btn:hover .code-tip { opacity: 1; visibility: visible; transform: translateX(-50%) translateY(0); }
 
 .section-heading {
-  font-family: 'IBM Plex Sans', sans-serif; font-size: 2.3rem; font-weight: 600;
+  font-family: var(--sans); font-size: 2.3rem; font-weight: 600;
   letter-spacing: -.01em; text-align: center; color: var(--ink); margin-bottom: 1.75rem;
 }
 .eyebrow {
@@ -60,6 +61,15 @@ body, button, input, select, textarea { font-family: 'IBM Plex Sans', sans-serif
 
 .teaser img, .teaser video { border-radius: 10px; width: 100%; display: block; }
 .teaser .caption { color: var(--ink3); font-size: .9rem; margin-top: .8rem; }
+.tagline { font-family: "Times New Roman", Times, serif; text-align: center; font-size: 1.95rem; font-weight: 700; line-height: 1.3; letter-spacing: -.005em; color: var(--ink); margin-bottom: .35rem; }
+.tagline em { font-style: italic; font-weight: 700; color: #c8940c; }  /* darker than the title yellow so it stays legible as text */
+.research-q { font-family: "Times New Roman", Times, serif; font-style: italic; text-align: center; font-size: 1.5rem; line-height: 1.3; color: var(--ink2); margin-bottom: 2.5rem; }
+.research-q em { font-style: italic; font-weight: 700; color: var(--ink); }
+
+/* Stage 1 / Stage 2 labels, tinted to match the architecture figure */
+.stage-tag { padding: .1em .35em; border-radius: 4px; }
+.stage-tag.teacher { background: #f2f2f2; }
+.stage-tag.student { background: #e9f0fd; }
 
 .results-table { width: 100%; border-collapse: collapse; font-size: .95rem; }
 .results-table th, .results-table td { padding: .6rem .9rem; text-align: center; border-bottom: 1px solid #e0e0dd; }
@@ -76,6 +86,38 @@ body, button, input, select, textarea { font-family: 'IBM Plex Sans', sans-serif
 .fig { text-align: center; }
 .fig img { border-radius: 10px; width: 100%; }
 .fig figcaption { color: var(--ink3); font-size: .95rem; margin-top: .6rem; }
+
+/* image slider (Offline Evaluation) */
+.slider-pair { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 1.25rem; margin-bottom: 1.25rem; }
+.slider-label { font-weight: 600; font-size: .95rem; color: var(--ink); text-align: center; margin-bottom: .45rem; }
+.slider { position: relative; overflow: hidden; border-radius: 10px; }
+.slider-col { min-width: 0; }
+@media (max-width: 768px) { .slider-pair { grid-template-columns: minmax(0, 1fr); } }
+.slider-track { display: flex; transition: transform .35s ease; }
+.slide { flex: 0 0 100%; }
+.slide img { display: block; width: 100%; border-radius: 10px; }
+.slide-placeholder { aspect-ratio: 16 / 9; align-items: center; justify-content: center; border: 2px dashed #ccc; border-radius: 10px; color: var(--ink3); font-size: .85rem; padding: 1rem; text-align: center; }
+.slider-arrow {
+  position: absolute; top: 50%; transform: translateY(-50%); z-index: 2;
+  width: 34px; height: 34px; border-radius: 50%; border: none; cursor: pointer;
+  background: rgba(255,255,255,.85); color: var(--ink); font-size: 1.5rem; line-height: 1;
+  box-shadow: 0 1px 4px rgba(0,0,0,.15); display: flex; align-items: center; justify-content: center; padding-bottom: 3px;
+}
+.slider-arrow:hover { background: var(--accent); }
+.slider-arrow.prev { left: .6rem; }
+.slider-arrow.next { right: .6rem; }
+.slider-dots {
+  position: absolute; left: 50%; bottom: .7rem; transform: translateX(-50%); z-index: 2;
+  display: flex; gap: .45rem;
+}
+.slider-dots button { width: 8px; height: 8px; padding: 0; border: none; border-radius: 50%; background: rgba(255,255,255,.7); box-shadow: 0 0 3px rgba(0,0,0,.5); cursor: pointer; }
+.slider-dots button.active { background: var(--accent); }
+
+/* colour legend for the offline-evaluation trajectory figure */
+.traj-legend { display: flex; flex-wrap: wrap; justify-content: center; gap: .4rem 1.1rem; font-size: .9rem; color: var(--ink2); margin-bottom: .9rem; }
+.traj-legend span { display: inline-flex; align-items: center; gap: .4rem; white-space: nowrap; }
+.traj-legend .line { display: inline-block; width: 22px; height: 4px; border-radius: 2px; }
+.traj-legend .star { font-style: normal; font-size: 1.1rem; line-height: 1; -webkit-text-stroke: .5px #b8860b; }
 
 /* row of four comparison videos (Results) */
 .video-row-title { font-size: 1.25rem; font-weight: 600; color: var(--ink); text-align: center; margin-bottom: .9rem; }

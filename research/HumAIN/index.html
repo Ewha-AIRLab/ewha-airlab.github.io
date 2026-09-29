@@ -15,7 +15,7 @@
   <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🚶</text></svg>">
 
   <!-- Fonts (matches the rest of the AIR Lab site) -->
-  <link href="https://fonts.googleapis.com/css2?family=EB+Garamond:ital,wght@0,400;0,500;0,600;1,400&family=IBM+Plex+Sans:wght@300;400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=EB+Garamond:ital,wght@0,400;0,500;0,600;1,400&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
 
   <!-- Bulma (nerfies base) + icons -->
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bulma@0.9.4/css/bulma.min.css">
@@ -58,7 +58,7 @@
       </div>
 
       <!-- Venue -->
-      <div style="margin-top:.7rem; color:var(--ink3); font-family:'IBM Plex Mono',monospace; font-size:1.05rem;">
+      <div style="margin-top:.7rem; color:var(--ink3); font-family:var(--sans); font-size:1.05rem;">
         <!-- EDIT ME: update once decisions are out (currently a submission) -->
         <B style="color:var(--ink); background:linear-gradient(transparent 25%, #ffda33 25%); padding:0 .12em; border-radius:3px;">Accepted to IEEE/RSJ IROS 2026</B>
       </div>
@@ -74,6 +74,12 @@
         <a class="button is-rounded" href="https://youtu.be/wRRUzoi-9p0" target="_blank" rel="noopener">
           <span class="icon"><i class="fab fa-youtube"></i></span><span>Video</span>
         </a>
+        <a class="button is-rounded" href="static/pdfs/IROS26_HumAIN_slides.pdf" target="_blank" rel="noopener">
+          <span class="icon"><i class="fas fa-chalkboard"></i></span><span>Slides</span>
+        </a>
+        <a class="button is-rounded" href="static/pdfs/IROS26_HumAIN_poster.pdf" target="_blank" rel="noopener">
+          <span class="icon"><i class="fas fa-image"></i></span><span>Poster</span>
+        </a>
         <a class="button is-rounded code-btn" href="#" onclick="return false;">
           <span class="icon"><i class="fab fa-github"></i></span>
           <span>Code</span>
@@ -87,6 +93,12 @@
 <!-- ══════════════ TEASER ══════════════ -->
 <section class="section teaser" style="padding-bottom:0;">
   <div class="container is-max-desktop">
+    <p class="tagline">
+      Humans often reveal their next move through <em>implicit social cues</em>.
+    </p>
+    <p class="research-q">
+      Can robots navigate by these cues, <em>implicitly</em>?
+    </p>
     <div style="position:relative; width:100%; padding-top:56.25%; border-radius:10px; overflow:hidden;">
       <iframe src="https://www.youtube.com/embed/wRRUzoi-9p0"
               style="position:absolute; top:0; left:0; width:100%; height:100%; border:0;"
@@ -152,7 +164,7 @@
 
     <div class="content has-text-justified">
       <p>
-        <b>Stage 1 — Teacher (privileged).</b> A high-capacity transformer fuses egocentric RGB, robot
+        <b class="stage-tag teacher">Stage 1 — Teacher (privileged).</b> A high-capacity transformer fuses egocentric RGB, robot
         kinematic history, a goal token, and privileged human states (3D skeletal keypoints, relative position,
         and facing direction for up to 10 people). A <b>body-part-aware human encoder</b> partitions keypoints
         into head, torso, arms, and legs, and a hierarchical robot-centric fusion pipeline reasons over
@@ -160,7 +172,7 @@
         path and a latent manifold that encapsulates high-fidelity social semantics.
       </p>
       <p>
-        <b>Stage 2 — Student (deployment).</b> The lightweight student sees <b>only raw images and
+        <b class="stage-tag student">Stage 2 — Student (deployment).</b> The lightweight student sees <b>only raw images and
         the goal</b>. It compresses the scene into a single CLS token and is trained with a dual objective: a
         trajectory imitation loss against ground truth plus a <b>feature-alignment loss</b> that pulls its belief
         state toward the frozen teacher's privileged representation. This forces the student to implicitly infer
@@ -222,15 +234,56 @@
         <figcaption>GNM</figcaption>
       </figure>
     </div>
-
+    <BR>
     <h3 class="video-row-title">Offline Evaluation</h3>
-    <figure class="fig" style="margin-bottom:2.5rem;">
-      <img src="static/images/qualitative.png" alt="Qualitative results"
-           onerror="this.style.display='none';this.nextElementSibling.style.display='block'">
-      <div class="img-fallback" style="display:none;">
-        Add Fig. 4 (qualitative trajectories) at <code>research/humain/static/images/qualitative.png</code>
+    <!-- add more images: add a <div class="slide"><img ...></div> line inside the track -->
+    <div class="slider-pair">
+      <div class="slider-col">
+        <div class="slider-label">SCAND</div>
+        <div class="slider" data-slider>
+          <button class="slider-arrow prev" type="button" aria-label="Previous image">&#8249;</button>
+          <div class="slider-track">
+            <div class="slide"><img src="static/images/scand/002580.png" alt="SCAND example 1"></div>
+            <div class="slide"><img src="static/images/scand/002709.png" alt="SCAND example 2"></div>
+            <div class="slide"><img src="static/images/scand/000725.png" alt="SCAND example 3"></div>
+            <div class="slide"><img src="static/images/scand/001938.png" alt="SCAND example 4"></div>
+            <div class="slide"><img src="static/images/scand/001363.png" alt="SCAND example 5"></div>
+            <div class="slide"><img src="static/images/scand/001438.png" alt="SCAND example 6"></div>
+            <div class="slide"><img src="static/images/scand/002437.png" alt="SCAND example 7"></div>
+            <div class="slide"><img src="static/images/scand/003401.png" alt="SCAND example 8"></div>
+          </div>
+          <button class="slider-arrow next" type="button" aria-label="Next image">&#8250;</button>
+          <div class="slider-dots"></div>
+        </div>
       </div>
-    </figure>
+      <div class="slider-col">
+        <div class="slider-label">OOD</div>
+        <div class="slider" data-slider>
+          <button class="slider-arrow prev" type="button" aria-label="Previous image">&#8249;</button>
+          <div class="slider-track">
+            <div class="slide"><img src="static/images/ood/000295.png" alt="OOD example 1"></div>
+            <div class="slide"><img src="static/images/ood/000296.png" alt="OOD example 2"></div>
+            <div class="slide"><img src="static/images/ood/001166.png" alt="OOD example 3"></div>
+            <div class="slide"><img src="static/images/ood/000982.png" alt="OOD example 4"></div>
+            <div class="slide"><img src="static/images/ood/000211.png" alt="OOD example 5"></div>
+            <div class="slide"><img src="static/images/ood/000385.png" alt="OOD example 6"></div>
+            <div class="slide"><img src="static/images/ood/000606.png" alt="OOD example 7"></div>
+            <div class="slide"><img src="static/images/ood/001966.png" alt="OOD example 8"></div>
+          </div>
+          <button class="slider-arrow next" type="button" aria-label="Next image">&#8250;</button>
+          <div class="slider-dots"></div>
+        </div>
+      </div>
+    </div>
+    <div class="traj-legend">
+      <span><i class="line" style="background:rgb(31,119,180);"></i>ViNT</span>
+      <span><i class="line" style="background:rgb(255,127,14);"></i>NoMaD</span>
+      <span><i class="line" style="background:rgb(148,103,189);"></i>GNM</span>
+      <span><i class="line" style="background:rgb(23,190,207);"></i>HST+MPC</span>
+      <span><i class="line" style="background:rgb(44,150,44);"></i>HumAIN (Ours)</span>
+      <span><i class="line" style="background:rgb(214,39,40);"></i>Ground Truth</span>
+      <span><i class="star" style="color:rgb(255,215,0);">&#9733;</i>Goal</span>
+    </div>
 
     <!-- <p class="content has-text-justified">
       We train on <a href="https://www.cs.utexas.edu/~xiao/SCAND/SCAND.html" target="_blank" rel="noopener"><b>SCAND</b></a> (a social navigation dataset of teleoperated demonstrations) and evaluate on both
@@ -313,5 +366,27 @@
   </div>
 </footer>
 
+<script>
+  // image sliders: arrows + dots, one slide at a time
+  document.querySelectorAll('[data-slider]').forEach(function (el) {
+    var track = el.querySelector('.slider-track');
+    var n = track.children.length, i = 0;
+    var dots = el.querySelector('.slider-dots');
+    for (var k = 0; k < n; k++) {
+      var d = document.createElement('button');
+      d.type = 'button'; d.setAttribute('aria-label', 'Go to image ' + (k + 1));
+      d.onclick = (function (k) { return function () { go(k); }; })(k);
+      dots.appendChild(d);
+    }
+    function go(k) {
+      i = (k + n) % n;
+      track.style.transform = 'translateX(' + (-100 * i) + '%)';
+      [].forEach.call(dots.children, function (d, j) { d.classList.toggle('active', j === i); });
+    }
+    el.querySelector('.prev').onclick = function () { go(i - 1); };
+    el.querySelector('.next').onclick = function () { go(i + 1); };
+    go(0);
+  });
+</script>
 </body>
 </html>
