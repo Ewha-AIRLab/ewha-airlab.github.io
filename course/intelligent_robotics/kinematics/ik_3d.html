@@ -1,0 +1,408 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>IK 3D (KUKA iiwa) — AIR Lab @ Ewha</title>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@300;400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="kinematics.css">
+<style>
+/* IK-only bits */
+.status { display: flex; align-items: center; gap: .5rem; font-size: .8rem; font-weight: 600; padding: .45rem .7rem; border-radius: 8px; margin-bottom: .6rem; }
+.status.ok   { background: #dcfce7; color: #166534; }
+.status.busy { background: #fef3c7; color: #92400e; }
+.status.bad  { background: #fee2e2; color: #991b1b; }
+.status i { width: 8px; height: 8px; border-radius: 50%; background: currentColor; }
+.jbar { display: grid; grid-template-columns: 2.4rem 1fr 3.4rem; align-items: center; gap: .55rem; font-size: .78rem; margin-bottom: .38rem; }
+.jbar .nm { color: #475569; }
+.jbar .val { font-family: 'IBM Plex Mono', monospace; text-align: right; }
+.jbar .track { position: relative; height: 8px; background: #e2e8f0; border-radius: 4px; }
+.jbar .track b { position: absolute; top: -3px; width: 4px; height: 14px; border-radius: 2px; background: #0f172a; transform: translateX(-2px); }
+.jbar .track .mid { position: absolute; left: 50%; top: 0; bottom: 0; width: 1px; background: #cbd5e1; }
+.jbar.warn .track b { background: #dc2626; }
+.jbar.warn .val { color: #dc2626; }
+.row-ctl { display: flex; align-items: center; gap: .6rem; font-size: .8rem; color: #475569; margin-bottom: .6rem; }
+.row-ctl input[type=range] { flex: 1; }
+.row-ctl .v { font-family: 'IBM Plex Mono', monospace; color: #0f172a; min-width: 3.6rem; text-align: right; }
+.toggle { display: inline-flex; align-items: center; gap: .4rem; font-size: .8rem; color: #334155; cursor: pointer; user-select: none; }
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <a href="/">AIR Lab @ Ewha</a>
+  <span class="sep">/</span>
+  <span class="cur">IK 3D (KUKA iiwa)</span>
+  <span style="margin-left:auto;display:flex;gap:.75rem;">
+    <a href="fk_3d.html" style="font-size:.8rem;">FK</a>
+    <span class="cur" style="font-size:.8rem;">IK</span>
+  </span>
+</div>
+
+<div class="page">
+  <h1 class="page-title">[3D] Inverse Kinematics — KUKA LBR iiwa 7 (7R)</h1>
+  <p class="page-desc">
+    Move the target and the robot figures out the joint angles to reach it.
+  </p>
+
+  <div class="main-grid">
+
+    <!-- 3D Visualization -->
+    <div class="viz-col">
+      <div class="card">
+        <div class="card-hd">
+          <div class="card-title">Visualization</div>
+          <div class="btn-row">
+            <label class="opacity-ctl" title="Robot opacity">Robot
+              <input type="range" id="sl-alpha" min="0.1" max="1" step="0.05" value="1" oninput="setRobotAlpha(this.value)">
+              <span id="lbl-alpha">100%</span>
+            </label>
+            <button class="btn" id="btn-frames" onclick="toggleFrames()">Frames</button>
+            <button class="btn" id="btn-labels" onclick="toggleLabels()">Labels</button>
+          </div>
+        </div>
+        <div class="card-body" style="padding:.75rem;">
+          <div class="viz-wrap" id="viz-wrap">
+            <canvas id="viz3d"></canvas>
+          </div>
+          <div class="chain">
+            <span class="chain-lbl">Target gizmo</span>
+            <div class="seg">
+              <button class="btn on" id="btn-move" onclick="setGizmo('translate')">Move</button>
+              <button class="btn" id="btn-rot" onclick="setGizmo('rotate')">Rotate</button>
+            </div>
+            <span class="chain-eq" style="color:#64748b;font-family:inherit;font-size:.76rem;">Drag the arrows / rings on the target frame</span>
+          </div>
+          <p class="hint">Drag empty space to orbit &middot; Scroll to zoom &middot; Right-drag to pan &middot; X <span style="color:#c4392f">■</span> Y <span style="color:#2e8b4f">■</span> Z <span style="color:#2f66c4">■</span></p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Side panel -->
+    <div class="side-panel">
+
+      <!-- Target -->
+      <div class="card">
+        <div class="card-hd"><div class="card-title">Target Pose <span class="card-sub">T<sub>target</sub> in {0}</span></div></div>
+        <div class="card-body">
+          <div id="target-sliders"></div>
+          <div class="preset-row"><div class="btn-row" id="target-presets"></div></div>
+        </div>
+      </div>
+
+      <!-- Solver -->
+      <div class="card">
+        <div class="card-hd">
+          <div class="card-title">Solver <span class="card-sub">damped least squares</span></div>
+          <label class="toggle"><input type="checkbox" id="chk-live" checked onchange="setLive(this.checked)"> Live</label>
+        </div>
+        <div class="card-body">
+          <div class="status busy" id="status"><i></i><span id="status-txt">—</span></div>
+          <div class="info-row"><span class="info-label">Position error |e<sub>p</sub>|</span><span class="info-val" id="e-pos">—</span></div>
+          <div class="info-row"><span class="info-label">Orientation error</span><span class="info-val" id="e-rot">—</span></div>
+          <div class="info-row"><span class="info-label">Iterations</span><span class="info-val" id="iters">0</span></div>
+          <div class="btn-row" style="margin-top:.8rem;">
+            <button class="btn" onclick="manualStep()">1 step</button>
+            <button class="btn" onclick="solveAnimated()">Solve</button>
+            <button class="btn" onclick="resetRobot()" style="margin-left:auto;">Reset robot</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Redundancy -->
+      <div class="card">
+        <div class="card-hd"><div class="card-title">Redundancy <span class="card-sub">7 joints − 6 pose DOF = 1</span></div></div>
+        <div class="card-body">
+          <div class="row-ctl">
+            <span>Elbow swivel</span>
+            <input type="range" id="sl-swivel" min="-160" max="160" step="1" value="0" oninput="setSwivel(this.value)">
+            <span class="v" id="lbl-swivel">0°</span>
+          </div>
+          <p class="note" style="margin-top:0;">
+            Sets a preferred value for q<sub>3</sub> (upper-arm roll). The solver only chases it inside the
+            <b>null space</b> of J, i.e. with joint motions that do not move the tool, so the elbow swings around the
+            shoulder–wrist line while the end-effector stays on target.
+          </p>
+        </div>
+      </div>
+
+      <!-- Joints -->
+      <div class="card">
+        <div class="card-hd"><div class="card-title">Joint Angles <span class="card-sub">solution q, with joint limits</span></div></div>
+        <div class="card-body" id="joint-bars"></div>
+      </div>
+
+    </div><!-- /side-panel -->
+  </div><!-- /main-grid -->
+</div><!-- /page -->
+
+<script src="https://cdn.jsdelivr.net/npm/three@0.128.0/build/three.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/TransformControls.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/environments/RoomEnvironment.js"></script>
+<script src="iiwa.js"></script>
+<script>
+'use strict';
+
+const READY = [0, 30, 0, -60, 0, 90, 0];
+const Q = READY.slice();               // joint angles, degrees
+
+// target pose: position (m) + roll/pitch/yaw (deg, ZYX)
+const TGT = { x: 0.45, y: 0.25, z: 0.40, roll: 180, pitch: 0, yaw: 180 };
+const TARGET_PRESETS = {
+  'Front':   { x: 0.60, y: 0.00, z: 0.30, roll: 180, pitch: 0,   yaw: 180 },
+  'Left':    { x: 0.15, y: 0.55, z: 0.35, roll: 180, pitch: 0,   yaw: 90  },
+  'High':    { x: 0.35, y: -0.2, z: 0.85, roll: 180, pitch: -60, yaw: 180 },
+  'Too far': { x: 1.10, y: 0.00, z: 0.40, roll: 180, pitch: 0,   yaw: 180 },
+};
+const TARGET_RANGE = { x: [-0.9, 0.9, 0.01], y: [-0.9, 0.9, 0.01], z: [0, 1.3, 0.01], roll: [-180, 180, 1], pitch: [-90, 90, 1], yaw: [-180, 180, 1] };
+
+const lambda = 0.05;               // DLS damping
+let live = true;
+let swivel = 0;                        // preferred q3, degrees
+let showFrames = false, showLabels = false, robotAlpha = 1;
+let iters = 0;
+const TOL_P = 1e-4, TOL_O = 1e-3;      // 0.1 mm, ~0.06°
+const MAX_STEP = 0.12;                 // rad, per joint per iteration
+
+// ── small linear-algebra helpers (plain arrays) ──
+function matT(A) { return A[0].map((_, j) => A.map(r => r[j])); }
+function matMul(A, B) { return A.map(r => B[0].map((_, j) => r.reduce((s, v, k) => s + v * B[k][j], 0))); }
+function matVec(A, v) { return A.map(r => r.reduce((s, x, k) => s + x * v[k], 0)); }
+function solve(A, b) {                 // Gaussian elimination with partial pivoting
+  const n = b.length, M = A.map((r, i) => [...r, b[i]]);
+  for (let c = 0; c < n; c++) {
+    let p = c;
+    for (let r = c + 1; r < n; r++) if (Math.abs(M[r][c]) > Math.abs(M[p][c])) p = r;
+    [M[c], M[p]] = [M[p], M[c]];
+    for (let r = c + 1; r < n; r++) {
+      const f = M[r][c] / M[c][c];
+      for (let k = c; k <= n; k++) M[r][k] -= f * M[c][k];
+    }
+  }
+  const x = Array(n).fill(0);
+  for (let r = n - 1; r >= 0; r--) {
+    let s = M[r][n];
+    for (let k = r + 1; k < n; k++) s -= M[r][k] * x[k];
+    x[r] = s / M[r][r];
+  }
+  return x;
+}
+
+// ── target ──
+function targetMatrix() {
+  const m = new THREE.Matrix4().makeRotationFromEuler(new THREE.Euler(TGT.roll * D2R, TGT.pitch * D2R, TGT.yaw * D2R, 'ZYX'));
+  m.setPosition(TGT.x, TGT.y, TGT.z);
+  return m;
+}
+function poseError(Te, Tt) {
+  const c = (m, i) => new THREE.Vector3().setFromMatrixColumn(m, i);
+  const ep = new THREE.Vector3().setFromMatrixPosition(Tt).sub(new THREE.Vector3().setFromMatrixPosition(Te));
+  const eo = new THREE.Vector3();
+  for (let i = 0; i < 3; i++) eo.add(new THREE.Vector3().crossVectors(c(Te, i), c(Tt, i)));
+  eo.multiplyScalar(0.5);
+  // true angle between the two orientations, for display
+  const R = new THREE.Matrix4().extractRotation(Te), Rt = new THREE.Matrix4().extractRotation(Tt);
+  const qa = new THREE.Quaternion().setFromRotationMatrix(R), qb = new THREE.Quaternion().setFromRotationMatrix(Rt);
+  return { e: [ep.x, ep.y, ep.z, eo.x, eo.y, eo.z], pos: ep.length(), ang: qa.angleTo(qb) / D2R };
+}
+
+// ── one damped-least-squares step, with the swivel goal in the null space ──
+function ikStep() {
+  const { T } = computeFK(Q);
+  const { e } = poseError(T[N], targetMatrix());
+  const J = jacobian(T), Jt = matT(J);
+  const A = matMul(J, Jt);
+  for (let i = 0; i < 6; i++) A[i][i] += lambda * lambda;
+  // J# = Jᵀ A⁻¹, built column by column
+  const Ainv = Array.from({ length: 6 }, (_, j) => solve(A, Array.from({ length: 6 }, (_, k) => +(k === j))));
+  const Jpinv = matMul(Jt, matT(Ainv));                       // 7×6
+  const dq = matVec(Jpinv, e);
+  // secondary goal: pull q3 toward the swivel setting
+  const z = Array(N).fill(0);
+  z[2] = 0.15 * (swivel - Q[2]) * D2R;
+  const JpJ = matMul(Jpinv, J);                                // 7×7
+  const Nz = z.map((zi, i) => zi - JpJ[i].reduce((s, v, k) => s + v * z[k], 0));
+  for (let i = 0; i < N; i++) {
+    const step = Math.max(-MAX_STEP, Math.min(MAX_STEP, dq[i] + Nz[i]));
+    Q[i] = Math.max(-JOINT_LIMITS[i], Math.min(JOINT_LIMITS[i], Q[i] + step / D2R));
+  }
+  iters++;
+}
+
+// ── scene extras: target frame + gizmo + error line ──
+const targetObj = new THREE.Group();
+const targetAxes = mkAxes(0.14);
+targetAxes.traverse(o => { if (o.material) { o.material = o.material.clone(); o.material.transparent = true; o.material.opacity = 0.55; } });
+targetObj.add(targetAxes);
+const targetBall = new THREE.Mesh(new THREE.SphereGeometry(0.022, 24, 24), mat(0xf59e0b, { transparent: true, opacity: 0.85, roughness: 0.3 }));
+targetObj.add(targetBall);
+scene.add(targetObj);
+const targetLabel = mkLabel(); scene.add(targetLabel);
+drawLabel(targetLabel, 'target', false, 'rgba(217,119,6,.92)');
+
+const errLine = new THREE.Line(new THREE.BufferGeometry().setFromPoints([new THREE.Vector3(), new THREE.Vector3()]),
+  new THREE.LineDashedMaterial({ color: 0xd97706, dashSize: 0.02, gapSize: 0.012 }));
+scene.add(errLine);
+
+const gizmo = new THREE.TransformControls(camera, renderer.domElement);
+gizmo.setSize(0.75);
+gizmo.attach(targetObj);
+scene.add(gizmo);
+gizmo.addEventListener('dragging-changed', ev => { controls.enabled = !ev.value; });
+gizmo.addEventListener('objectChange', () => {
+  const p = targetObj.position, r = rpyOf(new THREE.Matrix4().makeRotationFromQuaternion(targetObj.quaternion));
+  Object.assign(TGT, { x: p.x, y: p.y, z: p.z, roll: r.roll, pitch: r.pitch, yaw: r.yaw });
+  onTargetChanged(false);
+});
+function setGizmo(mode) {
+  gizmo.setMode(mode);
+  document.getElementById('btn-move').classList.toggle('on', mode === 'translate');
+  document.getElementById('btn-rot').classList.toggle('on', mode === 'rotate');
+}
+
+function syncTargetObj() {
+  const m = targetMatrix();
+  targetObj.position.setFromMatrixPosition(m);
+  targetObj.quaternion.setFromRotationMatrix(m);
+}
+
+// ── UI: target sliders ──
+const TKEYS = ['x', 'y', 'z', 'roll', 'pitch', 'yaw'];
+(function buildTargetUI() {
+  document.getElementById('target-sliders').innerHTML = TKEYS.map(k => {
+    const [mn, mx, st] = TARGET_RANGE[k];
+    return `<div class="sl-line">
+      <span class="nm">${k}</span>
+      <input type="range" id="sl-t-${k}" min="${mn}" max="${mx}" step="${st}" oninput="onTargetSlider('${k}', this)">
+      <input type="number" id="num-t-${k}" min="${mn}" max="${mx}" step="${st}" oninput="onTargetSlider('${k}', this)" onchange="syncTargetUI()">
+      <span class="unit">${k.length > 1 ? '°' : 'm'}</span>
+    </div>`;
+  }).join('');
+  document.getElementById('target-presets').innerHTML =
+    Object.keys(TARGET_PRESETS).map(n => `<button class="btn" onclick="goTarget('${n}')">${n}</button>`).join('') +
+    `<button class="btn" onclick="targetFromRobot()" style="margin-left:auto;" title="Put the target where the tool is now">At tool</button>`;
+
+  document.getElementById('joint-bars').innerHTML = Array.from({ length: N }, (_, i) =>
+    `<div class="jbar" id="jb-${i}"><span class="nm">q<sub>${i + 1}</sub></span>
+      <span class="track"><span class="mid"></span><b id="jb-b-${i}"></b></span><span class="val" id="jb-v-${i}"></span></div>`).join('') +
+    `<p class="note">Bars span each joint's limit (±${JOINT_LIMITS[0]}°, ±${JOINT_LIMITS[1]}°, …). Red = within 10° of a limit.</p>`;
+})();
+
+function syncTargetUI() {
+  for (const k of TKEYS) {
+    const v = TGT[k], isPos = k.length === 1;
+    document.getElementById(`sl-t-${k}`).value = v;
+    const num = document.getElementById(`num-t-${k}`);
+    if (document.activeElement !== num) num.value = isPos ? v.toFixed(2) : Math.round(v);
+  }
+}
+function onTargetSlider(k, el) {
+  const v = parseFloat(el.value);
+  if (isNaN(v)) return;
+  const [mn, mx] = TARGET_RANGE[k];
+  TGT[k] = Math.max(mn, Math.min(mx, v));
+  onTargetChanged(true);
+}
+function onTargetChanged(fromUI) {
+  if (fromUI) syncTargetObj();
+  syncTargetUI();
+  iters = 0;
+  if (live) wake();
+  render();
+}
+
+// smoothly move the target to a preset
+let tTween = null;
+function goTarget(name) {
+  if (tTween) cancelAnimationFrame(tTween);
+  const from = { ...TGT }, to = TARGET_PRESETS[name], t0 = performance.now(), dur = 800;
+  (function step(now) {
+    const t = Math.min(1, (now - t0) / dur), e = t < .5 ? 2 * t * t : 1 - Math.pow(-2 * t + 2, 2) / 2;
+    for (const k of TKEYS) TGT[k] = from[k] + (to[k] - from[k]) * e;
+    onTargetChanged(true);
+    tTween = t < 1 ? requestAnimationFrame(step) : null;
+  })(t0);
+}
+function targetFromRobot() {
+  const { T } = computeFK(Q);
+  const p = new THREE.Vector3().setFromMatrixPosition(T[N]), r = rpyOf(T[N]);
+  Object.assign(TGT, { x: p.x, y: p.y, z: p.z, roll: r.roll, pitch: r.pitch, yaw: r.yaw });
+  onTargetChanged(true);
+}
+
+// ── solver control ──
+let awake = 0;                 // frames left to keep iterating in live mode
+function wake() { awake = 240; }
+function setLive(v) { live = v; if (live) wake(); render(); }
+function setSwivel(v) {
+  swivel = +v;
+  document.getElementById('lbl-swivel').textContent = fmtDeg(swivel);
+  if (live) wake();
+}
+function manualStep() { ikStep(); render(); }
+let solving = 0;
+function solveAnimated() { solving = 400; }
+function resetRobot() {
+  READY.forEach((v, i) => { Q[i] = v; });
+  iters = 0;
+  if (live) wake();
+  render();
+}
+
+frameHooks.push(() => {
+  const converged = () => { const { T } = computeFK(Q); const pe = poseError(T[N], targetMatrix()); return pe.pos < TOL_P && pe.ang < TOL_O / D2R && Math.abs(Q[2] - swivel) < 0.5; };
+  if (live && awake > 0) {
+    for (let k = 0; k < 6; k++) ikStep();
+    awake--;
+    if (converged()) awake = Math.min(awake, 2);
+    render();
+  } else if (solving > 0) {
+    ikStep(); solving--;
+    if (converged()) solving = 0;
+    render();
+  }
+});
+
+// ── render panels + robot ──
+function setRobotAlpha(v) { robotAlpha = +v; document.getElementById('lbl-alpha').textContent = Math.round(robotAlpha * 100) + '%'; render(); }
+function toggleFrames() { showFrames = !showFrames; document.getElementById('btn-frames').classList.toggle('on', showFrames); render(); }
+function toggleLabels() { showLabels = !showLabels; document.getElementById('btn-labels').classList.toggle('on', showLabels); render(); }
+
+
+function render() {
+  const { T } = computeFK(Q);
+  updateRobot(T, { showFrames, showLabels, alpha: robotAlpha });
+
+  const Tt = targetMatrix(), pe = poseError(T[N], Tt);
+  const pEE = new THREE.Vector3().setFromMatrixPosition(T[N]), pT = new THREE.Vector3().setFromMatrixPosition(Tt);
+  errLine.geometry.setFromPoints([pEE, pT]);
+  errLine.computeLineDistances();
+  errLine.visible = pe.pos > 0.003;
+  targetLabel.position.copy(pT).add(new THREE.Vector3(0, 0, -0.22));   // below the target, clear of the gizmo
+
+  document.getElementById('e-pos').textContent = `${(pe.pos * 1000).toFixed(pe.pos < 0.01 ? 2 : 1)} mm`;
+  document.getElementById('e-rot').textContent = `${pe.ang.toFixed(pe.ang < 1 ? 2 : 1)}°`;
+  document.getElementById('iters').textContent = iters;
+
+  const st = document.getElementById('status'), txt = document.getElementById('status-txt');
+  const reached = pe.pos < 1e-3 && pe.ang < 0.5;
+  const running = (live && awake > 0) || solving > 0;
+  st.className = 'status ' + (reached ? 'ok' : running ? 'busy' : 'bad');
+  txt.textContent = reached ? 'Target reached' : running ? 'Solving…' : (pe.pos > 0.05 ? 'Not reached (out of reach or blocked by joint limits)' : 'Not converged yet');
+
+  for (let i = 0; i < N; i++) {
+    const L = JOINT_LIMITS[i];
+    document.getElementById(`jb-b-${i}`).style.left = `${((Q[i] + L) / (2 * L)) * 100}%`;
+    document.getElementById(`jb-v-${i}`).textContent = fmtDeg(Q[i]);
+    document.getElementById(`jb-${i}`).classList.toggle('warn', L - Math.abs(Q[i]) < 10);
+  }
+}
+
+syncTargetObj();
+syncTargetUI();
+wake();
+render();
+</script>
+</body>
+</html>
