@@ -1,0 +1,30 @@
+/* Shared controls for the Intelligent Robotics pages: one-line sliders.
+   .sl-line      name | slider | number box | unit
+   .sl-line.ro   name | slider | read-out value            (no number box)
+   Set --nm on a row (or its container) to widen the name column. */
+.sl-line { display: grid; grid-template-columns: var(--nm, 2.6rem) minmax(0, 1fr) 58px 1rem; align-items: center; gap: .55rem; margin-bottom: .45rem; font-size: .82rem; }
+.sl-line:last-child { margin-bottom: 0; }
+.sl-line.ro { grid-template-columns: var(--nm, 6.5rem) minmax(0, 1fr) var(--val, 4.2rem); }
+.sl-line .nm { color: #475569; font-family: 'IBM Plex Mono', monospace; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.sl-line.ro .nm, .sl-line .nm.txt { font-family: 'IBM Plex Sans', sans-serif; }
+.sl-line .nm i { display: inline-block; width: 9px; height: 9px; border-radius: 3px; margin-right: .35rem; vertical-align: 0; }
+.sl-line input[type=range] { width: 100%; min-width: 0; }
+.sl-line input[type=number] { width: 58px; padding: .2rem .35rem; font-size: .76rem; }
+.sl-line .unit { color: #94a3b8; font-size: .74rem; }
+.sl-line .val { font-family: 'IBM Plex Mono', monospace; font-size: .78rem; color: #0f172a; text-align: right; white-space: nowrap; }
+.sl-sub { font-size: .72rem; font-weight: 600; color: #94a3b8; text-transform: uppercase; letter-spacing: .06em; margin: .2rem 0 .5rem; }
+.sl-sub:not(:first-child) { margin-top: .9rem; }
+
+input[type=range] { -webkit-appearance: none; appearance: none; height: 4px; background: #e2e8f0; border-radius: 2px; outline: none; cursor: pointer; }
+input[type=range]::-webkit-slider-thumb { -webkit-appearance: none; width: 14px; height: 14px; border-radius: 50%; background: #0f172a; cursor: pointer; border: 2px solid white; box-shadow: 0 1px 3px rgba(0,0,0,.25); }
+input[type=range]::-moz-range-thumb { width: 11px; height: 11px; border-radius: 50%; background: #0f172a; cursor: pointer; border: 2px solid white; }
+input[type=range]:disabled { opacity: .45; cursor: not-allowed; }
+input[type=number] { font-family: 'IBM Plex Mono', monospace; border: 1px solid #e2e8f0; border-radius: 6px; text-align: right; background: #f8fafc; color: #0f172a; -moz-appearance: textfield; appearance: textfield; }
+input[type=number]::-webkit-outer-spin-button, input[type=number]::-webkit-inner-spin-button { -webkit-appearance: none; }
+input[type=number]:focus { outline: none; border-color: #94a3b8; background: white; }
+
+/* ── two-column pages: the visualization (left) stays in view, the right panel scrolls ── */
+@media (min-width: 961px) {
+  .main-grid { align-items: start; }
+  .main-grid > :first-child { position: sticky; top: 1rem; }
+}
