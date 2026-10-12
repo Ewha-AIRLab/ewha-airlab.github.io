@@ -82,34 +82,33 @@ input[type=number]:disabled { opacity: .32; cursor: default; }
 .info-label { color: #64748b; font-weight: 500; }
 .info-val { font-family: 'IBM Plex Mono', monospace; text-align: right; }
 
-/* ── Matrices ── */
-.mat-block { background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 10px; padding: .75rem; margin-bottom: .7rem; }
-.mat-block:last-of-type { margin-bottom: 0; }
-.mat-label { font-size: .78rem; font-weight: 600; color: #475569; margin-bottom: .45rem; }
-.mat-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: .3rem; }
-.mat-cell { background: white; border-radius: 4px; padding: .22rem .45rem; text-align: right; font-family: 'IBM Plex Mono', monospace; font-size: .78rem; box-shadow: 0 1px 2px rgba(0,0,0,.05); }
-.mat-note { font-size: .72rem; color: #94a3b8; margin-top: .6rem; line-height: 1.5; }
+/* ── Matrices (same as FK) ── */
+.mat-block { background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 10px; padding: .65rem .75rem; margin-bottom: .6rem; }
+.mat-block:last-child { margin-bottom: 0; }
+.mat-block.cum { border-color: #cbd5e1; }
+.mat-label { font-size: .78rem; font-weight: 600; color: #475569; margin-bottom: .4rem; display: flex; justify-content: space-between; gap: .5rem; }
+.mat-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: .22rem; }
+.mat-cell { border-radius: 4px; padding: .2rem .3rem; text-align: right; font-family: 'IBM Plex Mono', monospace; font-size: .7rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.mat-cell.rot { background: #fef3c7; color: #78350f; }
+.mat-cell.tr  { background: #dbeafe; color: #1e3a8a; }
+.mat-cell.hom { background: #f1f5f9; color: #94a3b8; }
+.mat-legend { display: flex; gap: .8rem; font-size: .72rem; color: #64748b; margin-bottom: .7rem; flex-wrap: wrap; }
+.mat-legend i { display: inline-block; width: 10px; height: 10px; border-radius: 3px; margin-right: .3rem; vertical-align: -1px; }
 
 /* ── Teaching notes ── */
 .note { font-size: .83rem; color: #64748b; margin-bottom: .5rem; line-height: 1.6; }
 .note:last-child { margin-bottom: 0; }
 </style>
+<link rel="stylesheet" href="../ui.css">
 </head>
 <body>
 
-<div class="topbar">
-  <a href="/">AIR Lab @ Ewha</a>
-  <span class="sep">/</span>
-  <span class="cur">2D Mobile Robot</span>
-  <span style="margin-left:auto;display:flex;gap:.75rem;">
-    <span class="cur" style="font-size:.8rem;">2D Mobile Robot</span>
-    <a href="3d.html" style="font-size:.8rem;">3D Robot Arm</a>
-  </span>
-</div>
+<div class="topbar" id="course-nav"></div>
+<script src="../nav.js"></script>
 
 <div class="page">
-  <h1 class="page-title">[2D] Coordinate Frames, Pose, and Transformation</h1>
-  <p class="page-desc">2D mobile robot visualizer. Exploring world, robot, and camera frames; pose representation; local vs. global coordinates; and transform composition.</p>
+  <h1 class="page-title">[2D] Coordinate Frames — Mobile Robot</h1>
+  <p class="page-desc">Move the robot and see how the same point looks from the world, the robot, and its camera.</p>
 
   <div class="btn-row">
     <button id="btn-play"        onclick="togglePlay()">Play</button>
@@ -127,8 +126,8 @@ input[type=number]:disabled { opacity: .32; cursor: default; }
       <div class="card-hd">
         <div class="card-title">Visualization</div>
         <div class="axis-legend">
-          <span class="axis-chip" style="background:#ef4444">X</span>
-          <span class="axis-chip" style="background:#22c55e">Y</span>
+          <span class="axis-chip" style="background:#c4392f">X</span>
+          <span class="axis-chip" style="background:#2e8b4f">Y</span>
         </div>
       </div>
       <div class="card-body" style="padding:.75rem;">
@@ -143,26 +142,23 @@ input[type=number]:disabled { opacity: .32; cursor: default; }
       <div class="card">
         <div class="card-hd"><div class="card-title">Controls</div></div>
         <div class="card-body">
-          <div class="sl-group">
-            <div class="sl-label"><span>Robot x (m)</span><span class="sl-val" id="lbl-x">2.00</span></div>
-            <div class="sl-row">
-              <input type="range"  id="sl-x"    min="-0.5" max="6.0"  step="0.05" value="2.0"  oninput="onSlider('x',this)">
-              <input type="number" id="num-x"   min="-0.5" max="6.0"  step="0.05" value="2.00" oninput="onNumber('x',this)">
-            </div>
+          <div class="sl-line" style="--nm:4.2rem">
+            <span class="nm">Robot x</span>
+            <input type="range"  id="sl-x"    min="-0.5" max="6.0"  step="0.05" value="2.0"  oninput="onSlider('x',this)">
+            <input type="number" id="num-x"   min="-0.5" max="6.0"  step="0.05" value="2.00" oninput="onNumber('x',this)">
+            <span class="unit">m</span>
           </div>
-          <div class="sl-group">
-            <div class="sl-label"><span>Robot y (m)</span><span class="sl-val" id="lbl-y">1.50</span></div>
-            <div class="sl-row">
-              <input type="range"  id="sl-y"    min="-0.5" max="4.5"  step="0.05" value="1.5"  oninput="onSlider('y',this)">
-              <input type="number" id="num-y"   min="-0.5" max="4.5"  step="0.05" value="1.50" oninput="onNumber('y',this)">
-            </div>
+          <div class="sl-line" style="--nm:4.2rem">
+            <span class="nm">Robot y</span>
+            <input type="range"  id="sl-y"    min="-0.5" max="4.5"  step="0.05" value="1.5"  oninput="onSlider('y',this)">
+            <input type="number" id="num-y"   min="-0.5" max="4.5"  step="0.05" value="1.50" oninput="onNumber('y',this)">
+            <span class="unit">m</span>
           </div>
-          <div class="sl-group">
-            <div class="sl-label"><span>Robot &theta; (deg)</span><span class="sl-val" id="lbl-theta">30°</span></div>
-            <div class="sl-row">
-              <input type="range"  id="sl-theta"  min="-180" max="180" step="1" value="30" oninput="onSlider('theta',this)">
-              <input type="number" id="num-theta" min="-180" max="180" step="1" value="30"  oninput="onNumber('theta',this)">
-            </div>
+          <div class="sl-line" style="--nm:4.2rem">
+            <span class="nm">Robot θ</span>
+            <input type="range"  id="sl-theta"  min="-180" max="180" step="1" value="30" oninput="onSlider('theta',this)">
+            <input type="number" id="num-theta" min="-180" max="180" step="1" value="30"  oninput="onNumber('theta',this)">
+            <span class="unit">°</span>
           </div>
           <div class="sl-divider"></div>
           <div class="frame-sel-label">Point P reference frame</div>
@@ -171,19 +167,17 @@ input[type=number]:disabled { opacity: .32; cursor: default; }
             <button class="frame-btn"            id="frame-robot"  onclick="setRefFrame('robot')">Robot</button>
             <button class="frame-btn"            id="frame-camera" onclick="setRefFrame('camera')">Camera</button>
           </div>
-          <div class="sl-group">
-            <div class="sl-label"><span>Point P x (<span id="px-frame-lbl">world</span>)</span><span class="sl-val" id="lbl-px">4.60</span></div>
-            <div class="sl-row">
-              <input type="range"  id="sl-px"   min="-6" max="8" step="0.05" value="4.6"  oninput="onSlider('px',this)">
-              <input type="number" id="num-px"  min="-6" max="8" step="0.05" value="4.60" oninput="onNumber('px',this)">
-            </div>
+          <div class="sl-line" style="--nm:4.2rem">
+            <span class="nm">P x</span>
+            <input type="range"  id="sl-px"   min="-6" max="8" step="0.05" value="4.6"  oninput="onSlider('px',this)">
+            <input type="number" id="num-px"  min="-6" max="8" step="0.05" value="4.60" oninput="onNumber('px',this)">
+            <span class="unit">m</span>
           </div>
-          <div class="sl-group">
-            <div class="sl-label"><span>Point P y (<span id="py-frame-lbl">world</span>)</span><span class="sl-val" id="lbl-py">2.50</span></div>
-            <div class="sl-row">
-              <input type="range"  id="sl-py"   min="-6" max="8" step="0.05" value="2.5"  oninput="onSlider('py',this)">
-              <input type="number" id="num-py"  min="-6" max="8" step="0.05" value="2.50" oninput="onNumber('py',this)">
-            </div>
+          <div class="sl-line" style="--nm:4.2rem">
+            <span class="nm">P y</span>
+            <input type="range"  id="sl-py"   min="-6" max="8" step="0.05" value="2.5"  oninput="onSlider('py',this)">
+            <input type="number" id="num-py"  min="-6" max="8" step="0.05" value="2.50" oninput="onNumber('py',this)">
+            <span class="unit">m</span>
           </div>
         </div>
       </div>
@@ -205,13 +199,17 @@ input[type=number]:disabled { opacity: .32; cursor: default; }
 
       <!-- Matrices -->
       <div class="card">
-        <div class="card-hd"><div class="card-title">Transformation matrices</div></div>
+        <div class="card-hd"><div class="card-title">Transformation Matrices</div></div>
         <div class="card-body">
-          <div class="mat-block"><div class="mat-label">T_world_robot</div><div class="mat-grid" id="mat-wr"></div></div>
+          <div class="mat-legend">
+            <span><i style="background:#fef3c7"></i>rotation R</span>
+            <span><i style="background:#dbeafe"></i>translation p</span>
+            <span><i style="background:#f1f5f9"></i>homogeneous row</span>
+          </div>
+          <div class="mat-block"><div class="mat-label"><span>T<sub>world,robot</sub></span></div><div class="mat-grid" id="mat-wr"></div></div>
           <div id="cam-mat">
-            <div class="mat-block"><div class="mat-label">T_robot_camera</div><div class="mat-grid" id="mat-rc"></div></div>
-            <div class="mat-block"><div class="mat-label">T_world_camera</div><div class="mat-grid" id="mat-wc"></div></div>
-            <p class="mat-note">In 2D homogeneous coordinates, T_world_camera = T_world_robot &middot; T_robot_camera.</p>
+            <div class="mat-block"><div class="mat-label"><span>T<sub>robot,camera</sub></span></div><div class="mat-grid" id="mat-rc"></div></div>
+            <div class="mat-block cum"><div class="mat-label"><span>T<sub>world,camera</sub> = T<sub>world,robot</sub>·T<sub>robot,camera</sub></span></div><div class="mat-grid" id="mat-wc"></div></div>
           </div>
         </div>
       </div>
@@ -236,12 +234,13 @@ input[type=number]:disabled { opacity: .32; cursor: default; }
   </div><!-- /main-grid -->
 </div><!-- /page -->
 
+<script src="../style2d.js"></script>
 <script>
 'use strict';
 
 // ── Constants ──
 const W = 900, H = 560, SCALE = 80, OX = 170, OY = 440;
-const CAM_LOCAL = { x: 0.55, y: 0.2, theta: deg2rad(20) };
+const CAM_LOCAL = { x: 0.42, y: 0, theta: 0 };   // mounted on the front bumper, looking forward
 
 // ── State ──
 const S = {
@@ -291,74 +290,31 @@ function w2c(p)  { return { x: OX + p.x * SCALE, y: OY - p.y * SCALE }; }
 function cv(v)   { return { x: v.x * SCALE, y: -v.y * SCALE }; }
 function fmt(n)  { return (n >= 0 ? '' : '\u2212') + Math.abs(n).toFixed(2); }
 
-// ── SVG builders ──
-function svgDefs() {
-  return `<defs>
-    <marker id="ar" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto"><path d="M0,0 L8,4 L0,8 z" fill="#dc2626"/></marker>
-    <marker id="ag" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto"><path d="M0,0 L8,4 L0,8 z" fill="#16a34a"/></marker>
-    <marker id="ab" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto"><path d="M0,0 L8,4 L0,8 z" fill="#2563eb"/></marker>
-  </defs>`;
-}
-
+// ── SVG builders (shared 2D style: style2d.js) ──
 function svgGrid() {
   const tl = w2c({ x: -1, y: 5 }), br = w2c({ x: 8, y: -1 });
-  let s = `<g><rect x="${tl.x}" y="${tl.y}" width="${br.x - tl.x}" height="${br.y - tl.y}" fill="#f8fafc"/>`;
+  let s = `<g><rect x="${tl.x}" y="${tl.y}" width="${br.x - tl.x}" height="${br.y - tl.y}" fill="${P2.bg}"/>`;
   for (let gx = -1; gx <= 8; gx++) {
     const a = w2c({ x: gx, y: -1 }), b = w2c({ x: gx, y: 5 });
-    s += `<line x1="${a.x}" y1="${a.y}" x2="${b.x}" y2="${b.y}" stroke="#e5e7eb" stroke-width="1"/>`;
+    s += `<line x1="${a.x}" y1="${a.y}" x2="${b.x}" y2="${b.y}" stroke="${P2.grid}" stroke-width="1"/>`;
   }
   for (let gy = -1; gy <= 5; gy++) {
     const a = w2c({ x: -1, y: gy }), b = w2c({ x: 8, y: gy });
-    s += `<line x1="${a.x}" y1="${a.y}" x2="${b.x}" y2="${b.y}" stroke="#e5e7eb" stroke-width="1"/>`;
+    s += `<line x1="${a.x}" y1="${a.y}" x2="${b.x}" y2="${b.y}" stroke="${P2.grid}" stroke-width="1"/>`;
   }
   return s + '</g>';
 }
 
-function svgFrame(pose, label, axisLen, dashed) {
-  axisLen = axisLen || 0.9;
-  const o  = w2c({ x: pose.x, y: pose.y });
-  const xa = cv(applyRot(pose.theta, { x: axisLen, y: 0 }));
-  const ya = cv(applyRot(pose.theta, { x: 0, y: axisLen }));
-  const d  = dashed ? 'stroke-dasharray="6 4"' : '';
-  return `<g>
-    <circle cx="${o.x}" cy="${o.y}" r="5" fill="black"/>
-    <line x1="${o.x}" y1="${o.y}" x2="${o.x+xa.x}" y2="${o.y+xa.y}" stroke="#dc2626" stroke-width="3" ${d} marker-end="url(#ar)"/>
-    <line x1="${o.x}" y1="${o.y}" x2="${o.x+ya.x}" y2="${o.y+ya.y}" stroke="#16a34a" stroke-width="3" ${d} marker-end="url(#ag)"/>
-    <text x="${o.x+8}" y="${o.y+15}" font-size="15" font-weight="600">${label}</text>
-    <text x="${o.x+xa.x+6}" y="${o.y+xa.y+4}" font-size="13" fill="#dc2626">x</text>
-    <text x="${o.x+ya.x+6}" y="${o.y+ya.y+4}" font-size="13" fill="#16a34a">y</text>
-  </g>`;
+function svgFrame(pose, label, axisLen, dashed, labelAt) {
+  return svg2d(frameOps(w2c(pose), pose.theta, (axisLen || 0.9) * SCALE,
+    { label, labelAt, axisLabels: true, size: 14, width: 3, dash: dashed ? [6, 4] : null }));
 }
-
-function svgRobot(pose) {
-  const o = w2c({ x: pose.x, y: pose.y });
-  const deg = rad2deg(pose.theta);
-  return `<g transform="translate(${o.x},${o.y}) rotate(${-deg})">
-    <rect x="-34" y="-22" width="68" height="44" rx="14" fill="#cbd5e1" stroke="#475569" stroke-width="2"/>
-    <circle cx="26" cy="0" r="4" fill="#0f172a"/>
-    <circle cx="-20" cy="-24" r="7" fill="#334155"/>
-    <circle cx="20"  cy="-24" r="7" fill="#334155"/>
-    <circle cx="-20" cy="24"  r="7" fill="#334155"/>
-    <circle cx="20"  cy="24"  r="7" fill="#334155"/>
-  </g>`;
-}
-
-function svgCamera(pose) {
-  const o = w2c({ x: pose.x, y: pose.y });
-  const deg = rad2deg(pose.theta);
-  return `<g transform="translate(${o.x},${o.y}) rotate(${-deg})">
-    <rect x="-12" y="-8" width="24" height="16" rx="4" fill="#dbeafe" stroke="#2563eb" stroke-width="2"/>
-    <circle cx="4" cy="0" r="4" fill="#60a5fa" stroke="#1d4ed8" stroke-width="1.5"/>
-    <line x1="12" y1="0" x2="26" y2="0" stroke="#2563eb" stroke-width="2" stroke-dasharray="4 3"/>
-  </g>`;
-}
+const svgRobot  = pose => svg2d(mobileOps(w2c(pose), pose.theta, 34));
+const svgCamera = pose => svg2d(cameraOps(w2c(pose), pose.theta, 12));
 
 function svgPoint(p, color, label) {
   const c = w2c(p);
-  return `<g>
-    <circle cx="${c.x}" cy="${c.y}" r="7" fill="${color}"/>
-    <text x="${c.x+10}" y="${c.y-10}" font-size="14" font-weight="600" fill="${color}">${label}</text>
-  </g>`;
+  return svg2d([op.circle(c, 7, color, '#ffffff', 2), op.text({ x: c.x + 11, y: c.y - 10 }, label, color, 14)]);
 }
 
 function svgLegend() {
@@ -390,17 +346,15 @@ function render() {
   const camSvg = S.showCamera
     ? svgCamera(cameraPose) +
       svgFrame(cameraPose, 'camera', 0.75, true) +
-      `<line x1="${ra.x}" y1="${ra.y}" x2="${ca.x}" y2="${ca.y}"
-         stroke="#2563eb" stroke-width="2" stroke-dasharray="6 4" marker-end="url(#ab)"/>`
+      svg2d(arrowOps(ra, Math.atan2(-(ca.y - ra.y), ca.x - ra.x), Math.hypot(ca.x - ra.x, ca.y - ra.y), P2.z, { width: 2, dash: [6, 4], head: 9 }))
     : '';
 
   document.getElementById('viz').innerHTML =
-    svgDefs() +
     svgGrid() +
     svgRobot(robotPose) +
     svgFrame({ x: 0, y: 0, theta: 0 }, 'world', 1.1) +
-    svgFrame(robotPose, 'robot', 1.0) +
-    svgPoint(pWorld, '#7c3aed', 'point P') +
+    svgFrame(robotPose, 'robot', 1.0, false, { dx: 0, dy: 50 }) +   // name below the robot body
+    svgPoint(pWorld, P2.point, 'point P') +
     camSvg +
     svgLegend();
 
@@ -432,15 +386,8 @@ function render() {
   document.getElementById('num-py').value    = pFrame.y.toFixed(2);
 
   // Sync slider labels
-  document.getElementById('lbl-x').textContent     = fmt(S.x);
-  document.getElementById('lbl-y').textContent     = fmt(S.y);
-  document.getElementById('lbl-theta').textContent = `${S.thetaDeg.toFixed(0)}°`;
-  document.getElementById('lbl-px').textContent    = fmt(pFrame.x);
-  document.getElementById('lbl-py').textContent    = fmt(pFrame.y);
 
   // Update Point P slider frame labels
-  document.getElementById('px-frame-lbl').textContent = S.refFrame;
-  document.getElementById('py-frame-lbl').textContent = S.refFrame;
 
   // Slider + number disabled state
   const posLock   = S.mode === 'rotation' || S.isPlaying;
@@ -498,7 +445,7 @@ function render() {
 
 function renderMat(id, rows) {
   document.getElementById(id).innerHTML = rows
-    .map(row => row.map(v => `<div class="mat-cell">${Math.abs(v) < 1e-9 ? '0.00' : v.toFixed(2)}</div>`).join(''))
+    .map((row, r) => row.map((v, c) => `<div class="mat-cell ${r === 2 ? 'hom' : c === 2 ? 'tr' : 'rot'}">${(Math.abs(v) < 5e-4 ? 0 : v) < 0 ? '\u2212' : ''}${Math.abs(Math.abs(v) < 5e-4 ? 0 : v).toFixed(3)}</div>`).join(''))
     .join('');
 }
 

@@ -49,6 +49,10 @@ renderer.toneMapping = THREE.ACESFilmicToneMapping;
 renderer.toneMappingExposure = 0.88;
 renderer.shadowMap.enabled = true;
 renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+// See-through robot parts are blended in a fixed order (the order they were added). With the
+// default per-frame depth sort, overlapping translucent parts swap order as the arm moves and
+// the overlap visibly flickers. Opaque objects are still drawn first, so depth stays correct.
+renderer.sortObjects = false;
 
 const scene = new THREE.Scene();
 scene.background = null;   // CSS gradient shows through

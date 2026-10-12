@@ -59,20 +59,31 @@ input[type=number]:focus { outline: none; border-color: #94a3b8; background: whi
 .info-label { color: #64748b; font-weight: 500; }
 .info-val { font-family: 'IBM Plex Mono', monospace; text-align: right; }
 
-/* ── Equations ── */
-.eq-block { background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 10px; padding: .75rem 1rem; margin-bottom: .7rem; }
-.eq-block:last-child { margin-bottom: 0; }
-.eq-label { font-size: .75rem; font-weight: 600; color: #475569; margin-bottom: .45rem; }
-.eq-line { font-family: 'IBM Plex Mono', monospace; font-size: .72rem; color: #1e293b; line-height: 1.7; }
-.eq-line span { color: #7c3aed; }
+/* ── Buttons (same as FK 3D) ── */
+.btn { font-family: inherit; font-size: .76rem; font-weight: 500; border: 1px solid #e2e8f0; background: white; color: #334155; border-radius: 8px; padding: .3rem .65rem; cursor: pointer; white-space: nowrap; }
+.btn:hover { border-color: #94a3b8; background: #f8fafc; }
+.btn.on { background: #0f172a; border-color: #0f172a; color: white; }
+.btn-row { display: flex; flex-wrap: wrap; gap: .4rem; align-items: center; }
+.seg { display: inline-flex; border: 1px solid #e2e8f0; border-radius: 8px; overflow: hidden; }
+.seg .btn { border: none; border-radius: 0; }
+.seg .btn + .btn { border-left: 1px solid #e2e8f0; }
+.preset-row { margin-top: 1rem; padding-top: .85rem; border-top: 1px solid #f1f5f9; }
+.card-sub { font-size: .75rem; color: #94a3b8; font-weight: 400; margin-left: .35rem; }
 
-/* ── Matrices ── */
-.mat-block { background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 10px; padding: .65rem .85rem; margin-bottom: .7rem; }
-.mat-block:last-of-type { margin-bottom: 0; }
-.mat-label { font-size: .75rem; font-weight: 600; color: #475569; margin-bottom: .4rem; }
+/* ── Matrices (same as FK 3D) ── */
+.mat-block { background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 10px; padding: .65rem .75rem; margin-bottom: .6rem; transition: border-color .15s, background .15s; }
+.mat-block:last-child { margin-bottom: 0; }
+.mat-block.hl { border-color: #f59e0b; background: #fffbeb; }
+.mat-block.cum { border-color: #cbd5e1; }
+.mat-label { font-size: .78rem; font-weight: 600; color: #475569; margin-bottom: .4rem; display: flex; justify-content: space-between; gap: .5rem; }
+.mat-label .sub { font-weight: 400; color: #94a3b8; font-family: 'IBM Plex Mono', monospace; font-size: .7rem; }
 .mat-grid3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: .22rem; }
-.mat-cell { background: white; border-radius: 4px; padding: .18rem .28rem; text-align: center; font-family: 'IBM Plex Mono', monospace; font-size: .68rem; box-shadow: 0 1px 2px rgba(0,0,0,.05); color: #1e293b; }
-.mat-cell.hi { color: #7c3aed; }
+.mat-cell { border-radius: 4px; padding: .2rem .3rem; text-align: right; font-family: 'IBM Plex Mono', monospace; font-size: .7rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.mat-cell.rot { background: #fef3c7; color: #78350f; }
+.mat-cell.tr  { background: #dbeafe; color: #1e3a8a; }
+.mat-cell.hom { background: #f1f5f9; color: #94a3b8; }
+.mat-legend { display: flex; gap: .8rem; font-size: .72rem; color: #64748b; margin-bottom: .7rem; flex-wrap: wrap; }
+.mat-legend i { display: inline-block; width: 10px; height: 10px; border-radius: 3px; margin-right: .3rem; vertical-align: -1px; }
 
 /* ── Mobile ── */
 @media (max-width: 640px) {
@@ -85,24 +96,17 @@ input[type=number]:focus { outline: none; border-color: #94a3b8; background: whi
   input[type=number] { width: 56px; font-size: .75rem; }
 }
 </style>
+<link rel="stylesheet" href="../ui.css">
 </head>
 <body>
 
-<div class="topbar">
-  <a href="/">AIR Lab @ Ewha</a>
-  <span class="sep">/</span>
-  <span class="cur">FK 2D</span>
-  <span style="margin-left:auto;display:flex;gap:.75rem;">
-    <span class="cur" style="font-size:.8rem;">FK 2D</span>
-    <a href="fk_3d.html" style="font-size:.8rem;">FK 3D (iiwa)</a>
-  </span>
-</div>
+<div class="topbar" id="course-nav"></div>
+<script src="../nav.js"></script>
 
 <div class="page">
-  <h1 class="page-title">[2D] Forward Kinematics</h1>
+  <h1 class="page-title">[2D] Forward Kinematics — 3R Arm</h1>
   <p class="page-desc">
-    2D planar 3-DOF robot arm (L<sub>1</sub>=1.5, L<sub>2</sub>=1.2, L<sub>3</sub>=0.8 m).
-    Set joint angles (q<sub>1</sub>, q<sub>2</sub>, q<sub>3</sub>) to compute the end-effector pose.
+    Set the joint angles and see where the robot's hand ends up.
   </p>
 
   <div class="main-grid">
@@ -123,92 +127,53 @@ input[type=number]:focus { outline: none; border-color: #94a3b8; background: whi
     <!-- Side panel -->
     <div class="side-panel">
 
+      <!-- Joint Values -->
       <div class="card">
-        <div class="card-hd"><div class="card-title">Joint Angles</div></div>
+        <div class="card-hd"><div class="card-title">Joint Values <span class="card-sub">θ<sub>i</sub> = q<sub>i</sub></span></div></div>
         <div class="card-body">
-          <div class="sl-group">
-            <div class="sl-label"><span class="sl-name">q<sub>1</sub> — base</span><span class="sl-val" id="lbl-fk-q1">30°</span></div>
-            <div class="sl-row">
-              <input type="range"  id="fk-sl-q1"  min="-180" max="180" step="1" value="30"  oninput="fkOnSlider(0,this)">
-              <input type="number" id="fk-num-q1" min="-180" max="180" step="1" value="30"  oninput="fkOnNumber(0,this)">
-            </div>
+          <div class="sl-line">
+            <span class="nm">q₁</span>
+            <input type="range"  id="fk-sl-q1"  min="-180" max="180" step="1" value="30"  oninput="fkOnSlider(0,this)">
+            <input type="number" id="fk-num-q1" min="-180" max="180" step="1" value="30"  oninput="fkOnNumber(0,this)" onchange="fkUpdate()">
+            <span class="unit">°</span>
           </div>
-          <div class="sl-group">
-            <div class="sl-label"><span class="sl-name">q<sub>2</sub> — elbow</span><span class="sl-val" id="lbl-fk-q2">−40°</span></div>
-            <div class="sl-row">
-              <input type="range"  id="fk-sl-q2"  min="-150" max="150" step="1" value="-40"  oninput="fkOnSlider(1,this)">
-              <input type="number" id="fk-num-q2" min="-150" max="150" step="1" value="-40"  oninput="fkOnNumber(1,this)">
-            </div>
+          <div class="sl-line">
+            <span class="nm">q₂</span>
+            <input type="range"  id="fk-sl-q2"  min="-150" max="150" step="1" value="-40"  oninput="fkOnSlider(1,this)">
+            <input type="number" id="fk-num-q2" min="-150" max="150" step="1" value="-40"  oninput="fkOnNumber(1,this)" onchange="fkUpdate()">
+            <span class="unit">°</span>
           </div>
-          <div class="sl-group">
-            <div class="sl-label"><span class="sl-name">q<sub>3</sub> — wrist</span><span class="sl-val" id="lbl-fk-q3">20°</span></div>
-            <div class="sl-row">
-              <input type="range"  id="fk-sl-q3"  min="-150" max="150" step="1" value="20"  oninput="fkOnSlider(2,this)">
-              <input type="number" id="fk-num-q3" min="-150" max="150" step="1" value="20"  oninput="fkOnNumber(2,this)">
-            </div>
+          <div class="sl-line">
+            <span class="nm">q₃</span>
+            <input type="range"  id="fk-sl-q3"  min="-150" max="150" step="1" value="20"  oninput="fkOnSlider(2,this)">
+            <input type="number" id="fk-num-q3" min="-150" max="150" step="1" value="20"  oninput="fkOnNumber(2,this)" onchange="fkUpdate()">
+            <span class="unit">°</span>
           </div>
+          <div class="preset-row"><div class="btn-row" id="presets"></div></div>
         </div>
       </div>
 
+      <!-- End-Effector Pose -->
       <div class="card">
-        <div class="card-hd"><div class="card-title">End-Effector Pose</div></div>
+        <div class="card-hd"><div class="card-title">End-Effector Pose <span class="card-sub">frame {3} in {0}</span></div></div>
         <div class="card-body">
-          <div class="info-row">
-            <span class="info-label">(x<sub>ee</sub>, y<sub>ee</sub>, φ)</span>
-            <span class="info-val" id="fk-ee-pose">—</span>
-          </div>
-        </div>
-      </div>
-
-      <div class="card">
-        <div class="card-hd"><div class="card-title">FK Equations</div></div>
-        <div class="card-body">
-
-          <div class="eq-block">
-            <div class="eq-label">Transforms (3×3 homogeneous)</div>
-            <div class="eq-line">T<sub>01</sub> = Rz(q₁) · Trans(<span>L₁</span>, 0)</div>
-            <div class="eq-line">T<sub>12</sub> = Rz(q₂) · Trans(<span>L₂</span>, 0)</div>
-            <div class="eq-line">T<sub>23</sub> = Rz(q₃) · Trans(<span>L₃</span>, 0)</div>
-          </div>
-
-          <div class="mat-block">
-            <div class="mat-label">T<sub>i</sub> = Rz(qᵢ) · Trans(Lᵢ, 0)</div>
-            <div class="mat-grid3">
-              <div class="mat-cell hi">cᵢ</div><div class="mat-cell hi">−sᵢ</div><div class="mat-cell hi">Lᵢcᵢ</div>
-              <div class="mat-cell hi">sᵢ</div><div class="mat-cell hi"> cᵢ</div><div class="mat-cell hi">Lᵢsᵢ</div>
-              <div class="mat-cell">0</div><div class="mat-cell">0</div><div class="mat-cell">1</div>
-            </div>
-          </div>
-
-          <div class="eq-block">
-            <div class="eq-label">End-effector pose</div>
-            <div class="eq-line">p<sub>ee</sub> = T<sub>01</sub>·T<sub>12</sub>·T<sub>23</sub> · [0, 0, 1]<sup>T</sup></div>
-            <div class="eq-line">φ &nbsp;= q₁ + q₂ + q₃</div>
-          </div>
-
+          <div class="info-row"><span class="info-label">Position (x, y)</span><span class="info-val" id="ee-xy">—</span></div>
+          <div class="info-row"><span class="info-label">Orientation φ</span><span class="info-val" id="ee-phi">—</span></div>
         </div>
       </div>
 
       <!-- Transformation Matrices -->
       <div class="card">
-        <div class="card-hd"><div class="card-title">Transformation Matrices</div></div>
+        <div class="card-hd">
+          <div class="card-title">Transformation Matrices</div>
+        </div>
         <div class="card-body">
-          <div class="mat-block">
-            <div class="mat-label">T<sub>01</sub> = Rz(q<sub>1</sub>) · Trans(L<sub>1</sub>, 0)</div>
-            <div class="mat-grid3" id="mat-t01"></div>
+          <div class="mat-legend">
+            <span><i style="background:#fef3c7"></i>rotation R</span>
+            <span><i style="background:#dbeafe"></i>translation p</span>
+            <span><i style="background:#f1f5f9"></i>homogeneous row</span>
           </div>
-          <div class="mat-block">
-            <div class="mat-label">T<sub>12</sub> = Rz(q<sub>2</sub>) · Trans(L<sub>2</sub>, 0)</div>
-            <div class="mat-grid3" id="mat-t12"></div>
-          </div>
-          <div class="mat-block">
-            <div class="mat-label">T<sub>23</sub> = Rz(q<sub>3</sub>) · Trans(L<sub>3</sub>, 0)</div>
-            <div class="mat-grid3" id="mat-t23"></div>
-          </div>
-          <div class="mat-block">
-            <div class="mat-label">T<sub>world,ee</sub> = T<sub>01</sub>·T<sub>12</sub>·T<sub>23</sub></div>
-            <div class="mat-grid3" id="mat-tee"></div>
-          </div>
+          <div id="mats"></div>
         </div>
       </div>
 
@@ -216,6 +181,7 @@ input[type=number]:focus { outline: none; border-color: #94a3b8; background: whi
   </div><!-- /main-grid -->
 </div><!-- /page -->
 
+<script src="../style2d.js"></script>
 <script>
 'use strict';
 
@@ -238,13 +204,15 @@ let W = 0, H = 0, CX = 0, CY = 0, SCALE = 0;
 function onResize() {
   W = vizWrap.clientWidth;
   H = vizWrap.clientHeight;
-  cvs.width  = W;
-  cvs.height = H;
+  const dpr = Math.min(window.devicePixelRatio || 1, 2);
+  cvs.width  = W * dpr;
+  cvs.height = H * dpr;
   cvs.style.width  = W + 'px';
   cvs.style.height = H + 'px';
-  SCALE = Math.min(W, H) / 7.5;
-  CX = W * 0.38;
-  CY = H * 0.62;
+  ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+  SCALE = Math.min(W, H) * 0.46 / REACH_MAX;   // same framing as the C-space workspace view
+  CX = W * 0.5;     // base in the middle: the reach circle is symmetric around it
+  CY = H * 0.5;
   draw();
 }
 new ResizeObserver(onResize).observe(vizWrap);
@@ -268,10 +236,18 @@ function mat3Mul(A, B) {
         R[r*3+col] += A[r*3+k] * B[k*3+col];
   return R;
 }
+const SUB = ['₀', '₁', '₂', '₃'];
+const fmtN = (v, dp = 3) => Math.abs(v) < 0.5 * 10 ** -dp ? (0).toFixed(dp) : (v < 0 ? '\u2212' : '') + Math.abs(v).toFixed(dp);
+const fmtDeg = v => `${Math.round(v) < 0 ? '\u2212' : ''}${Math.abs(Math.round(v))}\u00b0`;
+let HL = -1;
+
+// 3×3 matrix cells, coloured like FK 3D: rotation (top-left 2×2), translation (top-right), homogeneous row
 function renderMat3(id, m) {
-  const fmt = v => Math.abs(v) < 1e-9 ? '0.00' : ((v >= 0 ? '' : '\u2212') + Math.abs(v).toFixed(2));
-  document.getElementById(id).innerHTML =
-    m.map(v => `<div class="mat-cell">${fmt(v)}</div>`).join('');
+  const vals = m.map(v => fmtN(v));
+  document.getElementById(id).innerHTML = vals.map((v, k) => {
+    const r = Math.floor(k / 3), c = k % 3, cls = r === 2 ? 'hom' : c === 2 ? 'tr' : 'rot';
+    return `<div class="mat-cell ${cls}" title="${v}">${v}</div>`;
+  }).join('');
 }
 
 // ── FK math ──
@@ -286,154 +262,122 @@ function fkPoses(q1, q2, q3) {
   return [p0, p1, p2, p3];
 }
 
-// ── Drawing ──
+// ── Drawing (shared 2D style: style2d.js) ──
+// background in the C-space workspace style: mint reach area, dot grid, faint axes, 1 m scale bar
 function drawGrid() {
-  ctx.save();
-  ctx.strokeStyle = '#e2e8f0';
-  ctx.lineWidth = 1;
-  const range = 5;
-  for (let i = -range; i <= range; i++) {
-    const [x0, y0] = w2c(i, -range); const [x1, y1] = w2c(i,  range);
-    ctx.beginPath(); ctx.moveTo(x0, y0); ctx.lineTo(x1, y1); ctx.stroke();
-    const [x2, y2] = w2c(-range, i);  const [x3, y3] = w2c( range, i);
-    ctx.beginPath(); ctx.moveTo(x2, y2); ctx.lineTo(x3, y3); ctx.stroke();
-  }
+  const step = SCALE * 0.5;
+  ctx.fillStyle = 'rgba(100,116,139,.28)';
+  for (let gx = CX % step; gx < W; gx += step) for (let gy = CY % step; gy < H; gy += step) ctx.fillRect(gx - 0.75, gy - 0.75, 1.5, 1.5);
+  ctx.strokeStyle = 'rgba(100,116,139,.22)'; ctx.lineWidth = 1;
+  ctx.beginPath(); ctx.moveTo(0, CY); ctx.lineTo(W, CY); ctx.moveTo(CX, 0); ctx.lineTo(CX, H); ctx.stroke();
+  ctx.fillStyle = '#94a3b8'; ctx.font = '500 11px IBM Plex Mono, monospace';
+  ctx.fillText('x', W - 14, CY - 7); ctx.fillText('y', CX + 7, 14);
   ctx.strokeStyle = '#94a3b8'; ctx.lineWidth = 1.5;
-  const [ax0, ay0] = w2c(-range, 0); const [ax1, ay1] = w2c(range, 0);
-  ctx.beginPath(); ctx.moveTo(ax0, ay0); ctx.lineTo(ax1, ay1); ctx.stroke();
-  const [bx0, by0] = w2c(0, -range); const [bx1, by1] = w2c(0, range);
-  ctx.beginPath(); ctx.moveTo(bx0, by0); ctx.lineTo(bx1, by1); ctx.stroke();
-  ctx.fillStyle = '#94a3b8'; ctx.font = `${Math.max(10,SCALE*.18)}px IBM Plex Sans, sans-serif`; ctx.textAlign = 'center';
-  const [lx, ly] = w2c(range - 0.2, 0); ctx.fillText('x', lx, ly - 6);
-  const [ly2x, ly2y] = w2c(0, range - 0.2); ctx.fillText('y', ly2x + 6, ly2y);
-  ctx.font = `${Math.max(9, SCALE*.14)}px IBM Plex Mono, monospace`; ctx.fillStyle = '#cbd5e1';
-  for (let i = -range; i <= range; i++) {
-    if (i === 0) continue;
-    const [tx, ty] = w2c(i, 0); ctx.fillText(i, tx, ty + 14);
-    const [tx2, ty2] = w2c(0, i); ctx.fillText(i, tx2 - 14, ty2 + 4);
-  }
+  ctx.beginPath(); ctx.moveTo(14, H - 16); ctx.lineTo(14 + SCALE, H - 16); ctx.moveTo(14, H - 20); ctx.lineTo(14, H - 12); ctx.moveTo(14 + SCALE, H - 20); ctx.lineTo(14 + SCALE, H - 12); ctx.stroke();
+  ctx.fillText('1 m', 14 + SCALE / 2 - 10, H - 22);
+}
+
+function drawWorkspace() {                        // reachable area of the end-effector (same mint as C-space free space)
+  ctx.save();
+  ctx.fillStyle = P2.free;
+  ctx.beginPath(); ctx.arc(CX, CY, REACH_MAX * SCALE, 0, Math.PI * 2);
+  if (REACH_MIN > 0.01) ctx.arc(CX, CY, REACH_MIN * SCALE, 0, Math.PI * 2, true);
+  ctx.fill();
+  ctx.strokeStyle = '#bfe1d6'; ctx.lineWidth = 1;
+  ctx.beginPath(); ctx.arc(CX, CY, REACH_MAX * SCALE, 0, Math.PI * 2); ctx.stroke();
+  if (REACH_MIN > 0.01) { ctx.beginPath(); ctx.arc(CX, CY, REACH_MIN * SCALE, 0, Math.PI * 2); ctx.stroke(); }
   ctx.restore();
 }
 
-function drawWorkspace() {
-  ctx.save();
-  const [ox, oy] = w2c(0, 0);
-  ctx.beginPath(); ctx.arc(ox, oy, REACH_MAX * SCALE, 0, 2*Math.PI);
-  ctx.strokeStyle = 'rgba(148,163,184,0.25)'; ctx.setLineDash([5, 5]); ctx.lineWidth = 1.5; ctx.stroke();
-  if (REACH_MIN > 0.01) {
-    ctx.beginPath(); ctx.arc(ox, oy, REACH_MIN * SCALE, 0, 2*Math.PI); ctx.stroke();
-  }
-  ctx.setLineDash([]); ctx.restore();
-}
+function toPx(p) { const [x, y] = w2c(p.x, p.y); return { x, y }; }
 
-function drawArm(pts) {
-  const lw = Math.max(5, SCALE * 0.12);
-  ctx.save();
-  ctx.lineCap = 'round'; ctx.lineWidth = lw; ctx.strokeStyle = 'rgba(148,163,184,1)';
-  for (let i = 0; i < pts.length - 1; i++) {
-    const [x0, y0] = w2c(pts[i].x, pts[i].y);
-    const [x1, y1] = w2c(pts[i+1].x, pts[i+1].y);
-    ctx.beginPath(); ctx.moveTo(x0, y0); ctx.lineTo(x1, y1); ctx.stroke();
+// frames {0}..{3}: frame {i} sits at the end of link i, turned by q1 + … + qi (hovered one is highlighted)
+function drawFrames(pts, q) {
+  let ang = 0;
+  for (let k = 0; k <= 3; k++) {
+    if (k > 0) ang += q[k - 1] * D2R;
+    const hl = k === HL;
+    draw2d(ctx, frameOps(toPx(pts[k]), ang, SCALE * 0.38, { width: 2.2, noDot: true, gap: 10 }));
+    const p = toPx(pts[k]);
+    draw2d(ctx, [op.text({ x: p.x - 12, y: p.y + 22 }, `{${k}}`, hl ? '#d97706' : P2.text, 12, { halo: true, align: 'center' })]);
   }
-  const jR = lw * 0.85;
-  const jCols = ['#1e293b', '#f59e0b', '#f59e0b'];
-  for (let i = 0; i < 3; i++) {
-    const [cx2, cy2] = w2c(pts[i].x, pts[i].y);
-    ctx.beginPath(); ctx.arc(cx2, cy2, jR, 0, 2*Math.PI);
-    ctx.fillStyle = jCols[i]; ctx.fill();
-    ctx.strokeStyle = 'white'; ctx.lineWidth = 2; ctx.stroke();
-  }
-  const [ex, ey] = w2c(pts[3].x, pts[3].y);
-  ctx.beginPath(); ctx.arc(ex, ey, jR * 0.85, 0, 2*Math.PI);
-  ctx.fillStyle = '#7c3aed'; ctx.fill();
-  ctx.strokeStyle = 'white'; ctx.lineWidth = 2; ctx.stroke();
-  ctx.restore();
-}
-
-function drawFrameArrow(px, py, angle, len = 0.35) {
-  const cos = Math.cos(angle), sin = Math.sin(angle);
-  const [x0, y0] = w2c(px, py);
-  const [x1, y1] = w2c(px + len*cos, py + len*sin);
-  ctx.save();
-  ctx.strokeStyle = '#ef4444'; ctx.lineWidth = 2;
-  ctx.beginPath(); ctx.moveTo(x0, y0); ctx.lineTo(x1, y1); ctx.stroke();
-  const headLen = 8, headAngle = 0.4;
-  const ang = Math.atan2(y0-y1, x0-x1);
-  ctx.fillStyle = '#ef4444';
-  ctx.beginPath();
-  ctx.moveTo(x1, y1);
-  ctx.lineTo(x1 + headLen*Math.cos(ang - headAngle), y1 + headLen*Math.sin(ang - headAngle));
-  ctx.lineTo(x1 + headLen*Math.cos(ang + headAngle), y1 + headLen*Math.sin(ang + headAngle));
-  ctx.closePath(); ctx.fill();
-  ctx.restore();
-}
-
-function drawJointLabels(pts) {
-  ctx.save();
-  ctx.font = `${Math.max(10, SCALE * 0.15)}px IBM Plex Sans, sans-serif`;
-  ctx.fillStyle = '#475569';
-  const labels = ['q₁', 'q₂', 'q₃'];
-  const offsets = [{dx:-16, dy:-12}, {dx:8, dy:-12}, {dx:8, dy:-12}];
-  for (let i = 0; i < 3; i++) {
-    const [px, py] = w2c(pts[i].x, pts[i].y);
-    ctx.fillText(labels[i], px + offsets[i].dx, py + offsets[i].dy);
-  }
-  ctx.restore();
 }
 
 function draw() {
   if (!W || !H) return;
   ctx.clearRect(0, 0, W, H);
-  drawGrid();
+  ctx.fillStyle = P2.bg; ctx.fillRect(0, 0, W, H);
   drawWorkspace();
-  const [q1, q2, q3] = S.q;
-  const pts = fkPoses(q1, q2, q3);
-  drawArm(pts);
-  drawFrameArrow(pts[3].x, pts[3].y, (q1+q2+q3)*D2R, 0.38);
-  drawJointLabels(pts);
+  drawGrid();
+  const pts = fkPoses(...S.q);
+  draw2d(ctx, armOps(pts.map(toPx), { w: 15 }));
+  drawFrames(pts, S.q);
 }
 
 // ── FK UI ──
-function fkUpdate() {
-  const [q1, q2, q3] = S.q;
-  const pts = fkPoses(q1, q2, q3);
-  const ee  = pts[3];
-  const phi = q1 + q2 + q3;
+const PRESETS = { Zero: [0, 0, 0], Default: [30, -40, 20], Folded: [60, -130, 110], Reach: [20, 25, 25] };
 
-  const fmt    = v => (v >= 0 ? '' : '\u2212') + Math.abs(v).toFixed(2);
-  const fmtDeg = v => `${v < 0 ? '\u2212' : ''}${Math.abs(v).toFixed(1)}\u00b0`;
-
-  document.getElementById('fk-ee-pose').textContent =
-    `(${fmt(ee.x)},\u00a0${fmt(ee.y)}\u00a0m,\u00a0${fmtDeg(phi)})`;
-
-  // Transformation matrices
-  const T01 = mat3Rz_Trans(q1, L1);
-  const T12 = mat3Rz_Trans(q2, L2);
-  const T23 = mat3Rz_Trans(q3, L3);
-  const Tee = mat3Mul(mat3Mul(T01, T12), T23);
-  renderMat3('mat-t01', T01);
-  renderMat3('mat-t12', T12);
-  renderMat3('mat-t23', T23);
-  renderMat3('mat-tee', Tee);
-
-  [0,1,2].forEach(i => {
-    const keys = ['q1','q2','q3'];
-    const v = S.q[i];
-    document.getElementById(`fk-sl-${keys[i]}`).value  = v;
-    document.getElementById(`fk-num-${keys[i]}`).value = v.toFixed(0);
-    document.getElementById(`lbl-fk-${keys[i]}`).textContent = fmtDeg(v);
+(function buildPanel() {
+  let html = '';
+  for (let i = 0; i < 3; i++) {
+    html += `<div class="mat-block" data-frame="${i + 1}">
+      <div class="mat-label"><span>A<sub>${i + 1}</sub> = T<sub>${i}${i + 1}</sub></span><span class="sub" id="mat-sub-${i}"></span></div>
+      <div class="mat-grid3" id="mat-a${i}"></div></div>`;
+  }
+  html += `<div class="mat-block cum" data-frame="3">
+    <div class="mat-label"><span>T<sub>03</sub> = A<sub>1</sub>·A<sub>2</sub>·A<sub>3</sub></span></div>
+    <div class="mat-grid3" id="mat-cum"></div></div>`;
+  document.getElementById('mats').innerHTML = html;
+  document.querySelectorAll('.mat-block[data-frame]').forEach(el => {
+    el.addEventListener('mouseenter', () => { HL = +el.dataset.frame; el.classList.add('hl'); draw(); });
+    el.addEventListener('mouseleave', () => { HL = -1; el.classList.remove('hl'); draw(); });
   });
+  document.getElementById('presets').innerHTML =
+    Object.keys(PRESETS).map(n => `<button class="btn" onclick="goPreset('${n}')">${n}</button>`).join('') +
+    `<button class="btn" onclick="goPreset('Default')" style="margin-left:auto;">Reset</button>`;
+})();
 
+function fkUpdate() {
+  const q = S.q, pts = fkPoses(...q), ee = pts[3], phi = q[0] + q[1] + q[2];
+  document.getElementById('ee-xy').textContent = `(${fmtN(ee.x)}, ${fmtN(ee.y)}) m`;
+  document.getElementById('ee-phi').textContent = fmtDeg(phi);
+
+  const A = [mat3Rz_Trans(q[0], L1), mat3Rz_Trans(q[1], L2), mat3Rz_Trans(q[2], L3)];
+  A.forEach((m, i) => {
+    renderMat3(`mat-a${i}`, m);
+    document.getElementById(`mat-sub-${i}`).textContent = `θ${SUB[i + 1]} = ${fmtDeg(q[i])}`;
+  });
+  renderMat3('mat-cum', mat3Mul(mat3Mul(A[0], A[1]), A[2]));
+
+  ['q1', 'q2', 'q3'].forEach((k, i) => {
+    document.getElementById(`fk-sl-${k}`).value = q[i];
+    const num = document.getElementById(`fk-num-${k}`);
+    if (document.activeElement !== num) num.value = Math.round(q[i]);
+  });
   draw();
 }
 
-function fkOnSlider(idx, el) { S.q[idx] = parseFloat(el.value); fkUpdate(); }
+function fkOnSlider(idx, el) { stopTween(); S.q[idx] = parseFloat(el.value); fkUpdate(); }
 function fkOnNumber(idx, el) {
-  const min = parseFloat(el.min), max = parseFloat(el.max);
-  let v = parseFloat(el.value);
+  const v = parseFloat(el.value);
   if (isNaN(v)) return;
-  v = Math.max(min, Math.min(max, v));
-  S.q[idx] = v; fkUpdate();
+  stopTween();
+  S.q[idx] = Math.max(parseFloat(el.min), Math.min(parseFloat(el.max), v));
+  fkUpdate();
+}
+
+// smooth move to a preset (same as FK 3D)
+let tween = null;
+function stopTween() { if (tween) { cancelAnimationFrame(tween); tween = null; } }
+function goPreset(name) {
+  stopTween();
+  const from = S.q.slice(), to = PRESETS[name], t0 = performance.now(), dur = 700;
+  (function step(now) {
+    const t = Math.min(1, (now - t0) / dur), e = t < .5 ? 2 * t * t : 1 - Math.pow(-2 * t + 2, 2) / 2;
+    for (let i = 0; i < 3; i++) S.q[i] = from[i] + (to[i] - from[i]) * e;
+    fkUpdate();
+    tween = t < 1 ? requestAnimationFrame(step) : null;
+  })(t0);
 }
 
 // ── Init ──

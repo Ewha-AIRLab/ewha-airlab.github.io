@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>IK 3D (KUKA iiwa) — AIR Lab @ Ewha</title>
+<title>IK 3D — AIR Lab @ Ewha</title>
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@300;400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="kinematics.css">
 <style>
@@ -26,21 +26,15 @@
 .row-ctl .v { font-family: 'IBM Plex Mono', monospace; color: #0f172a; min-width: 3.6rem; text-align: right; }
 .toggle { display: inline-flex; align-items: center; gap: .4rem; font-size: .8rem; color: #334155; cursor: pointer; user-select: none; }
 </style>
+<link rel="stylesheet" href="../ui.css">
 </head>
 <body>
 
-<div class="topbar">
-  <a href="/">AIR Lab @ Ewha</a>
-  <span class="sep">/</span>
-  <span class="cur">IK 3D (KUKA iiwa)</span>
-  <span style="margin-left:auto;display:flex;gap:.75rem;">
-    <a href="fk_3d.html" style="font-size:.8rem;">FK</a>
-    <span class="cur" style="font-size:.8rem;">IK</span>
-  </span>
-</div>
+<div class="topbar" id="course-nav"></div>
+<script src="../nav.js"></script>
 
 <div class="page">
-  <h1 class="page-title">[3D] Inverse Kinematics — KUKA LBR iiwa 7 (7R)</h1>
+  <h1 class="page-title">[3D] Inverse Kinematics</h1>
   <p class="page-desc">
     Move the target and the robot figures out the joint angles to reach it.
   </p>

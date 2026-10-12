@@ -27,7 +27,10 @@ body { font-family: 'IBM Plex Sans', sans-serif; background: #f5f6f8; color: #0f
 .card-body-tight { padding: .55rem; }
 
 /* Shared controls */
-.shared-bar { display: flex; align-items: flex-end; gap: 1.75rem; flex-wrap: wrap; }
+.shared-row { display: grid; grid-template-columns: auto minmax(220px, 1.2fr) minmax(180px, 1fr) auto; gap: 1.75rem; align-items: center; padding: .85rem 1.35rem !important; }
+.shared-row .sl-line { margin: 0; }
+.shared-btns { display: flex; gap: .5rem; }
+@media (max-width: 900px) { .shared-row { grid-template-columns: 1fr; gap: .75rem; } }
 .sl-inline { display: flex; flex-direction: column; gap: .25rem; font-size: .82rem; }
 .sl-inline label { color: #475569; font-weight: 500; }
 .sl-inline .sl-row { display: flex; align-items: center; gap: .5rem; }
@@ -39,7 +42,7 @@ body { font-family: 'IBM Plex Sans', sans-serif; background: #f5f6f8; color: #0f
 @media (max-width: 700px)  { .algo-row { grid-template-columns: 1fr; } }
 
 /* Canvas */
-.canvas-wrap { width: 100%; aspect-ratio: 4/3; border-radius: 10px; overflow: hidden; background: #f1f5f9; border: 1px solid #e2e8f0; cursor: crosshair; }
+.canvas-wrap { width: 100%; aspect-ratio: 4/3; border-radius: 10px; overflow: hidden; background: #ffffff; border: 1px solid #e2e8f0; cursor: crosshair; }
 .canvas-wrap canvas { display: block; width: 100% !important; height: 100% !important; }
 .canvas-hint { font-size: .7rem; color: #94a3b8; margin-top: .3rem; text-align: center; }
 
@@ -84,57 +87,40 @@ input[type=range]::-webkit-slider-thumb { -webkit-appearance: none; width: 15px;
 .divider { border-top: 1px solid #f1f5f9; margin: .55rem 0; }
 
 /* Algo accent */
-.algo-prm     .card-hd { border-bottom: 2px solid #3b82f6; }
-.algo-rrt     .card-hd { border-bottom: 2px solid #f59e0b; }
-.algo-rrtstar .card-hd { border-bottom: 2px solid #22c55e; }
+.algo-prm .card-hd, .algo-rrt .card-hd, .algo-rrtstar .card-hd { border-bottom: 1px solid #f1f5f9; }
 </style>
+<link rel="stylesheet" href="../ui.css">
 </head>
 <body>
 
-<div class="topbar">
-  <a href="../index.html">Intelligent Robotics</a>
-  <span class="sep">/</span>
-  Motion Planning
-  <span class="sep">/</span>
-  <span class="cur">Sampling-based Planning</span>
-</div>
+<div class="topbar" id="course-nav"></div>
+<script src="../nav.js"></script>
 
 <div class="page">
-  <h1 class="page-title">Sampling-based Motion Planning</h1>
+  <h1 class="page-title">[2D] Sampling-based Planning — PRM, RRT, RRT*</h1>
   <p class="page-desc">
-    Three sampling-based planners on the same maze environment.
-    <strong>PRM</strong> builds an offline roadmap.
-    <strong>RRT</strong> grows a tree fast — first feasible path, no optimization.
-    <strong>RRT*</strong> adds rewiring and runs longer to asymptotically improve path cost.
-    <span style="color:#22c55e;font-weight:600">Left-click</span> a canvas to move start ·
-    <span style="color:#a855f7;font-weight:600">Right-click</span> to move goal.
+    Three ways to find a path by trying random points: PRM builds a map first, RRT grows a tree fast,
+    and RRT* keeps improving its path. <span style="color:#d97706;font-weight:600">Left-click</span> to move the start,
+    <span style="color:#7c3aed;font-weight:600">right-click</span> to move the goal.
   </p>
 
-  <!-- Shared controls -->
-  <div class="card" style="margin-bottom:1.25rem;">
-    <div class="card-hd">
+  <!-- Shared controls: one row -->
+  <div class="card shared-card" style="margin-bottom:1.25rem;">
+    <div class="card-body shared-row">
       <div class="card-title">Shared Settings</div>
-      <div style="display:flex;gap:.5rem;">
+      <div class="sl-line ro" style="--nm:7.6rem;--val:4.6rem">
+        <span class="nm">Animation speed</span>
+        <input type="range" id="spd" min="1" max="5" value="3" step="1">
+        <span class="val" id="spd-disp">medium</span>
+      </div>
+      <div class="sl-line ro" style="--nm:4.6rem;--val:2rem">
+        <span class="nm">Step size</span>
+        <input type="range" id="step-size" min="2" max="15" value="6" step="1">
+        <span class="val" id="step-disp">6</span>
+      </div>
+      <div class="shared-btns">
         <button class="btn btn-primary"   id="btn-run-all">▶ Run All</button>
         <button class="btn btn-danger"    id="btn-reset-all">↺ Reset All</button>
-      </div>
-    </div>
-    <div class="card-body">
-      <div class="shared-bar">
-        <div class="sl-inline">
-          <label>Animation speed</label>
-          <div class="sl-row">
-            <input type="range" id="spd" min="1" max="5" value="3" step="1" style="width:110px">
-            <span class="val" id="spd-disp">medium</span>
-          </div>
-        </div>
-        <div class="sl-inline">
-          <label>Step size</label>
-          <div class="sl-row">
-            <input type="range" id="step-size" min="2" max="15" value="6" step="1" style="width:110px">
-            <span class="val" id="step-disp">6</span>
-          </div>
-        </div>
       </div>
     </div>
   </div>
@@ -153,17 +139,19 @@ input[type=range]::-webkit-slider-thumb { -webkit-appearance: none; width: 15px;
       </div>
       <div class="card-body-tight">
         <div class="canvas-wrap" id="prm-wrap"><canvas id="prm-canvas"></canvas></div>
-        <p class="canvas-hint">edges = #cbd5e1 · path = <span style="color:#3b82f6">■</span> blue</p>
+        <p class="canvas-hint">Grey: roadmap · <span style="color:#e11d48">■</span> path</p>
       </div>
       <div class="card-body">
         <div class="sec-lbl">Parameters</div>
-        <div class="sl-group">
-          <div class="sl-label"><span class="sl-name">Samples N</span><span class="sl-val" id="prm-n-disp">200</span></div>
+        <div class="sl-line ro">
+          <span class="nm">Samples N</span>
           <input type="range" id="prm-n" min="50" max="600" value="200" step="10">
+          <span class="val" id="prm-n-disp">200</span>
         </div>
-        <div class="sl-group">
-          <div class="sl-label"><span class="sl-name">Connect radius r</span><span class="sl-val" id="prm-r-disp">15</span></div>
+        <div class="sl-line ro">
+          <span class="nm">Connect radius r</span>
           <input type="range" id="prm-r" min="5" max="40" value="15" step="1">
+          <span class="val" id="prm-r-disp">15</span>
         </div>
         <div class="divider"></div>
         <div class="sec-lbl">Statistics</div>
@@ -190,13 +178,14 @@ input[type=range]::-webkit-slider-thumb { -webkit-appearance: none; width: 15px;
       </div>
       <div class="card-body-tight">
         <div class="canvas-wrap" id="rrt-wrap"><canvas id="rrt-canvas"></canvas></div>
-        <p class="canvas-hint">tree = #94a3b8 · path = <span style="color:#f59e0b">■</span> orange</p>
+        <p class="canvas-hint">Grey: tree · <span style="color:#e11d48">■</span> path</p>
       </div>
       <div class="card-body">
         <div class="sec-lbl">Parameters</div>
-        <div class="sl-group">
-          <div class="sl-label"><span class="sl-name">Max iterations</span><span class="sl-val" id="rrt-iter-disp">5,000</span></div>
+        <div class="sl-line ro">
+          <span class="nm">Max iterations</span>
           <input type="range" id="rrt-iter" min="500" max="15000" value="5000" step="500">
+          <span class="val" id="rrt-iter-disp">5,000</span>
         </div>
         <div class="divider"></div>
         <div class="sec-lbl">Statistics</div>
@@ -223,17 +212,19 @@ input[type=range]::-webkit-slider-thumb { -webkit-appearance: none; width: 15px;
       </div>
       <div class="card-body-tight">
         <div class="canvas-wrap" id="rrtstar-wrap"><canvas id="rrtstar-canvas"></canvas></div>
-        <p class="canvas-hint">tree = #94a3b8 · path = <span style="color:#22c55e">■</span> green (improves over time)</p>
+        <p class="canvas-hint">Grey: tree · <span style="color:#e11d48">■</span> path (gets shorter over time)</p>
       </div>
       <div class="card-body">
         <div class="sec-lbl">Parameters</div>
-        <div class="sl-group">
-          <div class="sl-label"><span class="sl-name">Max iterations</span><span class="sl-val" id="rrtstar-iter-disp">8,000</span></div>
+        <div class="sl-line ro">
+          <span class="nm">Max iterations</span>
           <input type="range" id="rrtstar-iter" min="500" max="20000" value="8000" step="500">
+          <span class="val" id="rrtstar-iter-disp">8,000</span>
         </div>
-        <div class="sl-group">
-          <div class="sl-label"><span class="sl-name">Near radius γ</span><span class="sl-val" id="rrtstar-r-disp">12</span></div>
+        <div class="sl-line ro">
+          <span class="nm">Near radius γ</span>
           <input type="range" id="rrtstar-r" min="5" max="35" value="12" step="1">
+          <span class="val" id="rrtstar-r-disp">12</span>
         </div>
         <div class="divider"></div>
         <div class="sec-lbl">Statistics</div>
@@ -252,6 +243,7 @@ input[type=range]::-webkit-slider-thumb { -webkit-appearance: none; width: 15px;
   </div><!-- end algo-row -->
 </div><!-- end page -->
 
+<script src="../style2d.js"></script>
 <script>
 'use strict';
 
@@ -263,9 +255,9 @@ input[type=range]::-webkit-slider-thumb { -webkit-appearance: none; width: 15px;
 const W = 100, H = 75;
 
 const OBSTACLES = [
-  { x: 24, y: 0,  w: 9, h: 58, color: '#ef4444' },  // Wall 1 — gap y=58–75
-  { x: 49, y: 17, w: 9, h: 58, color: '#f97316' },  // Wall 2 — gap y=0–17
-  { x: 74, y: 0,  w: 9, h: 58, color: '#8b5cf6' },  // Wall 3 — gap y=58–75
+  { x: 24, y: 0,  w: 9, h: 58, color: '#e76f51' },  // Wall 1 — gap y=58–75
+  { x: 49, y: 17, w: 9, h: 58, color: '#7b8cae' },  // Wall 2 — gap y=0–17
+  { x: 74, y: 0,  w: 9, h: 58, color: '#b5838d' },  // Wall 3 — gap y=58–75
 ];
 
 let startPt = { x: 5,  y: 35 };
@@ -335,12 +327,12 @@ function c2w(cx, cy, cw, ch) {
 // DRAWING PRIMITIVES
 // ══════════════════════════════════════════════════════════════════════════════
 function drawBase(ctx, cw, ch) {
-  ctx.fillStyle = '#f1f5f9';
+  ctx.fillStyle = P2.bg;
   ctx.fillRect(0, 0, cw, ch);
 
   // Grid
-  ctx.strokeStyle = '#e2e8f0';
-  ctx.lineWidth = 0.5;
+  ctx.strokeStyle = P2.grid;
+  ctx.lineWidth = 1;
   for (let x = 0; x <= W; x += 10) {
     const {x: cx} = w2c(x, 0, cw, ch);
     ctx.beginPath(); ctx.moveTo(cx, 0); ctx.lineTo(cx, ch); ctx.stroke();
@@ -354,7 +346,7 @@ function drawBase(ctx, cw, ch) {
   for (const o of OBSTACLES) {
     const p1 = w2c(o.x,       o.y+o.h, cw, ch);
     const p2 = w2c(o.x+o.w,   o.y,     cw, ch);
-    ctx.fillStyle   = o.color + '38';
+    ctx.fillStyle   = o.color + '3d';
     ctx.fillRect(p1.x, p1.y, p2.x-p1.x, p2.y-p1.y);
     ctx.strokeStyle = o.color;
     ctx.lineWidth   = 1.5;
@@ -363,13 +355,13 @@ function drawBase(ctx, cw, ch) {
 }
 
 function drawEndpoints(ctx, cw, ch) {
-  for (const [pt, color, label] of [[startPt,'#22c55e','S'],[goalPt,'#a855f7','G']]) {
+  for (const [pt, color, label] of [[startPt, P2.start, 'S'], [goalPt, P2.goal, 'G']]) {
     const p = w2c(pt.x, pt.y, cw, ch);
-    ctx.beginPath(); ctx.arc(p.x, p.y, 7, 0, Math.PI*2);
+    ctx.beginPath(); ctx.arc(p.x, p.y, 8, 0, Math.PI*2);
     ctx.fillStyle = color; ctx.fill();
     ctx.strokeStyle = 'white'; ctx.lineWidth = 2; ctx.stroke();
     ctx.fillStyle = 'white';
-    ctx.font = 'bold 8px IBM Plex Sans, sans-serif';
+    ctx.font = '700 9px IBM Plex Sans, sans-serif';
     ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
     ctx.fillText(label, p.x, p.y);
   }
@@ -475,12 +467,12 @@ function prmDraw(ctx, cw, ch) {
     const pb = w2c(nodes[b].x, nodes[b].y, cw, ch);
     ctx.beginPath(); ctx.moveTo(pa.x, pa.y); ctx.lineTo(pb.x, pb.y); ctx.stroke();
   }
-  ctx.fillStyle = '#3b82f6';
+  ctx.fillStyle = P2.textDim;
   for (let i = 2; i < nodes.length; i++) {
     const p = w2c(nodes[i].x, nodes[i].y, cw, ch);
     ctx.beginPath(); ctx.arc(p.x, p.y, 1.8, 0, Math.PI*2); ctx.fill();
   }
-  if (phase === 'done') drawPolyline(ctx, cw, ch, path, '#3b82f6', 3);
+  if (phase === 'done') drawPolyline(ctx, cw, ch, path, P2.path, 3);
   else if (phase === 'fail') {/* no path */}
 }
 
@@ -552,7 +544,7 @@ function rrtDraw(ctx, cw, ch) {
     const a = w2c(n.x, n.y, cw, ch), b = w2c(p.x, p.y, cw, ch);
     ctx.beginPath(); ctx.moveTo(a.x, a.y); ctx.lineTo(b.x, b.y); ctx.stroke();
   }
-  drawPolyline(ctx, cw, ch, path, '#f59e0b', 3);
+  drawPolyline(ctx, cw, ch, path, P2.path, 3);
 }
 
 // ══════════════════════════════════════════════════════════════════════════════
@@ -653,7 +645,7 @@ function rrtStarDraw(ctx, cw, ch) {
     const a = w2c(n.x, n.y, cw, ch), b = w2c(p.x, p.y, cw, ch);
     ctx.beginPath(); ctx.moveTo(a.x, a.y); ctx.lineTo(b.x, b.y); ctx.stroke();
   }
-  drawPolyline(ctx, cw, ch, path, '#22c55e', 3);
+  drawPolyline(ctx, cw, ch, path, P2.path, 3);
 }
 
 // ══════════════════════════════════════════════════════════════════════════════
@@ -663,9 +655,11 @@ function syncCanvas(id) {
   const canvas = document.getElementById(id+'-canvas');
   const wrap   = document.getElementById(id+'-wrap');
   const W2 = wrap.clientWidth, H2 = wrap.clientHeight;
-  if (canvas.width !== W2 || canvas.height !== H2) {
-    canvas.width = W2; canvas.height = H2;
+  const dpr = Math.min(window.devicePixelRatio || 1, 2);
+  if (canvas.width !== Math.round(W2 * dpr) || canvas.height !== Math.round(H2 * dpr)) {
+    canvas.width = Math.round(W2 * dpr); canvas.height = Math.round(H2 * dpr);
   }
+  canvas.getContext('2d').setTransform(dpr, 0, 0, dpr, 0, 0);
   return canvas;
 }
 
@@ -673,7 +667,7 @@ function redrawAll() {
   for (const id of ['prm','rrt','rrtstar']) {
     const canvas = syncCanvas(id);
     const ctx = canvas.getContext('2d');
-    const cw = canvas.width, ch = canvas.height;
+    const cw = canvas.clientWidth, ch = canvas.clientHeight;   // CSS pixels
     drawBase(ctx, cw, ch);
     if (id === 'prm')     prmDraw(ctx, cw, ch);
     if (id === 'rrt')     rrtDraw(ctx, cw, ch);
@@ -799,9 +793,8 @@ function bindCanvasInteraction(canvasId) {
   function handle(e, isGoal) {
     e.preventDefault();
     const rect = canvas.getBoundingClientRect();
-    const cx = (e.clientX - rect.left) * (canvas.width / rect.width);
-    const cy = (e.clientY - rect.top)  * (canvas.height / rect.height);
-    const pt = c2w(cx, cy, canvas.width, canvas.height);
+    const cx = e.clientX - rect.left, cy = e.clientY - rect.top;
+    const pt = c2w(cx, cy, rect.width, rect.height);
     if (!ptFree(pt.x, pt.y)) return;
     if (isGoal) { goalPt.x  = pt.x; goalPt.y  = pt.y; }
     else        { startPt.x = pt.x; startPt.y = pt.y; }

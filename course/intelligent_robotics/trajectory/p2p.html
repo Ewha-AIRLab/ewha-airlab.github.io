@@ -47,12 +47,12 @@ body { font-family: 'IBM Plex Sans', sans-serif; background: #f5f6f8; color: #0f
 .scenario-badge.warn    { background: #fef2f2; color: #dc2626; border: 1px solid #fecaca; }
 
 /* ── Canvas ── */
-.viz-wrap { width: 100%; aspect-ratio: 1/1; position: relative; border-radius: 10px; overflow: hidden; border: 1px solid #e2e8f0; background: #f8fafc; }
+.viz-wrap { width: 100%; aspect-ratio: 1/1; position: relative; border-radius: 10px; overflow: hidden; border: 1px solid #e2e8f0; background: #ffffff; }
 .viz-wrap svg { display: block; width: 100%; height: 100%; }
 .canvas-hint { font-size: .73rem; color: #94a3b8; margin-top: .4rem; }
 
 /* ── Velocity plot ── */
-.vel-wrap { width: 100%; height: 240px; border-radius: 10px; overflow: hidden; border: 1px solid #e2e8f0; background: #f8fafc; }
+.vel-wrap { width: 100%; height: 240px; border-radius: 10px; overflow: hidden; border: 1px solid #e2e8f0; background: #ffffff; }
 .vel-wrap svg { display: block; width: 100%; height: 100%; }
 
 /* ── Buttons / toggles ── */
@@ -121,19 +121,15 @@ input[type=range]::-webkit-slider-thumb {
   .page-title { font-size: 1.25rem; }
 }
 </style>
+<link rel="stylesheet" href="../ui.css">
 </head>
 <body>
 
-<div class="topbar">
-  <a href="/">AIR Lab @ Ewha</a>
-  <span class="sep">/</span>
-  Trajectory Generation
-  <span class="sep">/</span>
-  <span class="cur">C-space vs. Workspace Trajectory</span>
-</div>
+<div class="topbar" id="course-nav"></div>
+<script src="../nav.js"></script>
 
 <div class="page">
-  <h1 class="page-title">C-space vs. Workspace Trajectory — 2R Planar Robot</h1>
+  <h1 class="page-title">[2D] C-space vs. Workspace — 2R Arm</h1>
   <p class="page-desc">
     Same start and goal, two ways to move: a straight line in C-space (the joint angles), or a straight line in the
     workspace (the hand). What is straight in one is curved in the other.
@@ -162,9 +158,10 @@ input[type=range]::-webkit-slider-thumb {
           </div>
         </div>
         <div class="ctl-row">
-          <span>Progress <span class="sl-val" id="progressReadout" style="font-family:'IBM Plex Mono',monospace;color:#0f172a;">0.00</span></span>
+          <span>Progress</span>
           <div class="sl-row">
             <input type="range" id="progressSlider" min="0" max="1000" value="0">
+            <span class="sl-val" id="progressReadout" style="font-family:'IBM Plex Mono',monospace;font-size:.78rem;color:#0f172a;width:2.4rem;text-align:right;">0.00</span>
             <button class="btn-icon" id="playBtn" title="Play / Pause">
               <svg id="playIcon" width="12" height="12" viewBox="0 0 14 14"><polygon points="3,2 12,7 3,12" fill="currentColor"/></svg>
               <svg id="pauseIcon" width="12" height="12" viewBox="0 0 14 14" style="display:none"><rect x="3" y="2" width="3" height="10" fill="currentColor"/><rect x="8" y="2" width="3" height="10" fill="currentColor"/></svg>
@@ -192,12 +189,12 @@ input[type=range]::-webkit-slider-thumb {
       <div class="card-hd"><div class="card-title">Legend</div></div>
       <div class="card-body">
         <div class="legend-grid">
-          <div class="leg-item"><div class="leg-line" style="background:#0f172a"></div>Robot link</div>
-          <div class="leg-item"><div class="leg-dot" style="background:#f59e0b"></div>End-effector</div>
-          <div class="leg-item"><div class="leg-line" style="background:#15803d"></div>C-space path</div>
-          <div class="leg-item"><div class="leg-line" style="background:#ea580c"></div>Workspace path</div>
-          <div class="leg-item"><div class="leg-dot" style="background:#15803d"></div>Start</div>
-          <div class="leg-item"><div class="leg-dot" style="background:#dc2626"></div>Goal</div>
+          <div class="leg-item"><div class="leg-line" style="background:#0d9488"></div>C-space path</div>
+          <div class="leg-item"><div class="leg-line" style="background:#2f66c4"></div>Workspace path</div>
+          <div class="leg-item"><div class="leg-dot" style="background:#f59e0b"></div>Start</div>
+          <div class="leg-item"><div class="leg-dot" style="background:#8b5cf6"></div>Goal</div>
+          <div class="leg-item"><div class="leg-dot" style="background:#16a34a"></div>End-effector</div>
+          <div class="leg-item"><div class="leg-dot" style="background:#e9f5f1;border:1px solid #bfe1d6;border-radius:3px"></div>Free space</div>
         </div>
       </div>
     </div>
@@ -210,13 +207,11 @@ input[type=range]::-webkit-slider-thumb {
       <div class="card-hd">
         <div>
           <div class="card-title">Robot</div>
-          <div class="card-subtitle">2R planar manipulator</div>
         </div>
         <span id="scenario-badge" class="scenario-badge normal">● Normal</span>
       </div>
       <div class="card-body-tight">
         <div class="viz-wrap"><svg id="robotSvg" viewBox="0 0 400 400" preserveAspectRatio="xMidYMid meet"></svg></div>
-        <p class="canvas-hint">End-effector trace shows the actual workspace path of the active mode.</p>
       </div>
     </div>
     
@@ -224,34 +219,22 @@ input[type=range]::-webkit-slider-thumb {
     <div class="card">
       <div class="card-hd">
         <div>
-          <div class="card-title">Workspace <span style="font-weight:400;color:#94a3b8;font-size:.78rem;">W ⊂ ℝ²</span></div>
-          <div class="card-subtitle">end-effector position (x, y)</div>
-        </div>
-        <div class="axis-legend">
-          <span class="axis-chip" style="background:#ef4444">x</span>
-          <span class="axis-chip" style="background:#22c55e">y</span>
+          <div class="card-title">Workspace</div>
         </div>
       </div>
       <div class="card-body-tight">
         <div class="viz-wrap"><svg id="cartesianSvg" viewBox="0 0 400 400" preserveAspectRatio="xMidYMid meet"></svg></div>
-        <p class="canvas-hint">Solid line: straight in this space. Dashed: the other mode's path.</p>
       </div>
     </div>
 
     <div class="card">
       <div class="card-hd">
         <div>
-          <div class="card-title">C-space <span style="font-weight:400;color:#94a3b8;font-size:.78rem;">C ⊂ ℝ²</span></div>
-          <div class="card-subtitle">joint angles (θ₁, θ₂)</div>
-        </div>
-        <div class="axis-legend">
-          <span class="axis-chip" style="background:#7c3aed">θ₁</span>
-          <span class="axis-chip" style="background:#0ea5e9">θ₂</span>
+          <div class="card-title">C-space</div>
         </div>
       </div>
       <div class="card-body-tight">
         <div class="viz-wrap"><svg id="jointSvg" viewBox="0 0 400 400" preserveAspectRatio="xMidYMid meet"></svg></div>
-        <p class="canvas-hint">Solid line: straight in this space. Dashed: the other mode's path.</p>
       </div>
     </div>
   </div>
@@ -261,7 +244,6 @@ input[type=range]::-webkit-slider-thumb {
     <div class="card-hd">
       <div>
         <div class="card-title">Joint Speed Along the Path</div>
-        <div class="card-subtitle">|q̇(s)| as a function of normalized path progress · same total time for both modes</div>
       </div>
     </div>
     <div class="card-body-tight">
@@ -270,26 +252,28 @@ input[type=range]::-webkit-slider-thumb {
   </div>
 </div>
 
+<script src="../style2d.js"></script>
 <script>
 'use strict';
 
 //═══════════════════════════════════════════════════════════════════
 // COLOR TOKENS
 //═══════════════════════════════════════════════════════════════════
+// shared 2D palette (style2d.js): C-space path teal, workspace path blue, start amber, goal violet
 const COL = {
-  inkSoft: '#64748b',
-  ink: '#0f172a',
-  line: '#e2e8f0',
-  grid: '#e5e7eb',
-  tick: '#cbd5e1',
-  bg: '#f8fafc',
-  jointPath: '#15803d',
-  cartPath: '#ea580c',
-  start: '#15803d',
-  goal: '#dc2626',
-  ee: '#f59e0b',
-  link: '#0f172a',
-  warnRed: '#dc2626'
+  inkSoft: P2.text,
+  ink: P2.ink,
+  line: P2.gridMajor,
+  grid: P2.grid,
+  tick: P2.axis,
+  bg: P2.bg,
+  jointPath: '#0d9488',
+  cartPath: P2.z,
+  start: P2.start,
+  goal: P2.goal,
+  ee: P2.tip,
+  link: P2.linkEdge,
+  warnRed: P2.hit
 };
 
 //═══════════════════════════════════════════════════════════════════
@@ -444,11 +428,20 @@ let playing = false;
 let lastTime = null;
 const PLAY_DURATION_MS = 4000;
 
+// free space in mint, the same colour as the C-space page
+const FREE_EDGE = '#bfe1d6';
+function reachDisk(svg) {
+  const [ox, oy] = robotToSvg(0, 0), R = REACH_MAX * 75, r = Math.abs(L1 - L2) * 75;
+  const ring = (rad) => `M${ox - rad},${oy} a${rad},${rad} 0 1,0 ${2 * rad},0 a${rad},${rad} 0 1,0 ${-2 * rad},0`;
+  svg.appendChild(el("path", { d: ring(R) + (r > 0.5 ? ring(r) : ''), "fill-rule": "evenodd", fill: P2.free, stroke: FREE_EDGE, "stroke-width": 1 }));
+}
+
 //═══════════════════════════════════════════════════════════════════
 // Robot pane
 //═══════════════════════════════════════════════════════════════════
 function drawRobot() {
   const svg = clearSvg("robotSvg");
+  reachDisk(svg);
 
   const grid = el("g", { stroke: COL.grid, "stroke-width": 1, fill: "none" });
   for (let i = -2; i <= 2; i += 0.5) {
@@ -468,10 +461,10 @@ function drawRobot() {
   yL.textContent = "y"; svg.appendChild(yL);
 
   const showAlert = currentScenario === "singularity";
-  svg.appendChild(el("circle", {
+  if (showAlert) svg.appendChild(el("circle", {
     cx: ox, cy: oy, r: REACH_MAX * 75,
     fill: "none",
-    stroke: showAlert ? COL.warnRed : "#86efac",
+    stroke: showAlert ? COL.warnRed : COL.tick,
     "stroke-width": showAlert ? 1.5 : 1,
     "stroke-dasharray": "5 5",
     opacity: showAlert ? 0.6 : 0.7
@@ -518,15 +511,7 @@ function drawRobot() {
   const [ex, ey] = robotToSvg(pose.ex, pose.ey);
   const [tx, ty] = robotToSvg(pose.x, pose.y);
 
-  svg.appendChild(el("line", { x1: bx, y1: by, x2: ex, y2: ey, stroke: COL.link, "stroke-width": 5, "stroke-linecap": "round" }));
-  svg.appendChild(el("line", { x1: ex, y1: ey, x2: tx, y2: ty, stroke: COL.link, "stroke-width": 5, "stroke-linecap": "round" }));
-
-  svg.appendChild(el("circle", { cx: bx, cy: by, r: 7, fill: "white", stroke: COL.ink, "stroke-width": 2 }));
-  svg.appendChild(el("circle", { cx: ex, cy: ey, r: 5, fill: "white", stroke: COL.ink, "stroke-width": 2 }));
-  svg.appendChild(el("circle", { cx: tx, cy: ty, r: 6, fill: COL.ee, stroke: COL.warnRed, "stroke-width": 1.5 }));
-
-  const baseLbl = el("text", { x: bx + 10, y: by + 16, "font-family": "IBM Plex Mono, monospace", "font-size": 10, fill: COL.inkSoft });
-  baseLbl.textContent = "base"; svg.appendChild(baseLbl);
+  svg.insertAdjacentHTML("beforeend", svg2d(armOps([{ x: bx, y: by }, { x: ex, y: ey }, { x: tx, y: ty }], { w: 11 })));
 }
 
 //═══════════════════════════════════════════════════════════════════
@@ -534,6 +519,7 @@ function drawRobot() {
 //═══════════════════════════════════════════════════════════════════
 function drawCartesian() {
   const svg = clearSvg("cartesianSvg");
+  reachDisk(svg);
 
   const grid = el("g", { stroke: COL.grid, "stroke-width": 1, fill: "none" });
   for (let i = -2; i <= 2; i += 0.5) {
@@ -588,6 +574,11 @@ function drawCartesian() {
     }));
   }
 
+  // Current EE
+  const q = isJointMode ? jointSpaceTrajectory(s) : cartesianSpaceTrajectory(s);
+  const ee = fk(q.t1, q.t2);
+  const [cx, cy] = robotToSvg(ee.x, ee.y);
+  svg.appendChild(el("circle", { cx, cy, r: 7, fill: "white", stroke: COL.ee, "stroke-width": 3 }));
   // Start/goal
   svg.appendChild(el("circle", { cx: csx, cy: csy, r: 7, fill: COL.start, stroke: "white", "stroke-width": 2 }));
   svg.appendChild(el("circle", { cx: cgx, cy: cgy, r: 7, fill: COL.goal, stroke: "white", "stroke-width": 2 }));
@@ -596,11 +587,6 @@ function drawCartesian() {
   const gL = el("text", { x: cgx + 12, y: cgy + 4, "font-family": "IBM Plex Mono, monospace", "font-size": 11, fill: COL.goal, "font-weight": 600 });
   gL.textContent = "goal"; svg.appendChild(gL);
 
-  // Current EE
-  const q = isJointMode ? jointSpaceTrajectory(s) : cartesianSpaceTrajectory(s);
-  const ee = fk(q.t1, q.t2);
-  const [cx, cy] = robotToSvg(ee.x, ee.y);
-  svg.appendChild(el("circle", { cx, cy, r: 6, fill: COL.ee, stroke: COL.warnRed, "stroke-width": 2 }));
 }
 
 //═══════════════════════════════════════════════════════════════════
@@ -611,6 +597,10 @@ function drawJoint() {
 
   const grid = el("g", { stroke: COL.grid, "stroke-width": 1, fill: "none" });
   const { t1min, t1max, t2min, t2max } = JR;
+  {                                                   // every joint configuration is free → whole plot in mint
+    const [x0, y0] = jointToSvg(t1min, t2max), [x1, y1] = jointToSvg(t1max, t2min);
+    svg.appendChild(el("rect", { x: x0, y: y0, width: x1 - x0, height: y1 - y0, fill: P2.free }));
+  }
   for (let t1 = t1min; t1 <= t1max + 1e-9; t1 += 0.5) {
     const [x1, y1] = jointToSvg(t1, t2min), [x2, y2] = jointToSvg(t1, t2max);
     grid.appendChild(el("line", { x1, y1, x2, y2 }));
@@ -683,6 +673,9 @@ function drawJoint() {
     }));
   }
 
+  const q = isJointMode ? jointSpaceTrajectory(s) : cartesianSpaceTrajectory(s);
+  const [cx, cy] = jointToSvg(q.t1, q.t2);
+  svg.appendChild(el("circle", { cx, cy, r: 7, fill: "white", stroke: COL.ee, "stroke-width": 3 }));
   const [sx_, sy_] = jointToSvg(qsCfg.t1, qsCfg.t2);
   const [gx_, gy_] = jointToSvg(qgCfg.t1, qgCfg.t2);
   svg.appendChild(el("circle", { cx: sx_, cy: sy_, r: 7, fill: COL.start, stroke: "white", "stroke-width": 2 }));
@@ -692,9 +685,6 @@ function drawJoint() {
   const gL = el("text", { x: gx_ + 11, y: gy_ + 4, "font-family": "IBM Plex Mono, monospace", "font-size": 11, fill: COL.goal, "font-weight": 600 });
   gL.textContent = "goal"; svg.appendChild(gL);
 
-  const q = isJointMode ? jointSpaceTrajectory(s) : cartesianSpaceTrajectory(s);
-  const [cx, cy] = jointToSvg(q.t1, q.t2);
-  svg.appendChild(el("circle", { cx, cy, r: 6, fill: COL.ee, stroke: COL.warnRed, "stroke-width": 2 }));
 }
 
 //═══════════════════════════════════════════════════════════════════

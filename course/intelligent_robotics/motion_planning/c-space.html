@@ -30,8 +30,8 @@ body { font-family: 'IBM Plex Sans', sans-serif; background: var(--bg); color: v
 /* ── Layout ── */
 .main-grid { display: grid; grid-template-columns: minmax(0, 1fr) 340px; gap: 1.5rem; align-items: start; }
 .canvases-row { display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; }
-.side { display: flex; flex-direction: column; gap: 1.5rem; position: sticky; top: 1.25rem; }
-@media (max-width: 1180px) { .main-grid { grid-template-columns: 1fr; } .side { position: static; display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); align-items: start; } }
+.side { display: flex; flex-direction: column; gap: 1.5rem; }
+@media (max-width: 1180px) { .main-grid { grid-template-columns: 1fr; } .main-grid > :first-child { position: static !important; } .side { position: static; display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); align-items: start; } }
 @media (max-width: 760px) { .canvases-row { grid-template-columns: 1fr; } }
 
 /* ── Cards ── */
@@ -114,19 +114,15 @@ kbd { font-family: 'IBM Plex Mono', monospace; font-size: .7rem; background: whi
   .page-title { font-size: 1.25rem; }
 }
 </style>
+<link rel="stylesheet" href="../ui.css">
 </head>
 <body>
 
-<div class="topbar">
-  <a href="/">AIR Lab @ Ewha</a>
-  <span class="sep">/</span>
-  Motion Planning
-  <span class="sep">/</span>
-  <span class="cur">C-space Visualizer</span>
-</div>
+<div class="topbar" id="course-nav"></div>
+<script src="../nav.js"></script>
 
 <div class="page">
-  <h1 class="page-title">C-space Visualizer — 2R Planar Robot</h1>
+  <h1 class="page-title">[2D] C-space — 2R Arm</h1>
   <p class="page-desc">
     Each robot pose is a single point on the right. The shaded areas show every pose where the robot would hit an obstacle.
   </p>
@@ -167,20 +163,18 @@ kbd { font-family: 'IBM Plex Mono', monospace; font-size: .7rem; background: whi
     <div class="card">
       <div class="card-hd"><div class="card-title">Configuration <span class="card-sub">q = (θ₁, θ₂)</span></div></div>
       <div class="card-body">
-        <div class="sl-group">
-          <div class="sl-label"><span class="sl-name"><i style="background:var(--link1)"></i>θ₁ · joint 1</span><span class="sl-val" id="q1-disp"></span></div>
-          <div class="sl-row">
+        <div class="sl-line" style="--nm:3rem">
+            <span class="nm"><i style="background:var(--link1)"></i>θ₁</span>
             <input type="range" class="t1" id="q1-slider" min="-180" max="180" step="1">
             <input type="number" id="q1-num" min="-180" max="180" step="1">
+            <span class="unit">°</span>
           </div>
-        </div>
-        <div class="sl-group">
-          <div class="sl-label"><span class="sl-name"><i style="background:var(--link2)"></i>θ₂ · joint 2</span><span class="sl-val" id="q2-disp"></span></div>
-          <div class="sl-row">
+        <div class="sl-line" style="--nm:3rem">
+            <span class="nm"><i style="background:var(--link2)"></i>θ₂</span>
             <input type="range" class="t2" id="q2-slider" min="-180" max="180" step="1">
             <input type="number" id="q2-num" min="-180" max="180" step="1">
+            <span class="unit">°</span>
           </div>
-        </div>
         <div class="sl-divider"></div>
         <div class="info-row"><span class="info-label">End-effector (x, y)</span><span class="info-val" id="i-ee">—</span></div>
       </div>
@@ -207,6 +201,7 @@ kbd { font-family: 'IBM Plex Mono', monospace; font-size: .7rem; background: whi
   </div><!-- /main-grid -->
 </div>
 
+<script src="../style2d.js"></script>
 <script>
 'use strict';
 
@@ -219,7 +214,7 @@ let q1 = 60, q2 = 60, a1 = 1.0, a2 = 0.7;
 // link colours match the θ₁ / θ₂ colours used on the sliders and axes
 const LINK_COLORS = { l1: '#264653', l2: '#2a9d8f' };
 const OBS_COLORS = ['#e76f51', '#7b8cae', '#b5838d', '#f4a261', '#6d597a', '#7fa36b'];
-const HIT = '#d62828';
+const HIT = P2.hit;
 const FREE = '#e9f5f1';           // light mint: collision-free space
 
 let obstacles = [];
@@ -399,26 +394,6 @@ function roundRect(ctx, x, y, w, h, r) {
 // ══════════════════════════════════════════════════════════════════
 // DRAW — WORKSPACE
 // ══════════════════════════════════════════════════════════════════
-function drawLink(ctx, a, b, color, w) {
-  ctx.lineCap = 'round';
-  ctx.lineWidth = w + 3; ctx.strokeStyle = 'rgba(15,23,42,.55)';
-  ctx.beginPath(); ctx.moveTo(a.x, a.y); ctx.lineTo(b.x, b.y); ctx.stroke();
-  ctx.lineWidth = w; ctx.strokeStyle = color;
-  ctx.beginPath(); ctx.moveTo(a.x, a.y); ctx.lineTo(b.x, b.y); ctx.stroke();
-}
-function drawJoint(ctx, p, r) {
-  ctx.beginPath(); ctx.arc(p.x, p.y, r, 0, Math.PI * 2);
-  ctx.fillStyle = 'white'; ctx.fill(); ctx.lineWidth = 2.5; ctx.strokeStyle = '#1e293b'; ctx.stroke();
-}
-function drawGripper(ctx, p1, p2, color) {
-  const ang = Math.atan2(p2.y - p1.y, p2.x - p1.x);
-  ctx.save(); ctx.translate(p2.x, p2.y); ctx.rotate(ang);
-  ctx.strokeStyle = color; ctx.lineWidth = 3; ctx.lineCap = 'round'; ctx.lineJoin = 'round';
-  ctx.beginPath();
-  ctx.moveTo(10, -8); ctx.lineTo(0, -8); ctx.lineTo(0, 8); ctx.lineTo(10, 8);
-  ctx.stroke(); ctx.restore();
-}
-
 function drawWorkspace() {
   const ctx = wsCtx, W = WS.w, H = WS.h, s = wsScale(), cx = W / 2, cy = H / 2;
   ctx.clearRect(0, 0, W, H);
@@ -467,11 +442,8 @@ function drawWorkspace() {
   // preview of the hovered configuration: a faint "ghost" arm
   if (hoverQ) {
     const { j1, j2, ee } = fk(hoverQ.q1, hoverQ.q2), hh = hitsAt(hoverQ.q1, hoverQ.q2);
-    const g0 = w2c(j1.x, j1.y), g1 = w2c(j2.x, j2.y), g2 = w2c(ee.x, ee.y);
-    ctx.save(); ctx.globalAlpha = 0.28; ctx.lineCap = 'round'; ctx.lineWidth = 10;
-    ctx.strokeStyle = hh.some(h => h.h1) ? HIT : LINK_COLORS.l1; ctx.beginPath(); ctx.moveTo(g0.x, g0.y); ctx.lineTo(g1.x, g1.y); ctx.stroke();
-    ctx.strokeStyle = hh.some(h => h.h2) ? HIT : LINK_COLORS.l2; ctx.beginPath(); ctx.moveTo(g1.x, g1.y); ctx.lineTo(g2.x, g2.y); ctx.stroke();
-    ctx.restore();
+    const ghost = [w2c(j1.x, j1.y), w2c(j2.x, j2.y), w2c(ee.x, ee.y)];
+    draw2d(ctx, armOps(ghost, { w: 13, alpha: 0.3, bands: false, hit: [hh.some(h => h.h1), hh.some(h => h.h2)] }));
   }
 
   // joint-angle wedges: θ1 from +x, θ2 from the extension of link 1
@@ -495,17 +467,8 @@ function drawWorkspace() {
   wedge(p0, 36, 0, q1, LINK_COLORS.l1, 'θ₁');
   wedge(p1, 30, q1, q1 + q2, LINK_COLORS.l2, 'θ₂');
 
-  // base plate
-  ctx.fillStyle = '#334155';
-  roundRect(ctx, p0.x - 16, p0.y + 5, 32, 9, 3); ctx.fill();
-
-  // the robot
-  const l1Hit = hits.some(h => h.h1), l2Hit = hits.some(h => h.h2);
-  drawLink(ctx, p0, p1, l1Hit ? HIT : LINK_COLORS.l1, 12);
-  drawLink(ctx, p1, p2, l2Hit ? HIT : LINK_COLORS.l2, 10);
-  drawGripper(ctx, p1, p2, '#1e293b');
-  drawJoint(ctx, p0, 8);
-  drawJoint(ctx, p1, 6.5);
+  // the robot (shared 2D style: style2d.js); a link that touches an obstacle turns red
+  draw2d(ctx, armOps([p0, p1, p2], { w: 13, hit: [hits.some(h => h.h1), hits.some(h => h.h2)] }));
 }
 
 // ══════════════════════════════════════════════════════════════════
@@ -600,8 +563,8 @@ function updatePanels() {
 
 function renderLegend() {
   const items = [
-    `<div class="leg-item"><div class="leg-line" style="background:${LINK_COLORS.l1}"></div>Link 1 (θ₁)</div>`,
-    `<div class="leg-item"><div class="leg-line" style="background:${LINK_COLORS.l2}"></div>Link 2 (θ₂)</div>`,
+    `<div class="leg-item"><div class="leg-line" style="background:${LINK_COLORS.l1}"></div>θ₁ · link 1</div>`,
+    `<div class="leg-item"><div class="leg-line" style="background:${LINK_COLORS.l2}"></div>θ₂ · link 2</div>`,
     `<div class="leg-item"><div class="leg-rect" style="background:${FREE};box-shadow:inset 0 0 0 1px #bfe1d6"></div>Free space</div>`,
     `<div class="leg-item"><div class="leg-line" style="background:#94a3b8;opacity:.5"></div>Hover preview</div>`,
   ];
@@ -675,7 +638,6 @@ function syncQUI() {
   [['q1', q1], ['q2', q2]].forEach(([k, v]) => {
     $(`${k}-slider`).value = v;
     if (document.activeElement !== $(`${k}-num`)) $(`${k}-num`).value = Math.round(v);
-    $(`${k}-disp`).textContent = `${Math.round(v)}°`;
   });
 }
 
