@@ -3,7 +3,8 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Page not found</title>
+  <title>Page not found · AIR Lab @ Ewha</title>
+  <link rel="icon" type="image/png" href="/assets/symbols/ewha.png">
   <script>
     // GitHub Pages paths are case-sensitive. Redirect case-mismatched URLs
     // (e.g. /research/humain/) to their canonical spelling.
@@ -21,15 +22,165 @@
       }
     })();
   </script>
+  <link href="https://fonts.googleapis.com/css2?family=EB+Garamond:wght@500&family=IBM+Plex+Sans:wght@400;600&family=IBM+Plex+Mono:wght@500&display=swap" rel="stylesheet">
   <style>
-    body { font-family: 'IBM Plex Sans', sans-serif; background: #fff; color: #1a1a18;
-           display: flex; flex-direction: column; align-items: center; justify-content: center;
-           min-height: 100vh; margin: 0; padding: 0 16px; text-align: center; }
-    a { color: #00462a; }
+    body { margin: 0; min-height: 100vh; display: flex; flex-direction: column; align-items: center; justify-content: center;
+           padding: 0 16px; box-sizing: border-box; text-align: center; background: #fff; color: #1c1c1a;
+           font-family: 'IBM Plex Sans', sans-serif; }
+    .head { display: inline-flex; flex-direction: column; align-items: stretch; }
+    h1 { font-family: 'EB Garamond', serif; font-weight: 500; font-size: 6rem; line-height: 1; margin: 0; color: #00462A; }
+    .head p { margin: .7rem 0 0; color: #7a7a76; font-size: .95rem; white-space: nowrap; }   /* stretched to the 404's width by fitText() */
+    canvas { display: block; width: 100%; max-width: 600px; height: 150px; margin: 2.2rem 0 1.8rem; cursor: pointer; touch-action: manipulation; }
+    a { text-decoration: none; font-size: .84rem; font-weight: 600; color: #4a4a46; background: #efefed;
+        border-radius: 4px; padding: .6rem 1.4rem; transition: background .18s; }
+    a:hover { background: #e3e3e0; }
   </style>
 </head>
 <body>
-  <h1>404</h1>
-  <p>Page not found. <a href="/">Go to the AIR Lab homepage</a></p>
+  <div class="head">
+    <h1>404</h1>
+    <p><span id="msg">Page not found.</span></p>
+  </div>
+  <canvas id="game" aria-label="Robot runner game: press Space or tap to jump"></canvas>
+  <a href="/">AIR Lab @ Ewha</a>
+
+  <script>
+  // "Page not found." spans exactly the width of "404"
+  function fitText() {
+    const h = document.querySelector('h1'), s = document.getElementById('msg');
+    s.style.letterSpacing = '0px'; s.style.marginRight = '0px';
+    const ls = (h.offsetWidth - s.getBoundingClientRect().width) / (s.textContent.length - 1);
+    s.style.letterSpacing = ls + 'px';
+    s.style.marginRight = -ls + 'px';                      // no trailing space after the last letter
+  }
+  (document.fonts ? document.fonts.ready : Promise.resolve()).then(fitText);
+  addEventListener('resize', fitText);
+
+  // ── Robot runner (like the Chrome dino game) ──
+  (function () {
+    const cv = document.getElementById('game'), ctx = cv.getContext('2d');
+    const INK = '#535353', SOFT = '#b5b5b2', H = 150, GROUND = 128;
+    let W = 600;
+    function resize() {
+      const dpr = Math.min(devicePixelRatio || 1, 2);
+      W = cv.clientWidth;
+      cv.width = W * dpr; cv.height = H * dpr;
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      draw();
+    }
+
+    let best = 0;
+    try { best = +localStorage.getItem('air404best') || 0; } catch (e) {}
+    const bot = { x: 40, y: 0, vy: 0, w: 30, h: 36 };       // y = height above the ground
+    let state = 'idle', obs = [], speed, score, t, spawnIn, last = 0, dust = [];
+
+    function reset() { obs = []; speed = 6; score = 0; t = 0; spawnIn = 60; bot.y = 0; bot.vy = 0; }
+    reset();
+
+    function jump() {
+      if (state !== 'run') { reset(); state = 'run'; last = performance.now(); requestAnimationFrame(loop); return; }
+      if (bot.y === 0) bot.vy = 11.5;
+    }
+    addEventListener('keydown', e => { if (e.code === 'Space' || e.code === 'ArrowUp') { e.preventDefault(); jump(); } });
+    cv.addEventListener('pointerdown', e => { e.preventDefault(); jump(); });
+
+    function spawn() {
+      const r = Math.random();
+      if (score > 250 && r < 0.25) {                         // drone: low ones must be jumped, high ones pass overhead
+        obs.push({ kind: 'drone', x: W + 20, w: 34, h: 16, y: Math.random() < 0.5 ? 10 : 46 });
+      } else if (r < 0.65) {
+        const big = Math.random() < 0.35;
+        obs.push({ kind: 'cone', x: W + 20, w: big ? 22 : 16, h: big ? 34 : 24, y: 0 });
+      } else {
+        const n = 1 + (Math.random() * 2 | 0);
+        obs.push({ kind: 'box', x: W + 20, w: 20 * n + 2 * (n - 1), h: 20, y: 0, n });
+      }
+      spawnIn = 45 + Math.random() * 55 - Math.min(speed * 2, 20);
+    }
+
+    function hit(o) {                                          // slightly forgiving boxes
+      const bx = bot.x + 4, bw = bot.w - 8, by = bot.y, bh = bot.h - 4;
+      return bx < o.x + o.w - 3 && bx + bw > o.x + 3 && by < o.y + o.h - 2 && by + bh > o.y + 2;
+    }
+
+    function loop(now) {
+      if (state !== 'run') return;
+      const k = Math.min((now - last) / 16.67, 3); last = now;
+      t += k; speed = Math.min(6 + t / 600, 13); score += 0.15 * k * speed / 6;
+      bot.vy -= 0.62 * k; bot.y = Math.max(0, bot.y + bot.vy * k); if (bot.y === 0) bot.vy = 0;
+      obs.forEach(o => o.x -= speed * k); obs = obs.filter(o => o.x + o.w > -10);
+      if ((spawnIn -= k) <= 0) spawn();
+      if (obs.some(hit)) {
+        state = 'over';
+        if (score > best) { best = score; try { localStorage.setItem('air404best', Math.floor(best)); } catch (e) {} }
+      }
+      draw();
+      if (state === 'run') requestAnimationFrame(loop);
+    }
+
+    // ── drawing ──
+    const Y = y => GROUND - y;                                 // height above ground → canvas y
+    function rr(x, y, w, h, r) { ctx.beginPath(); ctx.roundRect ? ctx.roundRect(x, y, w, h, r) : ctx.rect(x, y, w, h); }
+
+    function drawBot() {
+      const x = bot.x, top = Y(bot.y) - bot.h, run = state === 'run' && bot.y === 0, ph = Math.floor(t / 5) % 2;
+      ctx.fillStyle = INK;
+      ctx.fillRect(x + 14, top - 7, 2, 7); ctx.beginPath(); ctx.arc(x + 15, top - 8, 2.5, 0, 7); ctx.fill();   // antenna
+      rr(x + 3, top, 24, 17, 5); ctx.fill();                                                                // head
+      ctx.fillStyle = '#fff';
+      if (state === 'over') { ctx.font = '700 8px IBM Plex Mono, monospace'; ctx.fillText('x', x + 9, top + 11); ctx.fillText('x', x + 17, top + 11); }
+      else { ctx.fillRect(x + 9, top + 6, 4, 5); ctx.fillRect(x + 18, top + 6, 4, 5); }                       // eyes
+      ctx.fillStyle = INK;
+      rr(x + 6, top + 19, 18, 10, 3); ctx.fill();                                                            // body
+      ctx.fillRect(x + 24, top + 21, 5, 3);                                                                   // arm
+      const wy = top + 32;                                                                                    // wheels
+      [x + 9, x + 21].forEach((cx, i) => {
+        ctx.beginPath(); ctx.arc(cx, wy, 4.5, 0, 7); ctx.fill();
+        ctx.fillStyle = '#fff'; ctx.fillRect(cx - (run && (ph ^ i) ? 2 : 0.5), wy - 0.5, run && (ph ^ i) ? 4 : 1, 1); ctx.fillStyle = INK;
+      });
+    }
+
+    function drawObs(o) {
+      ctx.fillStyle = INK;
+      const x = o.x, b = Y(o.y);
+      if (o.kind === 'cone') {
+        ctx.beginPath(); ctx.moveTo(x + o.w / 2 - 2, b - o.h); ctx.lineTo(x + o.w / 2 + 2, b - o.h); ctx.lineTo(x + o.w - 2, b - 3); ctx.lineTo(x + 2, b - 3); ctx.fill();
+        ctx.fillRect(x, b - 3, o.w, 3);
+        ctx.fillStyle = '#fff'; ctx.fillRect(x + 4, b - o.h * 0.55, o.w - 8, 3);
+      } else if (o.kind === 'box') {
+        for (let i = 0; i < o.n; i++) {
+          const bx = x + i * 22; rr(bx, b - 20, 20, 20, 2); ctx.fill();
+          ctx.fillStyle = '#fff'; ctx.fillRect(bx + 9, b - 20, 2, 7); ctx.fillStyle = INK;
+        }
+      } else {
+        const sp = Math.floor(t / 3) % 2 ? 12 : 8;
+        rr(x + 9, b - 11, 16, 8, 3); ctx.fill();
+        ctx.fillRect(x + 5, b - 14, 2, 4); ctx.fillRect(x + 27, b - 14, 2, 4);
+        ctx.fillRect(x + 6 - sp / 2, b - 15, sp, 2); ctx.fillRect(x + 28 - sp / 2, b - 15, sp, 2);
+        ctx.fillRect(x + 7, b - 9, 20, 2);
+      }
+    }
+
+    function draw() {
+      ctx.clearRect(0, 0, W, H);
+      ctx.fillStyle = INK; ctx.fillRect(0, GROUND, W, 1);
+      ctx.fillStyle = SOFT;                                                     // scrolling ground specks
+      for (let i = 0; i < 14; i++) { const gx = ((i * 97 - t * speed) % W + W) % W; ctx.fillRect(gx, GROUND + 5 + (i % 3) * 4, 2 + (i % 2) * 3, 1); }
+      obs.forEach(drawObs);
+      drawBot();
+      ctx.font = '500 12px IBM Plex Mono, monospace'; ctx.textAlign = 'right';
+      const pad = n => String(Math.floor(n)).padStart(5, '0');
+      ctx.fillStyle = SOFT; ctx.fillText(best ? 'HI ' + pad(best) : '', W - 70, 18);
+      ctx.fillStyle = INK; ctx.fillText(pad(score), W - 4, 18);
+      ctx.textAlign = 'center';
+      if (state === 'idle') { ctx.fillStyle = '#7a7a76'; ctx.fillText('Press Space or tap to start', W / 2, 62); }
+      if (state === 'over') { ctx.fillStyle = INK; ctx.fillText('G A M E   O V E R', W / 2, 52); ctx.fillStyle = '#7a7a76'; ctx.fillText('Space or tap to retry', W / 2, 72); }
+      ctx.textAlign = 'left';
+    }
+
+    new ResizeObserver(resize).observe(cv);
+    (document.fonts ? document.fonts.ready : Promise.resolve()).then(draw);
+  })();
+  </script>
 </body>
 </html>
