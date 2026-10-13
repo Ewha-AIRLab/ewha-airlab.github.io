@@ -80,6 +80,24 @@ const MEMBERS_DATA = {
           github: "",
           photo:   "assets/members/yujin.jpg"
         },
+        {
+          name:    "Somin Yoo",
+          role:    "Undergraduate Student",
+          focus:   "",
+          email:   "daemin2881@gmail.com",
+          website: "",
+          github: "https://github.com/daemin2881",
+          photo:   "assets/members/somin.jpg"
+        },
+        {
+          name:    "Jihye Bae",
+          role:    "Undergraduate Student",
+          focus:   "",
+          email:   "24bae@ewha.ac.kr",
+          website: "",
+          github: "",
+          photo:   "assets/members/jihye.png"
+        },
       ]
     },
     {
