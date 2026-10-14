@@ -3,7 +3,7 @@
 // Add new entries at the TOP of the array (newest first).
 //
 // type:      "conference" | "journal" | "extended_abstract"
-// thumbnail: path relative to site root, e.g. "assets/publications/teaser/foo.gif"
+// thumbnail: path relative to site root, e.g. "assets/publications/teaser/foo.mp4"
 //            Set to null if no image is available.
 // featured:  true  → shown in the Research Overview carousel on the home page
 //            false → publications page only
@@ -22,7 +22,7 @@ const PUBLICATIONS = [
     venue_full: "IEEE/RSJ International Conference on Intelligent Robots and Systems (IROS), 2026",
     type: "conference",
     featured: false,
-    thumbnail: "assets/publications/teaser/humain_teaser.gif",
+    thumbnail: "assets/publications/teaser/humain_teaser.mp4",
     links: [
       { label: "Webpage", url: "https://robotics.ewha.ac.kr/research/HumAIN/" },
       { label: "Paper", url: "https://arxiv.org/abs/2607.07357" },
@@ -64,7 +64,7 @@ const PUBLICATIONS = [
     venue_full: "IEEE International Conference on Robotics and Automation (ICRA), 2026",
     type: "conference",
     featured: true,
-    thumbnail: "assets/publications/teaser/loa_teaser.gif",
+    thumbnail: "assets/publications/teaser/loa_teaser.mp4",
     links: [
       { label: "Paper", url: "https://arxiv.org/abs/2602.09076" }
     ]
@@ -137,7 +137,7 @@ const PUBLICATIONS = [
     venue_full: "IEEE Robotics and Automation Letters (RA-L), 2025",
     type: "journal",
     featured: true,
-    thumbnail: "assets/publications/teaser/tgs.gif",
+    thumbnail: "assets/publications/teaser/tgs.mp4",
     links: [
       { label: "Webpage", url: "https://gamma.umd.edu/researchdirections/crowdmultiagent/tgs" },
       { label: "Paper",   url: "https://arxiv.org/abs/2408.02454" },
@@ -152,7 +152,7 @@ const PUBLICATIONS = [
     venue_full: "IEEE/RSJ International Conference on Intelligent Robots and Systems (IROS), 2025",
     type: "conference",
     featured: false,
-    thumbnail: "assets/publications/teaser/social-llava.gif",
+    thumbnail: "assets/publications/teaser/social-llava.mp4",
     links: [
       { label: "Webpage", url: "https://people.cs.gmu.edu/~xiao/Research/SNEI/" },
       { label: "Paper", url: "https://arxiv.org/abs/2501.09024" },
@@ -181,7 +181,7 @@ const PUBLICATIONS = [
     venue_full: "International Symposium on Experimental Robotics (ISER), 2025",
     type: "conference",
     featured: false,
-    thumbnail: "assets/publications/teaser/mosu.gif",
+    thumbnail: "assets/publications/teaser/mosu.mp4",
     links: [
       { label: "Paper", url: "https://arxiv.org/abs/2507.04686" }
     ]
@@ -211,7 +211,7 @@ const PUBLICATIONS = [
     venue_full: "IEEE Robotics and Automation Letters (RA-L), 2025",
     type: "journal",
     featured: true,
-    thumbnail: "assets/publications/teaser/VLM-SocialNav_teaser.gif",
+    thumbnail: "assets/publications/teaser/VLM-SocialNav_teaser.mp4",
     links: [
       { label: "Webpage", url: "https://gamma.umd.edu/researchdirections/crowdmultiagent/vlm-social-nav" },
       { label: "Paper",   url: "https://arxiv.org/abs/2404.00210" },
@@ -226,7 +226,7 @@ const PUBLICATIONS = [
     venue_full: "IEEE/RSJ International Conference on Intelligent Robots and Systems (IROS), 2024",
     type: "conference",
     featured: false,
-    thumbnail: "assets/publications/teaser/dtg_teaser.gif",
+    thumbnail: "assets/publications/teaser/dtg_teaser.mp4",
     links: [
       { label: "Paper", url: "https://arxiv.org/abs/2403.09900" },
       { label: "Video", url: "https://youtu.be/1-YZwSma5Z4?si=WzyriPOY30jM6KZv" },
@@ -256,7 +256,7 @@ const PUBLICATIONS = [
     ],
     type: "conference",
     featured: true,
-    thumbnail: "assets/publications/teaser/tspart_teaser.gif",
+    thumbnail: "assets/publications/teaser/tspart_teaser.mp4",
     links: [
       { label: "Webpage", url: "http://graphics.ewha.ac.kr/TSPArt" },
       { label: "Paper", url: "https://arxiv.org/abs/2210.07592" },
@@ -271,7 +271,7 @@ const PUBLICATIONS = [
     venue_full: "IEEE Transactions on Robotics (T-RO), 2023",
     type: "journal",
     featured: true,
-    thumbnail: "assets/publications/teaser/tro23_teaser.gif",
+    thumbnail: "assets/publications/teaser/tro23_teaser.mp4",
     links: [
       { label: "Webpage", url: "http://graphics.ewha.ac.kr/SSK" },
       { label: "Paper",   url: "assets/publications/paper/TRO23_SSK.pdf"},
@@ -287,7 +287,7 @@ const PUBLICATIONS = [
     venue_full: "IEEE/RSJ International Conference on Intelligent Robots and Systems (IROS), 2023",
     type: "conference",
     featured: true,
-    thumbnail: "assets/publications/teaser/iros23_teaser.gif",
+    thumbnail: "assets/publications/teaser/iros23_teaser.mp4",
     links: [
       { label: "Paper", url: "https://arxiv.org/abs/2210.07590" },
       { label: "Video", url: "https://youtu.be/_ENNdIS6qcw?si=U4GcvlF3EoguXeLW" }
@@ -301,7 +301,7 @@ const PUBLICATIONS = [
     venue_full: "IEEE Robotics and Automation Letters (RA-L), 2021",
     type: "journal",
     featured: false,
-    thumbnail: "assets/publications/teaser/ral21_teaser.gif",
+    thumbnail: "assets/publications/teaser/ral21_teaser.mp4",
     links: [
       { label: "Webpage", url: "http://graphics.ewha.ac.kr/SL1M" },
       { label: "Paper",   url: "https://arxiv.org/abs/2011.09772" },
@@ -333,7 +333,7 @@ const PUBLICATIONS = [
     ],
     type: "extended_abstract",
     featured: false,
-    thumbnail: "assets/publications/teaser/kcgs21_teaser.gif",
+    thumbnail: "assets/publications/teaser/kcgs21_teaser.mp4",
     links: [
       { label: "Best Undergrad Paper Award", award: true, url: "assets/award/TSPArt_BestUndergradPaper_KCGS.jpg"},
       { label: "Webpage", url: "http://graphics.ewha.ac.kr/TSPArt" },
@@ -366,7 +366,7 @@ const PUBLICATIONS = [
     venue_full: "IEEE International Conference on Robotics and Automation (ICRA), 2019",
     type: "conference",
     featured: false,
-    thumbnail: "assets/publications/teaser/icra19_teaser.gif",
+    thumbnail: "assets/publications/teaser/icra19_teaser.mp4",
     links: [
       { label: "Webpage", url: "http://graphics.ewha.ac.kr/SSK" },
       { label: "Paper", url: "assets/publications/paper/icra19.pdf" },
@@ -383,7 +383,7 @@ const PUBLICATIONS = [
     ],
     type: ["conference", "extended_abstract"],
     featured: true,
-    thumbnail: "assets/publications/teaser/icra18_teaser.gif",
+    thumbnail: "assets/publications/teaser/icra18_teaser.mp4",
     links: [
       { label: "Best Paper Award", award: true, url: "assets/award/SSK_BestPaperAward_KRoC.pdf"},
       { label: "Webpage", url: "http://graphics.ewha.ac.kr/SSK" },
@@ -416,7 +416,7 @@ const PUBLICATIONS = [
     venue_full: "IEEE Computer Graphics and Applications (CG&A), 2017",
     type: "journal",
     featured: false,
-    thumbnail: "assets/publications/teaser/cga17_teaser.gif",
+    thumbnail: "assets/publications/teaser/cga17_teaser.mp4",
     links: [
       { label: "Webpage", url: "https://graphics.ewha.ac.kr/alteredgravity/" },
       { label: "Paper", url: "assets/publications/paper/cga17.pdf" },

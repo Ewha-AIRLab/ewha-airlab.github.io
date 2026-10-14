@@ -43,6 +43,6 @@ const LAB_INFO = {
   gallery: [
     { src: "assets/gallery/ewha.gif",     caption: "Ewha Womans University, Seoul, KR" },
     { src: "assets/gallery/IROS2026.jpg", caption: "UMD · GMU · Ewha reunion @ IEEE IROS 2026!" },
-    { src: "assets/gallery/ICRA2026.jpg", caption: "Representing Ewha @ IEEE ICRA 2026!" },
+    { src: "assets/gallery/ICRA2026_web.jpg", caption: "Representing Ewha @ IEEE ICRA 2026!" },
   ],
 };

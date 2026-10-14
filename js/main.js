@@ -77,6 +77,15 @@ function setActiveNav(page) {
 // Home page
 // ─────────────────────────────────────────────
 
+// Teaser media: .mp4/.webm render as a muted looping <video> (much lighter than GIF)
+function thumbMedia(src) {
+  if (!src) return '';
+  if (/\.(mp4|webm)$/i.test(src)) {
+    return `<video src="${src}" autoplay muted loop playsinline preload="metadata" onerror="this.parentElement.innerHTML=''"></video>`;
+  }
+  return `<img src="${src}" alt="" loading="lazy" onerror="this.parentElement.innerHTML=''">`;
+}
+
 function renderHome() {
   const recentPubs = [...PUBLICATIONS].filter(p => p.featured).sort((a,b) => b.year - a.year);
 
@@ -84,7 +93,7 @@ function renderHome() {
     const lnk = (p.links || []).find(l => l.label === 'Website' || l.label === 'Webpage') ||
                 (p.links || []).find(l => !l.award);
     const inner = `<div class="pub-thumb-slot">
-        ${p.thumbnail ? `<img src="${p.thumbnail}" alt="" loading="lazy" onerror="this.parentElement.innerHTML=''">` : ''}
+        ${thumbMedia(p.thumbnail)}
       </div>`;
     return `<div class="carousel-item">
       ${lnk ? `<a href="${lnk.url}" target="_blank" rel="noopener" class="carousel-thumb-lnk">${inner}</a>` : inner}
@@ -441,9 +450,7 @@ window.toggleOlderNews = function(btn) {
 const CUTOFF = 2025;
 
 function buildPubCard(pub) {
-  const thumb = pub.thumbnail
-    ? `<img src="${pub.thumbnail}" alt="" loading="lazy" onerror="this.parentElement.innerHTML=''">`
-    : '';
+  const thumb = thumbMedia(pub.thumbnail);
   const links = (pub.links || []).map(l =>
     l.award
       ? (l.url
